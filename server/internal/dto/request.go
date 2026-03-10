@@ -38,6 +38,8 @@ type CreateFeatureRequest struct {
 	InputContract  InputContractRequest `json:"inputContract"`
 	Metadata       map[string]any       `json:"metadata"`
 	Tags           []string             `json:"tags"`
+	TrialUntil     *string              `json:"trialUntil"`
+	TrialValue     any                  `json:"trialValue"`
 }
 
 // UpdateFeatureRequest is the request body for updating a feature.
@@ -55,6 +57,8 @@ type UpdateFeatureRequest struct {
 	InputContract  InputContractRequest `json:"inputContract"`
 	Metadata       map[string]any       `json:"metadata"`
 	Tags           []string             `json:"tags"`
+	TrialUntil     *string              `json:"trialUntil"`
+	TrialValue     any                  `json:"trialValue"`
 }
 
 // ToggleFeatureRequest is the request body for toggling a feature.
@@ -64,28 +68,28 @@ type ToggleFeatureRequest struct {
 
 // CreateRuleRequest is the request body for creating a rule.
 type CreateRuleRequest struct {
-	Name                string                       `json:"name" binding:"required"`
-	Priority            int                          `json:"priority"`
-	Enabled             bool                         `json:"enabled"`
-	Expression          string                       `json:"expression" binding:"required"`
-	Value               any                          `json:"value" binding:"required"`
-	RolloutPercentage   *int                         `json:"rolloutPercentage"`
-	SourceBindings      SourceBindingsRequest        `json:"sourceBindings"`
-	ExternalApiBindings []ExternalApiBindingRequest  `json:"externalApiBindings"`
-	Metadata            map[string]any               `json:"metadata"`
+	Name                string                      `json:"name" binding:"required"`
+	Priority            int                         `json:"priority"`
+	Enabled             bool                        `json:"enabled"`
+	Expression          string                      `json:"expression" binding:"required"`
+	Value               any                         `json:"value" binding:"required"`
+	RolloutPercentage   *int                        `json:"rolloutPercentage"`
+	SourceBindings      SourceBindingsRequest       `json:"sourceBindings"`
+	ExternalApiBindings []ExternalApiBindingRequest `json:"externalApiBindings"`
+	Metadata            map[string]any              `json:"metadata"`
 }
 
 // UpdateRuleRequest is the request body for updating a rule.
 type UpdateRuleRequest struct {
-	Name                string                       `json:"name" binding:"required"`
-	Priority            int                          `json:"priority"`
-	Enabled             bool                         `json:"enabled"`
-	Expression          string                       `json:"expression" binding:"required"`
-	Value               any                          `json:"value" binding:"required"`
-	RolloutPercentage   *int                         `json:"rolloutPercentage"`
-	SourceBindings      SourceBindingsRequest        `json:"sourceBindings"`
-	ExternalApiBindings []ExternalApiBindingRequest  `json:"externalApiBindings"`
-	Metadata            map[string]any               `json:"metadata"`
+	Name                string                      `json:"name" binding:"required"`
+	Priority            int                         `json:"priority"`
+	Enabled             bool                        `json:"enabled"`
+	Expression          string                      `json:"expression" binding:"required"`
+	Value               any                         `json:"value" binding:"required"`
+	RolloutPercentage   *int                        `json:"rolloutPercentage"`
+	SourceBindings      SourceBindingsRequest       `json:"sourceBindings"`
+	ExternalApiBindings []ExternalApiBindingRequest `json:"externalApiBindings"`
+	Metadata            map[string]any              `json:"metadata"`
 }
 
 // ExternalApiBindingRequest binds a workspace-level ExternalApi to a rule with param mappings.
@@ -135,21 +139,27 @@ type ImportSegmentDataRequest struct {
 
 // CreatePackRequest is the request body for creating a pack.
 type CreatePackRequest struct {
-	Key         string         `json:"key" binding:"required"`
-	Name        string         `json:"name" binding:"required"`
-	Description string         `json:"description"`
-	FeatureKeys []string       `json:"featureKeys"`
-	Enabled     bool           `json:"enabled"`
-	Metadata    map[string]any `json:"metadata"`
+	Key          string         `json:"key" binding:"required"`
+	Name         string         `json:"name" binding:"required"`
+	Description  string         `json:"description"`
+	FeatureKeys  []string       `json:"featureKeys"`
+	Enabled      bool           `json:"enabled"`
+	Metadata     map[string]any `json:"metadata"`
+	TierKey      *string        `json:"tierKey"`
+	InheritsFrom []string       `json:"inheritsFrom"`
+	TrialUntil   *string        `json:"trialUntil"`
 }
 
 // UpdatePackRequest is the request body for updating a pack.
 type UpdatePackRequest struct {
-	Name        string         `json:"name" binding:"required"`
-	Description string         `json:"description"`
-	FeatureKeys []string       `json:"featureKeys"`
-	Enabled     bool           `json:"enabled"`
-	Metadata    map[string]any `json:"metadata"`
+	Name         string         `json:"name" binding:"required"`
+	Description  string         `json:"description"`
+	FeatureKeys  []string       `json:"featureKeys"`
+	Enabled      bool           `json:"enabled"`
+	Metadata     map[string]any `json:"metadata"`
+	TierKey      *string        `json:"tierKey"`
+	InheritsFrom []string       `json:"inheritsFrom"`
+	TrialUntil   *string        `json:"trialUntil"`
 }
 
 // ActivatePackRequest is the request body for activating a pack on a target.
@@ -207,10 +217,10 @@ type SegmentSourceBindingRequest struct {
 }
 
 type FeatureExpressionTestRequest struct {
-	Expression          string                     `json:"expression" binding:"required"`
-	SourceBindings      SourceBindingsRequest      `json:"sourceBindings"`
+	Expression          string                      `json:"expression" binding:"required"`
+	SourceBindings      SourceBindingsRequest       `json:"sourceBindings"`
 	ExternalApiBindings []ExternalApiBindingRequest `json:"externalApiBindings"`
-	Scenario            FeatureTestScenario        `json:"scenario" binding:"required"`
+	Scenario            FeatureTestScenario         `json:"scenario" binding:"required"`
 }
 
 type FeatureTestScenario struct {
@@ -258,7 +268,6 @@ type TestAuthProfileRequestInput struct {
 	Query   map[string]string `json:"query"`
 	Body    map[string]any    `json:"body"`
 }
-
 
 // CreateExternalAPIRequest creates a reusable external API definition.
 type CreateExternalAPIRequest struct {

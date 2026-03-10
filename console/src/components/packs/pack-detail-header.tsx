@@ -8,9 +8,9 @@ import { PackToggle } from './pack-toggle';
 
 import type { Pack } from '@/api/types';
 
-import { TierBadge } from '@/components/shared/tier-badge';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { PermissionButton } from '@/components/shared/permission-button';
+import { TierBadge } from '@/components/shared/tier-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useDeletePack } from '@/mutations/pack-mutations';

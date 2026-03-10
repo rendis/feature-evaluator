@@ -127,7 +127,7 @@ func TestFeatureHandlerUpdate_PreservesOmittedFields(t *testing.T) {
 		},
 	}
 
-	handler := NewFeatureHandler(featuredomain.NewService(repo), nil, nil, nil)
+	handler := NewFeatureHandler(featuredomain.NewService(repo), nil, nil, nil, nil)
 	router := gin.New()
 	router.Use(func(c *gin.Context) {
 		c.Set("requestId", "req-123")
@@ -218,7 +218,7 @@ func TestFeatureHandlerListSummary_ReturnsLightweightPayload(t *testing.T) {
 		},
 	}
 
-	handler := NewFeatureHandler(featuredomain.NewService(repo), nil, nil, nil)
+	handler := NewFeatureHandler(featuredomain.NewService(repo), nil, nil, nil, nil)
 	router := gin.New()
 	router.GET("/features", handler.List)
 

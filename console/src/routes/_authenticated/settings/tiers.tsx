@@ -6,13 +6,13 @@ import { useTranslation } from 'react-i18next';
 
 import type { Tier } from '@/api/types';
 
-import { TierForm } from '@/components/tiers/tier-form';
-import { TierList } from '@/components/tiers/tier-list';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ApiErrorState } from '@/components/shared/error-state';
 import { LoadingSkeleton } from '@/components/shared/loading-skeleton';
 import { PageHeader } from '@/components/shared/page-header';
 import { PermissionButton } from '@/components/shared/permission-button';
+import { TierForm } from '@/components/tiers/tier-form';
+import { TierList } from '@/components/tiers/tier-list';
 import { tierQueries } from '@/queries/tier-queries';
 
 export const Route = createFileRoute('/_authenticated/settings/tiers')({

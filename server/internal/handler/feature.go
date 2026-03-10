@@ -13,6 +13,7 @@ import (
 	"github.com/rendis/feature-evaluator/internal/domain/feature"
 	"github.com/rendis/feature-evaluator/internal/domain/pack"
 	"github.com/rendis/feature-evaluator/internal/domain/tag"
+	"github.com/rendis/feature-evaluator/internal/domain/tier"
 	"github.com/rendis/feature-evaluator/internal/dto"
 	"github.com/rendis/feature-evaluator/internal/server/middleware"
 	"github.com/rendis/feature-evaluator/pkg/apierror"
@@ -25,12 +26,13 @@ type FeatureHandler struct {
 	svc          *feature.Service
 	tagSvc       *tag.Service
 	packSvc      *pack.Service
+	tierSvc      *tier.Service
 	changelogSvc *changelog.Service
 }
 
 // NewFeatureHandler creates a new FeatureHandler.
-func NewFeatureHandler(svc *feature.Service, tagSvc *tag.Service, packSvc *pack.Service, changelogSvc *changelog.Service) *FeatureHandler {
-	return &FeatureHandler{svc: svc, tagSvc: tagSvc, packSvc: packSvc, changelogSvc: changelogSvc}
+func NewFeatureHandler(svc *feature.Service, tagSvc *tag.Service, packSvc *pack.Service, tierSvc *tier.Service, changelogSvc *changelog.Service) *FeatureHandler {
+	return &FeatureHandler{svc: svc, tagSvc: tagSvc, packSvc: packSvc, tierSvc: tierSvc, changelogSvc: changelogSvc}
 }
 
 // buildTagMap collects all unique tag keys from features, looks them up, and returns a map.
@@ -99,12 +101,94 @@ func (h *FeatureHandler) buildPackMap(c *gin.Context) map[string][]dto.PackRef {
 	return m
 }
 
+// buildTierRefs resolves tier refs for a single feature via its packs.
+func (h *FeatureHandler) buildTierRefs(c *gin.Context, featureKey string) []dto.TierRef {
+	if h.packSvc == nil || h.tierSvc == nil {
+		return nil
+	}
+	tierKeys := h.packSvc.ResolveTierKeysForFeature(c.Request.Context(), featureKey)
+	if len(tierKeys) == 0 {
+		return []dto.TierRef{}
+	}
+	tiers, err := h.tierSvc.FindByKeys(c.Request.Context(), tierKeys)
+	if err != nil {
+		//nolint:gosec // Structured logging records the feature key for operator debugging only.
+		slog.Warn("fetching tiers for feature", "featureKey", featureKey, "error", err, "requestId", middleware.GetRequestID(c))
+		return []dto.TierRef{}
+	}
+	return dto.TiersToRefs(tiers)
+}
+
+// collectFeatureTierKeys scans packs and returns a mapping from featureKey to
+// its set of tierKeys, plus the deduplicated set of all tierKeys found.
+func collectFeatureTierKeys(packs []pack.Pack) (featureTierKeys map[string]map[string]struct{}, allTierKeys map[string]struct{}) {
+	featureTierKeys = make(map[string]map[string]struct{})
+	allTierKeys = make(map[string]struct{})
+	for i := range packs {
+		if packs[i].TierKey == nil || *packs[i].TierKey == "" {
+			continue
+		}
+		tk := *packs[i].TierKey
+		allTierKeys[tk] = struct{}{}
+		for _, fk := range packs[i].FeatureKeys {
+			if featureTierKeys[fk] == nil {
+				featureTierKeys[fk] = make(map[string]struct{})
+			}
+			featureTierKeys[fk][tk] = struct{}{}
+		}
+	}
+	return featureTierKeys, allTierKeys
+}
+
+// buildTierMap returns a map of featureKey -> []TierRef for all features.
+func (h *FeatureHandler) buildTierMap(c *gin.Context, _ []feature.Feature) map[string][]dto.TierRef {
+	if h.packSvc == nil || h.tierSvc == nil {
+		return nil
+	}
+	allPacks, err := h.packSvc.List(c.Request.Context())
+	if err != nil {
+		//nolint:gosec // Structured logging, no user-controlled data in tier map enrichment path.
+		slog.Warn("fetching packs for tier map", "error", err, "requestId", middleware.GetRequestID(c))
+		return nil
+	}
+	featureTierKeys, allTierKeys := collectFeatureTierKeys(allPacks)
+	if len(allTierKeys) == 0 {
+		return nil
+	}
+	keys := make([]string, 0, len(allTierKeys))
+	for k := range allTierKeys {
+		keys = append(keys, k)
+	}
+	tiers, err := h.tierSvc.FindByKeys(c.Request.Context(), keys)
+	if err != nil {
+		//nolint:gosec // Structured logging, no user-controlled data in tier enrichment path.
+		slog.Warn("fetching tiers for feature list", "error", err, "requestId", middleware.GetRequestID(c))
+		return nil
+	}
+	tierByKey := make(map[string]dto.TierRef, len(tiers))
+	for i := range tiers {
+		tierByKey[tiers[i].Key] = dto.ToTierRef(&tiers[i])
+	}
+	result := make(map[string][]dto.TierRef)
+	for fk, tkSet := range featureTierKeys {
+		refs := make([]dto.TierRef, 0, len(tkSet))
+		for tk := range tkSet {
+			if ref, ok := tierByKey[tk]; ok {
+				refs = append(refs, ref)
+			}
+		}
+		result[fk] = refs
+	}
+	return result
+}
+
 func applyOptionalFeatureFields(
 	existing *feature.Feature,
 	req dto.UpdateFeatureRequest,
 	payload map[string]json.RawMessage,
 	activeFrom *time.Time,
 	activeUntil *time.Time,
+	trialUntil *time.Time,
 ) {
 	if _, ok := payload["enabled"]; ok && req.Enabled != nil {
 		existing.Enabled = *req.Enabled
@@ -138,6 +222,12 @@ func applyOptionalFeatureFields(
 	}
 	if _, ok := payload["tags"]; ok {
 		existing.Tags = req.Tags
+	}
+	if _, ok := payload["trialUntil"]; ok {
+		existing.TrialUntil = trialUntil
+	}
+	if _, ok := payload["trialValue"]; ok {
+		existing.TrialValue = req.TrialValue
 	}
 }
 
@@ -199,10 +289,11 @@ func (h *FeatureHandler) List(c *gin.Context) {
 	}
 
 	tagMap := h.buildTagMap(c, result.Data)
+	tierMap := h.buildTierMap(c, result.Data)
 	if params.View == feature.ListViewSummary {
 		data := make([]dto.FeatureSummaryResponse, 0, len(result.Data))
 		for i := range result.Data {
-			data = append(data, dto.ToFeatureSummaryResponse(&result.Data[i], tagMap))
+			data = append(data, dto.ToFeatureSummaryResponse(&result.Data[i], tagMap, tierMap[result.Data[i].Key]))
 		}
 
 		c.JSON(http.StatusOK, dto.ListResponse[dto.FeatureSummaryResponse]{
@@ -221,7 +312,7 @@ func (h *FeatureHandler) List(c *gin.Context) {
 
 	data := make([]dto.FeatureResponse, 0, len(result.Data))
 	for i := range result.Data {
-		data = append(data, dto.ToFeatureResponse(&result.Data[i], tagMap, packMap[result.Data[i].Key]))
+		data = append(data, dto.ToFeatureResponse(&result.Data[i], tagMap, tierMap[result.Data[i].Key], packMap[result.Data[i].Key]))
 	}
 
 	c.JSON(http.StatusOK, dto.ListResponse[dto.FeatureResponse]{
@@ -245,8 +336,9 @@ func (h *FeatureHandler) Get(c *gin.Context) {
 	}
 
 	tagMap := h.buildTagMapForFeature(c, f)
+	tierRefs := h.buildTierRefs(c, f.Key)
 	packRefs := h.buildPackRefs(c, f.Key)
-	c.JSON(http.StatusOK, dto.ToFeatureDetailResponse(f, tagMap, packRefs))
+	c.JSON(http.StatusOK, dto.ToFeatureDetailResponse(f, tagMap, tierRefs, packRefs))
 }
 
 // Create creates a new feature.
@@ -273,6 +365,16 @@ func (h *FeatureHandler) Create(c *gin.Context) {
 		return
 	}
 
+	trialUntil, err := dto.ParseTimePtr(req.TrialUntil)
+	if err != nil {
+		dto.RespondError(c, apierror.NewBadRequest(err.Error(), "error.invalidTrialUntil"))
+		return
+	}
+	if trialUntil != nil && req.TrialValue == nil {
+		dto.RespondError(c, apierror.NewBadRequest("trialValue is required when trialUntil is set", "error.trialValueRequired"))
+		return
+	}
+
 	f := &feature.Feature{
 		Key:            req.Key,
 		Name:           req.Name,
@@ -288,6 +390,8 @@ func (h *FeatureHandler) Create(c *gin.Context) {
 		InputContract:  toDomainInputContract(req.InputContract),
 		Metadata:       req.Metadata,
 		Tags:           req.Tags,
+		TrialUntil:     trialUntil,
+		TrialValue:     req.TrialValue,
 		CreatedBy:      middleware.GetUserEmail(c),
 		UpdatedBy:      middleware.GetUserEmail(c),
 	}
@@ -305,8 +409,9 @@ func (h *FeatureHandler) Create(c *gin.Context) {
 	})
 
 	tagMap := h.buildTagMapForFeature(c, f)
+	tierRefs := h.buildTierRefs(c, f.Key)
 	packRefs := h.buildPackRefs(c, f.Key)
-	c.JSON(http.StatusCreated, dto.ToFeatureDetailResponse(f, tagMap, packRefs))
+	c.JSON(http.StatusCreated, dto.ToFeatureDetailResponse(f, tagMap, tierRefs, packRefs))
 }
 
 // Update updates an existing feature.
@@ -346,12 +451,22 @@ func (h *FeatureHandler) Update(c *gin.Context) {
 		return
 	}
 
+	trialUntil, err := dto.ParseTimePtr(req.TrialUntil)
+	if err != nil {
+		dto.RespondError(c, apierror.NewBadRequest(err.Error(), "error.invalidTrialUntil"))
+		return
+	}
+	if trialUntil != nil && req.TrialValue == nil {
+		dto.RespondError(c, apierror.NewBadRequest("trialValue is required when trialUntil is set", "error.trialValueRequired"))
+		return
+	}
+
 	// Snapshot for diff before mutation.
 	oldSnapshot := *existing
 
 	existing.Name = req.Name
 	existing.Description = req.Description
-	applyOptionalFeatureFields(existing, req, payload, activeFrom, activeUntil)
+	applyOptionalFeatureFields(existing, req, payload, activeFrom, activeUntil, trialUntil)
 	existing.UpdatedBy = middleware.GetUserEmail(c)
 
 	if err := h.svc.Update(c.Request.Context(), existing); err != nil {
@@ -368,8 +483,9 @@ func (h *FeatureHandler) Update(c *gin.Context) {
 	})
 
 	tagMap := h.buildTagMapForFeature(c, existing)
+	tierRefs := h.buildTierRefs(c, existing.Key)
 	packRefs := h.buildPackRefs(c, existing.Key)
-	c.JSON(http.StatusOK, dto.ToFeatureDetailResponse(existing, tagMap, packRefs))
+	c.JSON(http.StatusOK, dto.ToFeatureDetailResponse(existing, tagMap, tierRefs, packRefs))
 }
 
 // Delete removes a feature.

@@ -21,12 +21,12 @@ import (
 
 // RuleHandler handles rule CRUD endpoints within a feature.
 type RuleHandler struct {
-	featureSvc      *feature.Service
-	segmentSvc      *segment.Service
-	externalApiSvc  *externalapi.Service
-	extApiResolver  evaluation.ExternalApiResolver
-	engine          *engine.Engine
-	changelogSvc    *changelog.Service
+	featureSvc     *feature.Service
+	segmentSvc     *segment.Service
+	externalApiSvc *externalapi.Service
+	extApiResolver evaluation.ExternalApiResolver
+	engine         *engine.Engine
+	changelogSvc   *changelog.Service
 }
 
 // NewRuleHandler creates a new RuleHandler.

@@ -69,6 +69,9 @@ type FeatureResponse struct {
 	UpdatedAt      string                `json:"updatedAt"`
 	CreatedBy      string                `json:"createdBy"`
 	UpdatedBy      string                `json:"updatedBy"`
+	TrialUntil     *string               `json:"trialUntil,omitempty"`
+	TrialValue     any                   `json:"trialValue,omitempty"`
+	Tiers          []TierRef             `json:"tiers"`
 }
 
 // FeatureSummaryResponse is the lightweight DTO used by feature list views.
@@ -89,6 +92,8 @@ type FeatureSummaryResponse struct {
 	UpdatedAt      string        `json:"updatedAt"`
 	CreatedBy      string        `json:"createdBy"`
 	UpdatedBy      string        `json:"updatedBy"`
+	TrialUntil     *string       `json:"trialUntil,omitempty"`
+	Tiers          []TierRef     `json:"tiers"`
 }
 
 // FeatureDetailResponse includes rules in the feature response.
@@ -182,17 +187,22 @@ type PackRef struct {
 
 // PackResponse is the response DTO for a pack.
 type PackResponse struct {
-	ID          string         `json:"id"`
-	Key         string         `json:"key"`
-	Name        string         `json:"name"`
-	Description string         `json:"description"`
-	FeatureKeys []string       `json:"featureKeys"`
-	Enabled     bool           `json:"enabled"`
-	Metadata    map[string]any `json:"metadata,omitempty"`
-	CreatedAt   string         `json:"createdAt"`
-	UpdatedAt   string         `json:"updatedAt"`
-	CreatedBy   string         `json:"createdBy"`
-	UpdatedBy   string         `json:"updatedBy"`
+	ID                   string         `json:"id"`
+	Key                  string         `json:"key"`
+	Name                 string         `json:"name"`
+	Description          string         `json:"description"`
+	FeatureKeys          []string       `json:"featureKeys"`
+	Enabled              bool           `json:"enabled"`
+	Metadata             map[string]any `json:"metadata,omitempty"`
+	CreatedAt            string         `json:"createdAt"`
+	UpdatedAt            string         `json:"updatedAt"`
+	CreatedBy            string         `json:"createdBy"`
+	UpdatedBy            string         `json:"updatedBy"`
+	TierKey              *string        `json:"tierKey,omitempty"`
+	Tier                 *TierRef       `json:"tier,omitempty"`
+	InheritsFrom         []string       `json:"inheritsFrom"`
+	TrialUntil           *string        `json:"trialUntil,omitempty"`
+	ResolvedFeatureCount int            `json:"resolvedFeatureCount"`
 }
 
 // ActivationResponse is the response DTO for a pack activation.

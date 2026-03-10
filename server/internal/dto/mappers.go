@@ -82,14 +82,19 @@ func enrichTags(keys []string, tagMap map[string]tag.Tag) []TagResponse {
 
 // ToFeatureResponse maps a domain feature to its list response DTO.
 // tagMap enriches the tag keys with name and color; pass nil if not available.
+// tiers provides tier refs resolved from packs; pass nil if not available.
 // packs provides pack membership info; pass nil if not available.
-func ToFeatureResponse(f *feature.Feature, tagMap map[string]tag.Tag, packs ...[]PackRef) FeatureResponse {
+func ToFeatureResponse(f *feature.Feature, tagMap map[string]tag.Tag, tiers []TierRef, packs ...[]PackRef) FeatureResponse {
 	var packRefs []PackRef
 	if len(packs) > 0 && packs[0] != nil {
 		packRefs = packs[0]
 	}
 	if packRefs == nil {
 		packRefs = []PackRef{}
+	}
+	tierRefs := tiers
+	if tierRefs == nil {
+		tierRefs = []TierRef{}
 	}
 	ruleCount := f.RuleCount
 	if ruleCount == 0 {
@@ -118,11 +123,18 @@ func ToFeatureResponse(f *feature.Feature, tagMap map[string]tag.Tag, packs ...[
 		UpdatedAt:      formatTime(f.UpdatedAt),
 		CreatedBy:      f.CreatedBy,
 		UpdatedBy:      f.UpdatedBy,
+		TrialUntil:     formatTimePtr(f.TrialUntil),
+		TrialValue:     f.TrialValue,
+		Tiers:          tierRefs,
 	}
 }
 
 // ToFeatureSummaryResponse maps a domain feature to the lightweight list DTO.
-func ToFeatureSummaryResponse(f *feature.Feature, tagMap map[string]tag.Tag) FeatureSummaryResponse {
+func ToFeatureSummaryResponse(f *feature.Feature, tagMap map[string]tag.Tag, tiers []TierRef) FeatureSummaryResponse {
+	tierRefs := tiers
+	if tierRefs == nil {
+		tierRefs = []TierRef{}
+	}
 	return FeatureSummaryResponse{
 		ID:             f.ID,
 		Key:            f.Key,
@@ -140,13 +152,16 @@ func ToFeatureSummaryResponse(f *feature.Feature, tagMap map[string]tag.Tag) Fea
 		UpdatedAt:      formatTime(f.UpdatedAt),
 		CreatedBy:      f.CreatedBy,
 		UpdatedBy:      f.UpdatedBy,
+		TrialUntil:     formatTimePtr(f.TrialUntil),
+		Tiers:          tierRefs,
 	}
 }
 
 // ToFeatureDetailResponse maps a domain feature to its detail response DTO.
 // tagMap enriches the tag keys with name and color; pass nil if not available.
+// tiers provides tier refs resolved from packs; pass nil if not available.
 // packs provides pack membership info; pass nil if not available.
-func ToFeatureDetailResponse(f *feature.Feature, tagMap map[string]tag.Tag, packs ...[]PackRef) FeatureDetailResponse {
+func ToFeatureDetailResponse(f *feature.Feature, tagMap map[string]tag.Tag, tiers []TierRef, packs ...[]PackRef) FeatureDetailResponse {
 	rules := make([]RuleResponse, 0, len(f.Rules))
 	for i := range f.Rules {
 		rules = append(rules, ToRuleResponse(&f.Rules[i]))
@@ -156,7 +171,7 @@ func ToFeatureDetailResponse(f *feature.Feature, tagMap map[string]tag.Tag, pack
 		packRefs = packs[0]
 	}
 	return FeatureDetailResponse{
-		FeatureResponse: ToFeatureResponse(f, tagMap, packRefs),
+		FeatureResponse: ToFeatureResponse(f, tagMap, tiers, packRefs),
 		Rules:           rules,
 	}
 }
@@ -293,23 +308,34 @@ func ToAuditErrorResponse(e *audit.EvalError) AuditErrorResponse {
 }
 
 // ToPackResponse maps a domain pack to its response DTO.
-func ToPackResponse(p *pack.Pack) PackResponse {
+// tier provides the resolved tier ref; pass nil if the pack has no tier.
+// resolvedFeatureCount is the total feature count including inherited packs.
+func ToPackResponse(p *pack.Pack, tier *TierRef, resolvedFeatureCount int) PackResponse {
 	featureKeys := p.FeatureKeys
 	if featureKeys == nil {
 		featureKeys = []string{}
 	}
+	inheritsFrom := p.InheritsFrom
+	if inheritsFrom == nil {
+		inheritsFrom = []string{}
+	}
 	return PackResponse{
-		ID:          p.ID,
-		Key:         p.Key,
-		Name:        p.Name,
-		Description: p.Description,
-		FeatureKeys: featureKeys,
-		Enabled:     p.Enabled,
-		Metadata:    p.Metadata,
-		CreatedAt:   formatTime(p.CreatedAt),
-		UpdatedAt:   formatTime(p.UpdatedAt),
-		CreatedBy:   p.CreatedBy,
-		UpdatedBy:   p.UpdatedBy,
+		ID:                   p.ID,
+		Key:                  p.Key,
+		Name:                 p.Name,
+		Description:          p.Description,
+		FeatureKeys:          featureKeys,
+		Enabled:              p.Enabled,
+		Metadata:             p.Metadata,
+		CreatedAt:            formatTime(p.CreatedAt),
+		UpdatedAt:            formatTime(p.UpdatedAt),
+		CreatedBy:            p.CreatedBy,
+		UpdatedBy:            p.UpdatedBy,
+		TierKey:              p.TierKey,
+		Tier:                 tier,
+		InheritsFrom:         inheritsFrom,
+		TrialUntil:           formatTimePtr(p.TrialUntil),
+		ResolvedFeatureCount: resolvedFeatureCount,
 	}
 }
 

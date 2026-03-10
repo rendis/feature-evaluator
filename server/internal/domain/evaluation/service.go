@@ -46,11 +46,11 @@ type AuthValidationResult struct {
 
 // Service handles feature evaluation logic.
 type Service struct {
-	featureRepo   feature.Repository
-	segmentSvc    *segment.Service
-	auditSvc      *audit.Service
-	packSvc       *pack.Service
-	experimentSvc *experiment.Service
+	featureRepo         feature.Repository
+	segmentSvc          *segment.Service
+	auditSvc            *audit.Service
+	packSvc             *pack.Service
+	experimentSvc       *experiment.Service
 	authValidator       AuthValidator
 	externalApiResolver ExternalApiResolver
 	engine              *engine.Engine

@@ -9,6 +9,7 @@ import { z } from 'zod';
 
 import type { Feature, Pack } from '@/api/types';
 
+import { localToUtc, utcToLocal } from '@/components/features/feature-builder-utils';
 import { TierBadge } from '@/components/shared/tier-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -29,7 +30,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { localToUtc, utcToLocal } from '@/components/features/feature-builder-utils';
 import { useSubmissionLoadingModal } from '@/hooks/use-global-loading';
 import { getVisibleErrorMessage } from '@/lib/display-error';
 import { buildNormalizedKeyFieldProps, resourceKeySchema, slugifyResourceKey } from '@/lib/resource-key';

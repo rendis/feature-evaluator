@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rendis/feature-evaluator/internal/domain/changelog"
 	"github.com/rendis/feature-evaluator/internal/domain/pack"
+	"github.com/rendis/feature-evaluator/internal/domain/tier"
 	"github.com/rendis/feature-evaluator/internal/dto"
 	"github.com/rendis/feature-evaluator/internal/server/middleware"
 	"github.com/rendis/feature-evaluator/pkg/apierror"
@@ -15,12 +16,37 @@ import (
 // PackHandler handles pack CRUD and activation endpoints.
 type PackHandler struct {
 	svc          *pack.Service
+	tierSvc      *tier.Service
 	changelogSvc *changelog.Service
 }
 
 // NewPackHandler creates a new PackHandler.
-func NewPackHandler(svc *pack.Service, changelogSvc *changelog.Service) *PackHandler {
-	return &PackHandler{svc: svc, changelogSvc: changelogSvc}
+func NewPackHandler(svc *pack.Service, tierSvc *tier.Service, changelogSvc *changelog.Service) *PackHandler {
+	return &PackHandler{svc: svc, tierSvc: tierSvc, changelogSvc: changelogSvc}
+}
+
+// buildTierRef resolves a tier ref for a pack's tier key.
+func (h *PackHandler) buildTierRef(c *gin.Context, tierKey *string) *dto.TierRef {
+	if tierKey == nil || *tierKey == "" || h.tierSvc == nil {
+		return nil
+	}
+	tiers, err := h.tierSvc.FindByKeys(c.Request.Context(), []string{*tierKey})
+	if err != nil || len(tiers) == 0 {
+		return nil
+	}
+	ref := dto.ToTierRef(&tiers[0])
+	return &ref
+}
+
+// resolveFeatureCount returns the total resolved feature count including inherited packs.
+func (h *PackHandler) resolveFeatureCount(c *gin.Context, packKey string) int {
+	resolvedKeys, err := h.svc.ResolveFeatureKeys(c.Request.Context(), packKey)
+	if err != nil {
+		//nolint:gosec // Structured logging records the pack key for operator debugging only.
+		slog.Warn("resolving feature keys for pack", "packKey", packKey, "error", err, "requestId", middleware.GetRequestID(c))
+		return 0
+	}
+	return len(resolvedKeys)
 }
 
 // List returns all packs.
@@ -34,7 +60,9 @@ func (h *PackHandler) List(c *gin.Context) {
 
 	data := make([]dto.PackResponse, 0, len(packs))
 	for i := range packs {
-		data = append(data, dto.ToPackResponse(&packs[i]))
+		tierRef := h.buildTierRef(c, packs[i].TierKey)
+		resolvedCount := h.resolveFeatureCount(c, packs[i].Key)
+		data = append(data, dto.ToPackResponse(&packs[i], tierRef, resolvedCount))
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": data})
@@ -49,7 +77,9 @@ func (h *PackHandler) Get(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, dto.ToPackResponse(p))
+	tierRef := h.buildTierRef(c, p.TierKey)
+	resolvedCount := h.resolveFeatureCount(c, p.Key)
+	c.JSON(http.StatusOK, dto.ToPackResponse(p, tierRef, resolvedCount))
 }
 
 // Create creates a new pack.
@@ -65,15 +95,24 @@ func (h *PackHandler) Create(c *gin.Context) {
 		featureKeys = []string{}
 	}
 
+	trialUntil, err := dto.ParseTimePtr(req.TrialUntil)
+	if err != nil {
+		dto.RespondError(c, apierror.NewBadRequest(err.Error(), "error.invalidTrialUntil"))
+		return
+	}
+
 	p := &pack.Pack{
-		Key:         req.Key,
-		Name:        req.Name,
-		Description: req.Description,
-		FeatureKeys: featureKeys,
-		Enabled:     req.Enabled,
-		Metadata:    req.Metadata,
-		CreatedBy:   middleware.GetUserEmail(c),
-		UpdatedBy:   middleware.GetUserEmail(c),
+		Key:          req.Key,
+		Name:         req.Name,
+		Description:  req.Description,
+		FeatureKeys:  featureKeys,
+		Enabled:      req.Enabled,
+		Metadata:     req.Metadata,
+		TierKey:      req.TierKey,
+		InheritsFrom: req.InheritsFrom,
+		TrialUntil:   trialUntil,
+		CreatedBy:    middleware.GetUserEmail(c),
+		UpdatedBy:    middleware.GetUserEmail(c),
 	}
 
 	if err := h.svc.Create(c.Request.Context(), p); err != nil {
@@ -88,7 +127,9 @@ func (h *PackHandler) Create(c *gin.Context) {
 		Action:     changelog.ActionCreate,
 	})
 
-	c.JSON(http.StatusCreated, dto.ToPackResponse(p))
+	tierRef := h.buildTierRef(c, p.TierKey)
+	resolvedCount := h.resolveFeatureCount(c, p.Key)
+	c.JSON(http.StatusCreated, dto.ToPackResponse(p, tierRef, resolvedCount))
 }
 
 // Update updates an existing pack.
@@ -111,11 +152,20 @@ func (h *PackHandler) Update(c *gin.Context) {
 		featureKeys = []string{}
 	}
 
+	trialUntil, err := dto.ParseTimePtr(req.TrialUntil)
+	if err != nil {
+		dto.RespondError(c, apierror.NewBadRequest(err.Error(), "error.invalidTrialUntil"))
+		return
+	}
+
 	existing.Name = req.Name
 	existing.Description = req.Description
 	existing.FeatureKeys = featureKeys
 	existing.Enabled = req.Enabled
 	existing.Metadata = req.Metadata
+	existing.TierKey = req.TierKey
+	existing.InheritsFrom = req.InheritsFrom
+	existing.TrialUntil = trialUntil
 	existing.UpdatedBy = middleware.GetUserEmail(c)
 
 	if err := h.svc.Update(c.Request.Context(), existing); err != nil {
@@ -130,7 +180,9 @@ func (h *PackHandler) Update(c *gin.Context) {
 		Action:     changelog.ActionUpdate,
 	})
 
-	c.JSON(http.StatusOK, dto.ToPackResponse(existing))
+	tierRef := h.buildTierRef(c, existing.TierKey)
+	resolvedCount := h.resolveFeatureCount(c, existing.Key)
+	c.JSON(http.StatusOK, dto.ToPackResponse(existing, tierRef, resolvedCount))
 }
 
 // Delete removes a pack.

@@ -12,6 +12,7 @@ import {
   Zap,
   type LucideIcon,
 } from 'lucide-react';
+import { createElement } from 'react';
 
 import type { TierRef } from '@/api/types';
 
@@ -43,7 +44,8 @@ interface TierBadgeProps {
 }
 
 export function TierBadge({ tier, size = 'default' }: TierBadgeProps) {
-  const IconComponent = getBuiltinIcon(tier.icon);
+  const icon = getBuiltinIcon(tier.icon);
+  const iconSize = size === 'sm' ? 'h-2.5 w-2.5' : 'h-3 w-3';
 
   return (
     <span
@@ -57,9 +59,7 @@ export function TierBadge({ tier, size = 'default' }: TierBadgeProps) {
         border: `1px solid ${tier.color}4D`,
       }}
     >
-      {IconComponent ? (
-        <IconComponent className={cn(size === 'sm' ? 'h-2.5 w-2.5' : 'h-3 w-3')} />
-      ) : null}
+      {icon ? createElement(icon, { className: iconSize }) : null}
       {tier.name}
     </span>
   );
