@@ -93,10 +93,19 @@ For custom OIDC providers set `FE_OIDC_ISSUER` and `FE_OIDC_CLIENT_ID` env vars.
 |------|---------|----------|
 | `fe_list_packs` | List packs | `search?` |
 | `fe_get_pack` | Get pack detail | `key` |
-| `fe_create_pack` | Create pack | `key`, `name`, `feature_keys?` |
+| `fe_create_pack` | Create pack | `key`, `name`, `feature_keys?`, `tier_key?`, `inherits_from?`, `trial_until?` |
+| `fe_update_pack` | Update pack | `key`, `name?`, `description?`, `feature_keys?`, `tier_key?`, `inherits_from?`, `trial_until?` |
 | `fe_toggle_pack` | Enable/disable | `key`, `enabled` |
 | `fe_activate_pack` | Activate on target | `key`, `target_type`, `target_id` |
 | `fe_deactivate_pack` | Deactivate from target | `key`, `target_type`, `target_id` |
+
+### Tiers
+
+Tiers are predefined (24 total across 6 categories: entry, growth, advanced, top, special, technical). Assign to packs via `tier_key`.
+
+| Tool | Purpose | Key Args |
+|------|---------|----------|
+| `fe_list_tiers` | List all predefined tiers | — |
 
 ### Segments
 

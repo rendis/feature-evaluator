@@ -12,6 +12,7 @@ func RegisterAll(server *mcp.Server, c *client.Client) {
 	RegisterRuleTools(server, c)
 	RegisterEvalTools(server, c)
 	RegisterPackTools(server, c)
+	RegisterTierTools(server, c)
 	RegisterSegmentTools(server, c)
 	RegisterExpressionTools(server, c)
 	RegisterExperimentTools(server, c)

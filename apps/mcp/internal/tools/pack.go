@@ -53,11 +53,14 @@ func getPack(c *client.Client) func(context.Context, *mcp.CallToolRequest, GetPa
 // --- Create Pack ---
 
 type CreatePackInput struct {
-	Key         string   `json:"key" jsonschema:"required,unique pack key (kebab-case)"`
-	Name        string   `json:"name" jsonschema:"required,display name"`
-	Description string   `json:"description,omitempty" jsonschema:"optional description"`
-	FeatureKeys []string `json:"feature_keys,omitempty" jsonschema:"feature keys to include in the pack"`
-	Enabled     bool     `json:"enabled,omitempty" jsonschema:"start enabled (default false)"`
+	Key          string   `json:"key" jsonschema:"required,unique pack key (kebab-case)"`
+	Name         string   `json:"name" jsonschema:"required,display name"`
+	Description  string   `json:"description,omitempty" jsonschema:"optional description"`
+	FeatureKeys  []string `json:"feature_keys,omitempty" jsonschema:"feature keys to include in the pack"`
+	Enabled      bool     `json:"enabled,omitempty" jsonschema:"start enabled (default false)"`
+	TierKey      string   `json:"tier_key,omitempty" jsonschema:"predefined tier key (use fe_list_tiers to see options)"`
+	InheritsFrom []string `json:"inherits_from,omitempty" jsonschema:"pack keys to inherit features from"`
+	TrialUntil   string   `json:"trial_until,omitempty" jsonschema:"trial expiration datetime (ISO 8601)"`
 }
 
 type CreatePackOutput struct {
@@ -73,11 +76,65 @@ func createPack(c *client.Client) func(context.Context, *mcp.CallToolRequest, Cr
 			"featureKeys": input.FeatureKeys,
 			"enabled":     input.Enabled,
 		}
+		if input.TierKey != "" {
+			body["tierKey"] = input.TierKey
+		}
+		if len(input.InheritsFrom) > 0 {
+			body["inheritsFrom"] = input.InheritsFrom
+		}
+		if input.TrialUntil != "" {
+			body["trialUntil"] = input.TrialUntil
+		}
 		result, err := c.Post("/packs", body)
 		if err != nil {
 			return nil, CreatePackOutput{}, fmt.Errorf("create pack: %w", err)
 		}
 		return nil, CreatePackOutput{Result: result}, nil
+	}
+}
+
+// --- Update Pack ---
+
+type UpdatePackInput struct {
+	Key          string   `json:"key" jsonschema:"required,pack key to update"`
+	Name         string   `json:"name,omitempty" jsonschema:"display name"`
+	Description  string   `json:"description,omitempty" jsonschema:"description"`
+	FeatureKeys  []string `json:"feature_keys,omitempty" jsonschema:"feature keys to include in the pack"`
+	TierKey      string   `json:"tier_key,omitempty" jsonschema:"predefined tier key (use fe_list_tiers to see options)"`
+	InheritsFrom []string `json:"inherits_from,omitempty" jsonschema:"pack keys to inherit features from"`
+	TrialUntil   string   `json:"trial_until,omitempty" jsonschema:"trial expiration datetime (ISO 8601)"`
+}
+
+type UpdatePackOutput struct {
+	Result any `json:"result" jsonschema:"updated pack"`
+}
+
+func updatePack(c *client.Client) func(context.Context, *mcp.CallToolRequest, UpdatePackInput) (*mcp.CallToolResult, UpdatePackOutput, error) {
+	return func(_ context.Context, _ *mcp.CallToolRequest, input UpdatePackInput) (*mcp.CallToolResult, UpdatePackOutput, error) {
+		body := map[string]any{}
+		if input.Name != "" {
+			body["name"] = input.Name
+		}
+		if input.Description != "" {
+			body["description"] = input.Description
+		}
+		if input.FeatureKeys != nil {
+			body["featureKeys"] = input.FeatureKeys
+		}
+		if input.TierKey != "" {
+			body["tierKey"] = input.TierKey
+		}
+		if len(input.InheritsFrom) > 0 {
+			body["inheritsFrom"] = input.InheritsFrom
+		}
+		if input.TrialUntil != "" {
+			body["trialUntil"] = input.TrialUntil
+		}
+		result, err := c.Put("/packs/"+input.Key, body)
+		if err != nil {
+			return nil, UpdatePackOutput{}, fmt.Errorf("update pack %q: %w", input.Key, err)
+		}
+		return nil, UpdatePackOutput{Result: result}, nil
 	}
 }
 
@@ -173,8 +230,13 @@ func RegisterPackTools(server *mcp.Server, c *client.Client) {
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "fe_create_pack",
-		Description: "Create a new feature pack. A pack bundles multiple features for activation on targets.",
+		Description: "Create a new feature pack. A pack bundles multiple features for activation on targets. Optionally assign a predefined tier.",
 	}, createPack(c))
+
+	mcp.AddTool(server, &mcp.Tool{
+		Name:        "fe_update_pack",
+		Description: "Update an existing pack's name, description, features, tier, inheritance, or trial period.",
+	}, updatePack(c))
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "fe_toggle_pack",
