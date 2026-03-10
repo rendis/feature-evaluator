@@ -33,7 +33,7 @@ export function TierBadge({ tier, size = 'default' }: TierBadgeProps) {
           '--icon-stroke': color,
         } as React.CSSProperties}
       >
-        <use href={`/tiers-sprite.svg#${spriteId}`} />
+        <use href={`${import.meta.env.BASE_URL}tiers-sprite.svg#${spriteId}`} />
       </svg>
       {tier.name}
     </span>
