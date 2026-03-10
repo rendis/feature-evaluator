@@ -387,3 +387,33 @@ type ExternalAPIExpressionProfileResponse struct {
 	Symbols  []ExternalAPIExpressionSymbolResponse `json:"symbols"`
 	Actions  []ExternalAPIExpressionActionResponse `json:"actions"`
 }
+
+// TierResponse is the full tier detail response.
+type TierResponse struct {
+	ID        string `json:"id"`
+	Key       string `json:"key"`
+	Name      string `json:"name"`
+	Level     int    `json:"level"`
+	Color     string `json:"color"`
+	Icon      string `json:"icon"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+	CreatedBy string `json:"createdBy"`
+}
+
+// TierRef is a lightweight tier reference for embedding in other responses.
+type TierRef struct {
+	Key   string `json:"key"`
+	Name  string `json:"name"`
+	Level int    `json:"level"`
+	Color string `json:"color"`
+	Icon  string `json:"icon"`
+}
+
+// TierIconResponse is the response for a tier icon.
+type TierIconResponse struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	ContentType string `json:"contentType"`
+	CreatedAt   string `json:"createdAt"`
+}

@@ -12,6 +12,7 @@ import (
 	"github.com/rendis/feature-evaluator/internal/domain/pack"
 	"github.com/rendis/feature-evaluator/internal/domain/segment"
 	"github.com/rendis/feature-evaluator/internal/domain/tag"
+	"github.com/rendis/feature-evaluator/internal/domain/tier"
 )
 
 func formatTime(t time.Time) string {
@@ -372,4 +373,49 @@ func PacksToRefs(packs []pack.Pack) []PackRef {
 		refs = append(refs, PackRef{Key: packs[i].Key, Name: packs[i].Name})
 	}
 	return refs
+}
+
+// ToTierResponse maps a domain Tier to its API response.
+func ToTierResponse(t *tier.Tier) TierResponse {
+	return TierResponse{
+		ID:        t.ID,
+		Key:       t.Key,
+		Name:      t.Name,
+		Level:     t.Level,
+		Color:     t.Color,
+		Icon:      t.Icon,
+		CreatedAt: formatTime(t.CreatedAt),
+		UpdatedAt: formatTime(t.UpdatedAt),
+		CreatedBy: t.CreatedBy,
+	}
+}
+
+// ToTierRef maps a domain Tier to a lightweight reference.
+func ToTierRef(t *tier.Tier) TierRef {
+	return TierRef{
+		Key:   t.Key,
+		Name:  t.Name,
+		Level: t.Level,
+		Color: t.Color,
+		Icon:  t.Icon,
+	}
+}
+
+// TiersToRefs maps a slice of domain Tiers to refs.
+func TiersToRefs(tiers []tier.Tier) []TierRef {
+	refs := make([]TierRef, 0, len(tiers))
+	for i := range tiers {
+		refs = append(refs, ToTierRef(&tiers[i]))
+	}
+	return refs
+}
+
+// ToTierIconResponse maps a domain TierIcon to its API response.
+func ToTierIconResponse(icon *tier.TierIcon) TierIconResponse {
+	return TierIconResponse{
+		ID:          icon.ID,
+		Name:        icon.Name,
+		ContentType: icon.ContentType,
+		CreatedAt:   formatTime(icon.CreatedAt),
+	}
 }
