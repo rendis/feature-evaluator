@@ -29,6 +29,10 @@ Thumbs.db
 QA-REPORT.md
 SECURITY-REPORT.md
 
+# dirs
+demo/
+tmp/
+
 # Claude session data
 .claude/
 e2e/mock-auth-server/mock-auth-server
