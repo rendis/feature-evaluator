@@ -1,0 +1,35 @@
+# Environment files
+.env
+.env.*
+!.env.example
+!console/.env.e2e
+!server/.env.e2e
+
+# Go
+server/tmp/
+server/bin/
+apps/mcp/bin/
+
+# Node
+console/node_modules/
+console/dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Reports (generated)
+QA-REPORT.md
+SECURITY-REPORT.md
+
+# Claude session data
+.claude/
+e2e/mock-auth-server/mock-auth-server
+e2e/mock-external-api/mock-external-api

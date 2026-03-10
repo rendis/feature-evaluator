@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "feature-evaluator": {
+      "command": "./apps/mcp/bin/feature-evaluator-mcp",
+      "args": [],
+      "env": {
+        "FE_API_URL": "http://localhost:8080/features",
+        "FE_AUTH_TOKEN": "dev-token"
+      }
+    }
+  }
+}
