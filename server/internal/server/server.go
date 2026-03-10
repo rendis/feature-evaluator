@@ -23,6 +23,7 @@ import (
 	"github.com/rendis/feature-evaluator/internal/domain/schedule"
 	"github.com/rendis/feature-evaluator/internal/domain/segment"
 	"github.com/rendis/feature-evaluator/internal/domain/tag"
+	"github.com/rendis/feature-evaluator/internal/domain/tier"
 	"github.com/rendis/feature-evaluator/internal/domain/workspace"
 	"github.com/rendis/feature-evaluator/internal/engine"
 	"github.com/rendis/feature-evaluator/internal/external"
@@ -75,6 +76,8 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 	authProfileRepo := postgres.NewAuthProfileRepo(postgresDB)
 	externalAPIRepo := postgres.NewExternalAPIRepo(postgresDB)
 	tagRepo := postgres.NewTagRepo(postgresDB)
+	tierRepo := postgres.NewTierRepo(postgresDB)
+	tierIconRepo := postgres.NewTierIconRepo(postgresDB)
 	packRepo := postgres.NewPackRepo(postgresDB)
 	packActivationRepo := postgres.NewPackActivationRepo(postgresDB)
 	changelogRepo := postgres.NewChangelogRepo(postgresDB)
@@ -107,6 +110,7 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 	authProfileSvc := authprofile.NewService(authProfileRepo, secretCipher)
 	externalAPISvc := externalapi.NewService(externalAPIRepo, secretCipher)
 	tagSvc := tag.NewService(tagRepo)
+	tierSvc := tier.NewService(tierRepo, tierIconRepo)
 	packCache := redisclient.NewPackCache(redis)
 	packSvc := pack.NewService(packRepo, packActivationRepo, featureRepo, packCache)
 	changelogSvc := changelog.NewService(changelogRepo)
@@ -167,6 +171,7 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 	externalAPIHandler := handler.NewExternalAPIHandler(externalAPISvc, extCaller)
 	featureHandler := handler.NewFeatureHandler(featureSvc, tagSvc, packSvc, changelogSvc)
 	tagHandler := handler.NewTagHandler(tagSvc)
+	tierHandler := handler.NewTierHandler(tierSvc)
 	packHandler := handler.NewPackHandler(packSvc, changelogSvc)
 	ruleHandler := handler.NewRuleHandler(featureSvc, segmentSvc, externalAPISvc, extApiResolver, exprEngine, changelogSvc)
 	changelogHandler := handler.NewChangelogHandler(changelogSvc)
@@ -282,6 +287,21 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 	tagsWrite.POST("", tagHandler.Create)
 	tagsWrite.PUT("/:key", tagHandler.Update)
 	tagsWrite.DELETE("/:key", tagHandler.Delete)
+
+	// Tiers
+	tiersRead := admin.Group("/tiers")
+	tiersRead.Use(middleware.RequirePermission(member.PermFeaturesRead))
+	tiersRead.GET("", tierHandler.List)
+	tiersRead.GET("/:key", tierHandler.Get)
+	tiersRead.GET("/icons", tierHandler.ListIcons)
+
+	tiersWrite := admin.Group("/tiers")
+	tiersWrite.Use(middleware.RequirePermission(member.PermFeaturesWrite))
+	tiersWrite.POST("", tierHandler.Create)
+	tiersWrite.PUT("/:key", tierHandler.Update)
+	tiersWrite.DELETE("/:key", tierHandler.Delete)
+	tiersWrite.POST("/icons", tierHandler.UploadIcon)
+	tiersWrite.DELETE("/icons/:id", tierHandler.DeleteIcon)
 
 	authProfilesWrite := admin.Group("/auth-profiles")
 	authProfilesWrite.Use(middleware.RequirePermission(member.PermSettingsManage))
