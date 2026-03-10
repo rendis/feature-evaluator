@@ -106,6 +106,13 @@
     "uat": "uat",
     "production": "production"
   },
+  "trial": {
+    "title": "Trial period",
+    "until": "Trial until",
+    "value": "Value during trial",
+    "helper": "While the trial is active, rules will be ignored and this value will be returned",
+    "valueRequired": "Trial value is required when a date is configured"
+  },
   "builder": {
     "steps": {
       "feature": "Feature",

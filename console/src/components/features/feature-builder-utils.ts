@@ -18,6 +18,8 @@ export interface FeatureDraft {
   activeFrom: string;
   activeUntil: string;
   environments: string[];
+  trialUntil: string;
+  trialValue: string;
 }
 
 // --- Draft lifecycle ---
@@ -38,6 +40,11 @@ export function createDraft(feature?: Feature): FeatureDraft {
     activeFrom: utcToLocal(feature?.activeFrom),
     activeUntil: utcToLocal(feature?.activeUntil),
     environments: feature?.environments ?? [],
+    trialUntil: utcToLocal(feature?.trialUntil),
+    trialValue:
+      feature?.trialValue !== undefined && feature?.trialValue !== null
+        ? stringifyDefault(feature.trialValue, feature.valueType)
+        : '',
   };
 }
 
@@ -55,6 +62,8 @@ export function serializeSnapshot(draft: FeatureDraft): string {
     activeFrom: draft.activeFrom,
     activeUntil: draft.activeUntil,
     environments: [...draft.environments].sort(),
+    trialUntil: draft.trialUntil,
+    trialValue: draft.trialValue,
   });
 }
 
@@ -107,6 +116,8 @@ export function buildCreatePayload(draft: FeatureDraft): CreateFeatureRequest {
     activeFrom,
     activeUntil,
     environments,
+    trialUntil: localToUtc(draft.trialUntil),
+    trialValue: draft.trialValue ? parseDefaultValue(draft.trialValue, draft.valueType) : undefined,
   };
 }
 
@@ -128,6 +139,8 @@ export function buildUpdatePayload(draft: FeatureDraft): UpdateFeatureRequest {
     activeFrom,
     activeUntil,
     environments,
+    trialUntil: localToUtc(draft.trialUntil),
+    trialValue: draft.trialValue ? parseDefaultValue(draft.trialValue, draft.valueType) : undefined,
   };
 }
 

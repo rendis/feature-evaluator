@@ -110,6 +110,48 @@ export function StepConfig({ draft, onChange }: StepConfigProps) {
           <p className="text-muted-foreground text-xs">{t('environments.helper')}</p>
         </div>
       </div>
+
+      <div className="border-t pt-5">
+        <div className="space-y-4">
+          <Label className="text-base font-semibold">{t('trial.title')}</Label>
+          <div className="space-y-2">
+            <Label htmlFor="trialUntil">{t('trial.until')}</Label>
+            <div className="flex gap-1">
+              <Input
+                id="trialUntil"
+                type="datetime-local"
+                value={draft.trialUntil}
+                onChange={(e) => onChange((c) => ({ ...c, trialUntil: e.target.value }))}
+                className="flex-1"
+              />
+              {draft.trialUntil ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={() => onChange((c) => ({ ...c, trialUntil: '' }))}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              ) : null}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="trialValue">{t('trial.value')}</Label>
+            <Input
+              id="trialValue"
+              value={draft.trialValue}
+              onChange={(e) => onChange((c) => ({ ...c, trialValue: e.target.value }))}
+              placeholder={t('trial.value')}
+            />
+            <p className="text-muted-foreground text-xs">{t('trial.helper')}</p>
+            {draft.trialUntil && !draft.trialValue ? (
+              <p className="text-amber-600 text-xs">{t('trial.valueRequired')}</p>
+            ) : null}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
