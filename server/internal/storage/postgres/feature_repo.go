@@ -51,16 +51,22 @@ func (r *FeatureRepo) Create(ctx context.Context, f *feature.Feature) error {
 		if err != nil {
 			return fmt.Errorf("marshal feature metadata: %w", err)
 		}
+		trialValueJSON, err := jsonBytes(f.TrialValue, "null")
+		if err != nil {
+			return fmt.Errorf("marshal feature trial value: %w", err)
+		}
 
 		_, err = r.client.db(txCtx).Exec(txCtx, `
 			INSERT INTO features (
 				id, workspace_key, key, name, description, enabled, value_type, default_value,
 				active_from, active_until, environments, access_policy, auth_profile_id, input_contract,
-				metadata, rollout_salt, created_at, updated_at, created_by, updated_by
+				metadata, rollout_salt, created_at, updated_at, created_by, updated_by,
+				trial_until, trial_value
 			) VALUES (
 				$1, $2, $3, $4, $5, $6, $7, $8::jsonb,
 				$9, $10, $11, $12, $13, $14::jsonb,
-				$15::jsonb, $16, $17, $18, $19, $20
+				$15::jsonb, $16, $17, $18, $19, $20,
+				$21, $22::jsonb
 			)
 		`,
 			f.ID,
@@ -83,6 +89,8 @@ func (r *FeatureRepo) Create(ctx context.Context, f *feature.Feature) error {
 			f.UpdatedAt,
 			f.CreatedBy,
 			f.UpdatedBy,
+			f.TrialUntil,
+			trialValueJSON,
 		)
 		if isUniqueViolation(err) {
 			return apierror.NewConflict(
@@ -151,6 +159,10 @@ func (r *FeatureRepo) Update(ctx context.Context, f *feature.Feature) error {
 		if err != nil {
 			return fmt.Errorf("marshal feature metadata: %w", err)
 		}
+		trialValueJSON, err := jsonBytes(f.TrialValue, "null")
+		if err != nil {
+			return fmt.Errorf("marshal feature trial value: %w", err)
+		}
 
 		var featureID string
 		tag, err := r.client.db(txCtx).Exec(txCtx, `
@@ -158,7 +170,8 @@ func (r *FeatureRepo) Update(ctx context.Context, f *feature.Feature) error {
 			SET name = $3, description = $4, enabled = $5, value_type = $6, default_value = $7::jsonb,
 			    active_from = $8, active_until = $9, environments = $10, access_policy = $11,
 			    auth_profile_id = $12, input_contract = $13::jsonb, metadata = $14::jsonb,
-			    updated_at = $15, updated_by = $16
+			    updated_at = $15, updated_by = $16,
+			    trial_until = $17, trial_value = $18::jsonb
 			WHERE workspace_key = $1 AND key = $2
 		`,
 			wsKey(txCtx),
@@ -177,6 +190,8 @@ func (r *FeatureRepo) Update(ctx context.Context, f *feature.Feature) error {
 			metadataJSON,
 			f.UpdatedAt,
 			f.UpdatedBy,
+			f.TrialUntil,
+			trialValueJSON,
 		)
 		if err != nil {
 			return fmt.Errorf("update feature: %w", err)
@@ -586,7 +601,8 @@ func featureSelectQuery(suffix string) string {
 		SELECT f.id, f.workspace_key, f.key, f.name, f.description, f.enabled, f.value_type,
 		       f.default_value, f.active_from, f.active_until, f.environments, f.access_policy,
 		       COALESCE(ap.key, '') AS auth_profile_key, f.input_contract, f.metadata, f.rollout_salt,
-		       f.created_at, f.updated_at, f.created_by, f.updated_by
+		       f.created_at, f.updated_at, f.created_by, f.updated_by,
+		       f.trial_until, f.trial_value
 		FROM features f
 		LEFT JOIN auth_profiles ap ON ap.id = f.auth_profile_id
 	` + suffix
@@ -597,7 +613,8 @@ func featureSummarySelectQuery(suffix string) string {
 		SELECT f.id, f.workspace_key, f.key, f.name, f.description, f.enabled, f.value_type,
 		       f.active_from, f.active_until, f.environments, f.access_policy,
 		       COALESCE(ap.key, '') AS auth_profile_key,
-		       f.created_at, f.updated_at, f.created_by, f.updated_by
+		       f.created_at, f.updated_at, f.created_by, f.updated_by,
+		       f.trial_until
 		FROM features f
 		LEFT JOIN auth_profiles ap ON ap.id = f.auth_profile_id
 	` + suffix
@@ -994,6 +1011,7 @@ func scanFeature(scanner featureScanner) (*feature.Feature, error) {
 	var defaultValueJSON []byte
 	var inputContractJSON []byte
 	var metadataJSON []byte
+	var trialValueJSON []byte
 	if err := scanner.Scan(
 		&f.ID,
 		&f.WorkspaceKey,
@@ -1015,6 +1033,8 @@ func scanFeature(scanner featureScanner) (*feature.Feature, error) {
 		&f.UpdatedAt,
 		&f.CreatedBy,
 		&f.UpdatedBy,
+		&f.TrialUntil,
+		&trialValueJSON,
 	); err != nil {
 		return nil, err
 	}
@@ -1025,6 +1045,9 @@ func scanFeature(scanner featureScanner) (*feature.Feature, error) {
 		return nil, err
 	}
 	if err := decodeJSON(metadataJSON, &f.Metadata); err != nil {
+		return nil, err
+	}
+	if err := decodeJSON(trialValueJSON, &f.TrialValue); err != nil {
 		return nil, err
 	}
 
@@ -1050,6 +1073,7 @@ func scanFeatureSummary(scanner featureScanner) (*feature.Feature, error) {
 		&f.UpdatedAt,
 		&f.CreatedBy,
 		&f.UpdatedBy,
+		&f.TrialUntil,
 	); err != nil {
 		return nil, err
 	}
