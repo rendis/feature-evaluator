@@ -1,0 +1,111 @@
+{
+  "title": "Feature Packs",
+  "description": "Gestione los packs de features y sus activaciones",
+  "createPack": "Nuevo Pack",
+  "edit": "Editar",
+  "deletePack": "Eliminar",
+  "search": "Buscar packs...",
+  "featureCount": "features",
+  "enabled": "Activo",
+  "disabled": "Inactivo",
+  "fields": {
+    "name": "Nombre",
+    "key": "Key",
+    "description": "Descripcion",
+    "features": "Features",
+    "enabled": "Activo",
+    "created": "Creado",
+    "actions": "Acciones"
+  },
+  "tabs": {
+    "features": "Features",
+    "activations": "Activaciones"
+  },
+  "form": {
+    "createTitle": "Crear nuevo pack",
+    "editTitle": "Editar pack",
+    "nameRequired": "El nombre es requerido",
+    "keyInvalid": "Formato invalido: use snake_case seguro con letras, numeros y guion bajo; debe comenzar con una letra (2-128 caracteres)",
+    "keyPattern": "Solo letras minusculas, numeros y guion bajo; el key se normaliza automaticamente a snake_case seguro y debe comenzar con una letra",
+    "featureSearchPlaceholder": "Buscar features para agregar...",
+    "noFeaturesFound": "No se encontraron features",
+    "success": "Pack guardado exitosamente",
+    "error": "Error al guardar pack"
+  },
+  "toggle": {
+    "enableSuccess": "Pack activado",
+    "disableSuccess": "Pack desactivado",
+    "error": "Error al cambiar estado del pack"
+  },
+  "delete": {
+    "title": "Eliminar pack",
+    "description": "Esta seguro que desea eliminar el pack \"{{key}}\"? Se eliminaran el pack y todas las activaciones.",
+    "success": "Pack eliminado",
+    "error": "Error al eliminar pack"
+  },
+  "empty": {
+    "title": "Sin packs",
+    "description": "Cree su primer feature pack para comenzar"
+  },
+  "features": {
+    "add": "Agregar Features",
+    "removeSuccess": "Feature eliminado del pack",
+    "removeError": "Error al eliminar feature",
+    "addSuccess": "Features agregados al pack",
+    "addError": "Error al agregar features",
+    "empty": {
+      "title": "Sin features en este pack",
+      "description": "Agregue features para comenzar a construir este pack"
+    },
+    "removeConfirm": {
+      "title": "Eliminar feature",
+      "description": "Eliminar \"{{key}}\" de este pack?",
+      "confirm": "Eliminar"
+    },
+    "addDialog": {
+      "title": "Agregar Features al Pack",
+      "search": "Buscar features...",
+      "selected": "{{count}} features seleccionados",
+      "noResults": "No se encontraron features",
+      "confirm": "Agregar Seleccionados ({{count}})"
+    }
+  },
+  "activations": {
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "targetType": "Tipo de Destino",
+    "targetId": "ID de Destino",
+    "activatedBy": "Activado Por",
+    "activated": "Activado",
+    "expires": "Expira",
+    "never": "Nunca",
+    "setExpiration": "Establecer expiracion",
+    "activateSuccess": "Pack activado",
+    "activateError": "Error al activar pack",
+    "deactivateSuccess": "Pack desactivado",
+    "deactivateError": "Error al desactivar pack",
+    "empty": {
+      "title": "Sin activaciones",
+      "description": "Active este pack para un destino para comenzar a usarlo"
+    },
+    "deactivateConfirm": {
+      "title": "Desactivar pack",
+      "description": "Desactivar \"{{pack}}\" para {{type}} \"{{target}}\"? Todos los features de este pack se desactivaran para este destino."
+    },
+    "activateDialog": {
+      "title": "Activar Pack"
+    },
+    "targetIdLabel": {
+      "tenant": "ID de Tenant",
+      "campus": "ID de Campus",
+      "program": "ID de Programa"
+    },
+    "targetIdPlaceholder": "Ingrese ID del destino..."
+  },
+  "targetTypes": {
+    "tenant": "Tenant",
+    "campus": "Campus",
+    "program": "Programa"
+  },
+  "packs": "Packs"
+}

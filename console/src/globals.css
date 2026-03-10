@@ -1,0 +1,331 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: var(--color-slate-100);
+  --foreground: var(--color-slate-900);
+
+  --card: var(--color-slate-50);
+  --card-foreground: var(--color-slate-900);
+
+  --popover: var(--color-white);
+  --popover-foreground: var(--color-slate-900);
+
+  --primary: var(--color-indigo-600);
+  --primary-foreground: var(--color-white);
+
+  --secondary: var(--color-slate-200);
+  --secondary-foreground: var(--color-slate-800);
+
+  --muted: color-mix(in oklab, var(--color-slate-200) 72%, white 28%);
+  --muted-foreground: var(--color-slate-600);
+
+  --accent: var(--color-slate-200);
+  --accent-foreground: var(--color-slate-900);
+
+  --destructive: var(--color-rose-600);
+  --destructive-foreground: var(--color-white);
+
+  --success: var(--color-emerald-600);
+  --success-foreground: var(--color-emerald-950);
+
+  --warning: var(--color-amber-600);
+  --warning-foreground: var(--color-amber-950);
+
+  --info: var(--color-sky-600);
+  --info-foreground: var(--color-sky-950);
+
+  --border: var(--color-slate-300);
+  --input: var(--color-slate-300);
+  --ring: var(--color-indigo-600);
+
+  --sidebar-background: var(--color-slate-200);
+  --sidebar-foreground: var(--color-slate-800);
+  --sidebar-primary: var(--color-indigo-600);
+  --sidebar-primary-foreground: var(--color-white);
+  --sidebar-accent: var(--color-slate-50);
+  --sidebar-accent-foreground: var(--color-slate-900);
+  --sidebar-border: var(--color-slate-300);
+  --sidebar-ring: var(--color-indigo-600);
+
+  --surface-canvas: var(--color-slate-100);
+  --surface-panel: var(--color-slate-50);
+  --surface-subtle: var(--color-slate-100);
+  --surface-elevated: var(--color-white);
+  --surface-editor: var(--color-slate-100);
+  --surface-overlay: oklch(0 0 0 / 0.38);
+
+  --content-strong: var(--color-slate-900);
+  --content-body: var(--color-slate-800);
+  --content-muted: var(--color-slate-600);
+  --content-subtle: var(--color-slate-500);
+  --content-inverse: var(--color-white);
+
+  --border-strong: var(--color-slate-300);
+  --border-muted: var(--color-slate-200);
+
+  --accent-soft: color-mix(in oklab, var(--color-indigo-600) 12%, transparent);
+  --accent-soft-foreground: var(--color-indigo-700);
+  --success-soft: color-mix(in oklab, var(--color-emerald-600) 12%, transparent);
+  --success-soft-foreground: var(--color-emerald-700);
+  --danger-soft: color-mix(in oklab, var(--color-rose-600) 12%, transparent);
+  --danger-soft-foreground: var(--color-rose-700);
+  --warning-soft: color-mix(in oklab, var(--color-amber-600) 14%, transparent);
+  --warning-soft-foreground: var(--color-amber-800);
+
+  --syntax-template-valid: var(--color-indigo-700);
+  --syntax-template-valid-bg: color-mix(in oklab, var(--color-indigo-500) 16%, transparent);
+  --syntax-template-secret: var(--color-amber-700);
+  --syntax-template-secret-bg: color-mix(in oklab, var(--color-amber-500) 16%, transparent);
+  --syntax-template-invalid: var(--color-rose-700);
+  --syntax-template-invalid-bg: color-mix(in oklab, var(--color-rose-500) 16%, transparent);
+  --syntax-path: var(--color-emerald-700);
+  --syntax-keyword: var(--color-violet-700);
+  --syntax-string: var(--color-amber-700);
+  --syntax-number: var(--color-sky-700);
+  --syntax-operator: var(--color-rose-700);
+
+  --radius: 0.625rem;
+}
+
+.dark {
+  --background: var(--color-slate-900);
+  --foreground: var(--color-slate-200);
+
+  --card: var(--color-slate-800);
+  --card-foreground: var(--color-slate-200);
+
+  --popover: var(--color-slate-900);
+  --popover-foreground: var(--color-slate-200);
+
+  --primary: var(--color-indigo-600);
+  --primary-foreground: var(--color-white);
+
+  --secondary: var(--color-slate-800);
+  --secondary-foreground: var(--color-slate-200);
+
+  --muted: color-mix(in oklab, var(--color-slate-800) 88%, transparent);
+  --muted-foreground: var(--color-slate-400);
+
+  --accent: var(--color-slate-800);
+  --accent-foreground: var(--color-white);
+
+  --destructive: var(--color-rose-500);
+  --destructive-foreground: var(--color-rose-50);
+
+  --success: var(--color-emerald-500);
+  --success-foreground: var(--color-emerald-950);
+
+  --warning: var(--color-amber-400);
+  --warning-foreground: var(--color-amber-950);
+
+  --info: var(--color-sky-400);
+  --info-foreground: var(--color-sky-950);
+
+  --border: var(--color-slate-700);
+  --input: var(--color-slate-700);
+  --ring: var(--color-indigo-500);
+
+  --sidebar-background: var(--color-slate-950);
+  --sidebar-foreground: var(--color-slate-300);
+  --sidebar-primary: var(--color-indigo-500);
+  --sidebar-primary-foreground: var(--color-white);
+  --sidebar-accent: var(--color-slate-800);
+  --sidebar-accent-foreground: var(--color-slate-100);
+  --sidebar-border: var(--color-slate-800);
+  --sidebar-ring: var(--color-indigo-500);
+
+  --surface-canvas: var(--color-slate-900);
+  --surface-panel: var(--color-slate-800);
+  --surface-subtle: color-mix(in oklab, var(--color-slate-900) 92%, white 8%);
+  --surface-elevated: var(--color-slate-900);
+  --surface-editor: var(--color-slate-950);
+  --surface-overlay: oklch(0 0 0 / 0.7);
+
+  --content-strong: var(--color-slate-50);
+  --content-body: var(--color-slate-200);
+  --content-muted: var(--color-slate-400);
+  --content-subtle: var(--color-slate-500);
+  --content-inverse: var(--color-slate-950);
+
+  --border-strong: var(--color-slate-800);
+  --border-muted: color-mix(in oklab, var(--color-slate-700) 78%, transparent);
+
+  --accent-soft: color-mix(in oklab, var(--color-indigo-600) 24%, transparent);
+  --accent-soft-foreground: var(--color-indigo-300);
+  --success-soft: color-mix(in oklab, var(--color-emerald-600) 20%, transparent);
+  --success-soft-foreground: var(--color-emerald-400);
+  --danger-soft: color-mix(in oklab, var(--color-rose-500) 20%, transparent);
+  --danger-soft-foreground: var(--color-rose-400);
+  --warning-soft: color-mix(in oklab, var(--color-amber-500) 18%, transparent);
+  --warning-soft-foreground: var(--color-amber-300);
+
+  --syntax-template-valid: var(--color-indigo-200);
+  --syntax-template-valid-bg: color-mix(in oklab, var(--color-indigo-500) 40%, transparent);
+  --syntax-template-secret: var(--color-amber-200);
+  --syntax-template-secret-bg: color-mix(in oklab, var(--color-amber-500) 30%, transparent);
+  --syntax-template-invalid: var(--color-rose-200);
+  --syntax-template-invalid-bg: color-mix(in oklab, var(--color-rose-500) 40%, transparent);
+  --syntax-path: var(--color-emerald-400);
+  --syntax-keyword: var(--color-purple-400);
+  --syntax-string: var(--color-amber-300);
+  --syntax-number: var(--color-sky-300);
+  --syntax-operator: var(--color-pink-400);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar-background: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-surface-canvas: var(--surface-canvas);
+  --color-surface-panel: var(--surface-panel);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-editor: var(--surface-editor);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-content-strong: var(--content-strong);
+  --color-content-body: var(--content-body);
+  --color-content-muted: var(--content-muted);
+  --color-content-subtle: var(--content-subtle);
+  --color-content-inverse: var(--content-inverse);
+  --color-border-strong: var(--border-strong);
+  --color-border-muted: var(--border-muted);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-foreground: var(--accent-soft-foreground);
+  --color-success-soft: var(--success-soft);
+  --color-success-soft-foreground: var(--success-soft-foreground);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-soft-foreground: var(--danger-soft-foreground);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-soft-foreground: var(--warning-soft-foreground);
+  --color-syntax-template-valid: var(--syntax-template-valid);
+  --color-syntax-template-valid-bg: var(--syntax-template-valid-bg);
+  --color-syntax-template-secret: var(--syntax-template-secret);
+  --color-syntax-template-secret-bg: var(--syntax-template-secret-bg);
+  --color-syntax-template-invalid: var(--syntax-template-invalid);
+  --color-syntax-template-invalid-bg: var(--syntax-template-invalid-bg);
+  --color-syntax-path: var(--syntax-path);
+  --color-syntax-keyword: var(--syntax-keyword);
+  --color-syntax-string: var(--syntax-string);
+  --color-syntax-number: var(--syntax-number);
+  --color-syntax-operator: var(--syntax-operator);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  html.light {
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 1rem;
+    padding-right: 2rem;
+  }
+  body {
+    @apply bg-surface-canvas text-foreground;
+    font-family:
+      ui-sans-serif,
+      system-ui,
+      -apple-system,
+      'Segoe UI',
+      Roboto,
+      sans-serif;
+  }
+}
+
+@layer components {
+  .fe-panel {
+    @apply rounded-xl border border-border bg-card shadow-sm;
+  }
+
+  .fe-panel-strong {
+    @apply rounded-xl border border-border-strong bg-surface-panel shadow-xl;
+  }
+
+  .fe-panel-subtle {
+    @apply rounded-xl border border-border bg-surface-subtle shadow-sm;
+  }
+
+  .fe-panel-elevated {
+    @apply rounded-xl border border-border-strong bg-surface-elevated shadow-xl;
+  }
+
+  .fe-editor {
+    @apply rounded-lg border border-border-strong bg-surface-editor text-content-body shadow-inner;
+  }
+
+  .fe-empty-surface {
+    @apply rounded-xl border border-dashed border-border-strong bg-surface-subtle/70 text-content-subtle;
+  }
+
+  .fe-tablist {
+    @apply inline-flex items-center gap-1 rounded-lg border border-border-strong bg-surface-editor p-1;
+  }
+
+  .fe-tab-trigger {
+    @apply inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-content-muted transition-colors hover:bg-surface-subtle hover:text-content-strong disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:bg-transparent disabled:hover:text-content-muted data-[active=true]:bg-primary data-[active=true]:text-primary-foreground;
+  }
+
+  .fe-inline-meta {
+    @apply rounded border border-border bg-surface-subtle px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-content-muted;
+  }
+
+  .fe-traffic-shell {
+    @apply rounded-lg border border-border-strong bg-surface-editor;
+  }
+
+  .fe-traffic-header {
+    @apply sticky top-0 flex items-center justify-between border-b border-border-strong bg-surface-elevated/80 px-4 py-2 backdrop-blur-sm;
+  }
+
+  .fe-traffic-title {
+    @apply text-content-muted text-[10px] font-bold uppercase tracking-widest;
+  }
+}

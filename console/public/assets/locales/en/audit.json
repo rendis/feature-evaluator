@@ -1,0 +1,23 @@
+{
+  "title": "Error audit log",
+  "description": "Evaluation error records",
+  "filters": {
+    "featureKey": "Feature key",
+    "tenantId": "Tenant ID",
+    "errorType": "Error type",
+    "from": "From",
+    "to": "To"
+  },
+  "columns": {
+    "date": "Date",
+    "featureKey": "Feature",
+    "errorType": "Type",
+    "message": "Message",
+    "tenantId": "Tenant",
+    "requestId": "Request ID"
+  },
+  "empty": {
+    "title": "No errors",
+    "description": "No evaluation errors found"
+  }
+}

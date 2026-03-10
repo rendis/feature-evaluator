@@ -1,0 +1,122 @@
+{
+  "title": "Features",
+  "description": "Gestione los feature flags y sus reglas de evaluacion",
+  "createFeature": "Crear feature",
+  "editFeature": "Editar feature",
+  "search": "Buscar por key o nombre...",
+  "filters": {
+    "all": "Todos",
+    "enabled": "Activos",
+    "disabled": "Inactivos",
+    "valueType": "Tipo",
+    "tags": "Tags",
+    "environment": "Ambiente"
+  },
+  "fields": {
+    "key": "Key",
+    "name": "Nombre",
+    "description": "Descripcion",
+    "valueType": "Tipo de valor",
+    "defaultValue": "Valor por defecto",
+    "metadata": "Metadata (JSON)",
+    "tags": "Tags",
+    "enabled": "Estado",
+    "rules": "Reglas",
+    "createdAt": "Creado",
+    "updatedAt": "Actualizado",
+    "activeFrom": "Activo desde",
+    "activeUntil": "Activo hasta",
+    "environments": "Ambientes",
+    "packs": "Packs",
+    "accessPolicy": "Acceso de evaluacion"
+  },
+  "accessPolicy": {
+    "public": "Publico",
+    "optional": "Auth opcional",
+    "required": "Auth requerida"
+  },
+  "accessPolicyHelp": {
+    "public": "Permite evaluar el feature sin credenciales.",
+    "optional": "Permite requests anonimos o autenticados; las rules pueden usar authenticated.",
+    "required": "Exige credenciales validas para evaluar este feature."
+  },
+  "valueTypes": {
+    "boolean": "Boolean",
+    "string": "String",
+    "number": "Number",
+    "json": "JSON"
+  },
+  "form": {
+    "createTitle": "Crear nuevo feature",
+    "editTitle": "Editar feature",
+    "keyPattern": "Se genera del nombre; puede editarlo manualmente. Solo letras minusculas, numeros y guion bajo",
+    "keyRequired": "El key es requerido",
+    "keyInvalid": "Formato invalido: use snake_case seguro con letras, numeros y guion bajo; debe comenzar con una letra (2-128 caracteres)",
+    "nameRequired": "El nombre es requerido",
+    "valueTypeRequired": "Seleccione un tipo de valor",
+    "defaultValueRequired": "El valor por defecto es requerido",
+    "metadataInvalid": "JSON invalido",
+    "success": "Feature guardado exitosamente",
+    "error": "Error al guardar feature",
+    "authProfileRequired": "Seleccione un Auth Profile cuando el acceso del feature requiera autenticacion.",
+    "schedulingSection": "Programacion y ambientes",
+    "dateRangeError": "Activo desde debe ser anterior a activo hasta"
+  },
+  "toggle": {
+    "enableSuccess": "Feature activado",
+    "disableSuccess": "Feature desactivado",
+    "error": "Error al cambiar estado"
+  },
+  "delete": {
+    "title": "Eliminar feature",
+    "description": "Esta seguro que desea eliminar el feature \"{{key}}\"? Esta accion eliminara todas sus reglas y no se puede deshacer.",
+    "success": "Feature eliminado",
+    "error": "Error al eliminar"
+  },
+  "detail": {
+    "rulesCount_one": "{{count}} regla",
+    "rulesCount_other": "{{count}} reglas",
+    "noRules": "Sin reglas configuradas"
+  },
+  "empty": {
+    "title": "Sin features",
+    "description": "Cree su primer feature para comenzar"
+  },
+  "status": {
+    "active": "Activo",
+    "scheduled": "Programado",
+    "expired": "Expirado",
+    "disabled": "Desactivado"
+  },
+  "schedule": {
+    "alwaysActive": "Siempre activo",
+    "helper": "Dejar vacio para siempre activo"
+  },
+  "tags": {
+    "searchPlaceholder": "Buscar tags...",
+    "createNew": "Crear tag",
+    "selectColor": "Seleccione un color",
+    "noResults": "No se encontraron tags",
+    "maxReached": "Maximo de tags alcanzado"
+  },
+  "environments": {
+    "all": "Todos los ambientes",
+    "helper": "No seleccionar ninguno para todos los ambientes",
+    "dev": "dev",
+    "uat": "uat",
+    "production": "production"
+  },
+  "builder": {
+    "steps": {
+      "feature": "Feature",
+      "value": "Valor",
+      "inputs": "Inputs",
+      "config": "Configuracion"
+    },
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "advancedTitle": "Detalles avanzados",
+    "humanSummary": "Resumen",
+    "generatedPayload": "Payload generado"
+  }
+}

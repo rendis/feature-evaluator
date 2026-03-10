@@ -1,0 +1,90 @@
+{
+  "app": {
+    "name": "Feature Evaluator"
+  },
+  "nav": {
+    "dashboard": "Panel",
+    "features": "Features",
+    "segments": "Segmentos",
+    "settings": "Configuración",
+    "members": "Miembros",
+    "apiKeys": "API keys",
+    "authProfiles": "Auth profiles",
+    "externalApis": "APIs externas",
+    "packs": "Packs",
+    "audit": "Auditoría",
+    "history": "Historial",
+    "workspaces": "Workspaces",
+    "experiments": "Experimentos"
+  },
+  "actions": {
+    "create": "Crear",
+    "edit": "Editar",
+    "configureSchema": "Configurar schema",
+    "delete": "Eliminar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "back": "Volver",
+    "close": "Cerrar",
+    "add": "Agregar",
+    "remove": "Quitar",
+    "retry": "Reintentar",
+    "loading": "Cargando..."
+  },
+  "status": {
+    "enabled": "Activo",
+    "disabled": "Inactivo",
+    "active": "Activo",
+    "inactive": "Inactivo"
+  },
+  "pagination": {
+    "page": "Página",
+    "of": "de",
+    "showing": "Mostrando",
+    "results": "resultados",
+    "previous": "Anterior",
+    "next": "Siguiente"
+  },
+  "errors": {
+    "unknown": "Ocurrió un error inesperado",
+    "notFound": "No encontrado",
+    "forbidden": "Sin permisos",
+    "unauthorized": "La sesión expiró",
+    "validation": "Error de validación"
+  },
+  "empty": {
+    "title": "Sin datos",
+    "description": "No hay datos para mostrar"
+  },
+  "confirm": {
+    "title": "Confirmar acción",
+    "description": "¿Estás seguro de que quieres continuar?",
+    "deleteTitle": "Confirmar eliminación",
+    "deleteDescription": "Esta acción no se puede deshacer."
+  },
+  "unsavedChanges": {
+    "title": "Cambios sin guardar",
+    "description": "Tienes cambios sin guardar. ¿Estás seguro de que quieres salir?",
+    "leave": "Salir",
+    "stay": "Quedarte"
+  },
+  "loadingModal": {
+    "creatingTitle": "Creando registro",
+    "savingTitle": "Guardando cambios",
+    "updatingTitle": "Actualizando registro",
+    "description": "Espera un momento mientras completamos la operación."
+  },
+  "theme": {
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
+  },
+  "language": {
+    "change": "Cambiar idioma",
+    "es": "Español",
+    "en": "English"
+  }
+}

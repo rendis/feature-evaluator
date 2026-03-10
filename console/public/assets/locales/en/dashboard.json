@@ -1,0 +1,78 @@
+{
+  "title": "Dashboard",
+  "description": "System overview",
+  "stats": {
+    "totalFeatures": "Total features",
+    "activeFeatures": "Active features",
+    "totalSegments": "Total segments",
+    "totalMembers": "Total members"
+  },
+  "activity": {
+    "title": "Recent activity",
+    "empty": "No recent activity",
+    "types": {
+      "feature_created": "Created",
+      "feature_updated": "Updated",
+      "feature_toggled": "Toggled",
+      "rule_created": "Rule created",
+      "rule_updated": "Rule updated"
+    }
+  },
+  "errors": {
+    "title": "Error summary",
+    "empty": "No recent errors",
+    "viewAll": "View full audit log"
+  },
+  "operations": {
+    "title": "System status",
+    "globalLabel": "Global",
+    "globalScope": "Global operational status for PostgreSQL, Redis, and runtime metrics.",
+    "lastChecked": "Last checked: {{time}}",
+    "refresh": "Refresh status",
+    "latency": "Latency",
+    "unavailable": "Unavailable",
+    "error": "Unable to load system status.",
+    "circuitOpenUntil": "Circuit open until {{time}}",
+    "status": {
+      "healthy": "Healthy",
+      "degraded": "Degraded",
+      "unhealthy": "Unhealthy"
+    },
+    "services": {
+      "postgresql": "PostgreSQL",
+      "redis": "Redis"
+    },
+    "metrics": {
+      "evaluationsToday": "Evaluations today",
+      "errorsToday": "Errors today",
+      "cacheHitRatio": "Cache hit ratio",
+      "rateLimitRejectsToday": "Rate limit rejects",
+      "externalLatency": "External latency",
+      "circuitBreakerEvents": "Circuit breaker events"
+    }
+  },
+  "empty": {
+    "title": "No features",
+    "description": "Get started by creating your first feature flag",
+    "cta": "Create feature"
+  },
+  "metrics": {
+    "title": "Evaluation Metrics",
+    "totalEvals": "Evaluations Today",
+    "errorRate": "Error Rate",
+    "cacheHitRatio": "Cache Hit Ratio",
+    "topFeatures": "Top Features",
+    "reasonsTitle": "Evaluation Reasons",
+    "environments": "By Environment",
+    "empty": "No evaluation data yet",
+    "reasons": {
+      "matched_rule": "Matched rule",
+      "default_value": "Default value",
+      "feature_disabled": "Feature disabled",
+      "error": "Error",
+      "not_yet_active": "Not yet active",
+      "expired": "Expired",
+      "environment_mismatch": "Environment mismatch"
+    }
+  }
+}

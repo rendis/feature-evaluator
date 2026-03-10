@@ -1,0 +1,111 @@
+{
+  "title": "Feature Packs",
+  "description": "Manage feature packs and their activations",
+  "createPack": "New Pack",
+  "edit": "Edit",
+  "deletePack": "Delete",
+  "search": "Search packs...",
+  "featureCount": "features",
+  "enabled": "Enabled",
+  "disabled": "Disabled",
+  "fields": {
+    "name": "Name",
+    "key": "Key",
+    "description": "Description",
+    "features": "Features",
+    "enabled": "Enabled",
+    "created": "Created",
+    "actions": "Actions"
+  },
+  "tabs": {
+    "features": "Features",
+    "activations": "Activations"
+  },
+  "form": {
+    "createTitle": "Create new pack",
+    "editTitle": "Edit pack",
+    "nameRequired": "Name is required",
+    "keyInvalid": "Invalid format: use safe snake_case with letters, numbers, and underscores; it must start with a letter (2-128 characters)",
+    "keyPattern": "Only lowercase letters, numbers, and underscores; the key is normalized automatically to safe snake_case and must start with a letter",
+    "featureSearchPlaceholder": "Search features to add...",
+    "noFeaturesFound": "No features found",
+    "success": "Pack saved successfully",
+    "error": "Error saving pack"
+  },
+  "toggle": {
+    "enableSuccess": "Pack enabled",
+    "disableSuccess": "Pack disabled",
+    "error": "Error toggling pack"
+  },
+  "delete": {
+    "title": "Delete pack",
+    "description": "Are you sure you want to delete pack \"{{key}}\"? This will remove the pack and all activations.",
+    "success": "Pack deleted",
+    "error": "Error deleting pack"
+  },
+  "empty": {
+    "title": "No packs",
+    "description": "Create your first feature pack to get started"
+  },
+  "features": {
+    "add": "Add Features",
+    "removeSuccess": "Feature removed from pack",
+    "removeError": "Error removing feature",
+    "addSuccess": "Features added to pack",
+    "addError": "Error adding features",
+    "empty": {
+      "title": "No features in this pack",
+      "description": "Add features to start building this pack"
+    },
+    "removeConfirm": {
+      "title": "Remove feature",
+      "description": "Remove \"{{key}}\" from this pack?",
+      "confirm": "Remove"
+    },
+    "addDialog": {
+      "title": "Add Features to Pack",
+      "search": "Search features...",
+      "selected": "{{count}} features selected",
+      "noResults": "No features found",
+      "confirm": "Add Selected ({{count}})"
+    }
+  },
+  "activations": {
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "targetType": "Target Type",
+    "targetId": "Target ID",
+    "activatedBy": "Activated By",
+    "activated": "Activated",
+    "expires": "Expires",
+    "never": "Never",
+    "setExpiration": "Set expiration",
+    "activateSuccess": "Pack activated",
+    "activateError": "Error activating pack",
+    "deactivateSuccess": "Pack deactivated",
+    "deactivateError": "Error deactivating pack",
+    "empty": {
+      "title": "No activations",
+      "description": "Activate this pack for a target to start using it"
+    },
+    "deactivateConfirm": {
+      "title": "Deactivate pack",
+      "description": "Deactivate \"{{pack}}\" for {{type}} \"{{target}}\"? All features in this pack will be deactivated for this target."
+    },
+    "activateDialog": {
+      "title": "Activate Pack"
+    },
+    "targetIdLabel": {
+      "tenant": "Tenant ID",
+      "campus": "Campus ID",
+      "program": "Program ID"
+    },
+    "targetIdPlaceholder": "Enter target ID..."
+  },
+  "targetTypes": {
+    "tenant": "Tenant",
+    "campus": "Campus",
+    "program": "Program"
+  },
+  "packs": "Packs"
+}

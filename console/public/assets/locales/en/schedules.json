@@ -1,0 +1,49 @@
+{
+  "title": "Scheduled changes",
+  "scheduleChange": "Schedule change",
+  "noPending": "No pending changes",
+  "pending": "Pending",
+  "changeTypes": {
+    "toggle": "Toggle state",
+    "update": "Update feature",
+    "default_value": "Change default value",
+    "environment": "Change environments"
+  },
+  "status": {
+    "pending": "Pending",
+    "executing": "Executing",
+    "completed": "Completed",
+    "failed": "Failed",
+    "cancelled": "Cancelled"
+  },
+  "form": {
+    "title": "Schedule change",
+    "description": "Schedule a future change for this feature",
+    "changeType": "Change type",
+    "scheduledAt": "Date and time",
+    "scheduledAtHelper": "The change will be applied at the selected date and time (UTC)",
+    "payload": "Configuration",
+    "toggleEnable": "Enable feature",
+    "toggleDisable": "Disable feature",
+    "newDefaultValue": "New default value",
+    "environments": "Environments",
+    "success": "Change scheduled successfully",
+    "error": "Error scheduling change",
+    "dateRequired": "Date is required",
+    "dateFuture": "Date must be in the future"
+  },
+  "cancel": {
+    "title": "Cancel scheduled change",
+    "description": "Are you sure you want to cancel this scheduled change?",
+    "success": "Change cancelled",
+    "error": "Error cancelling"
+  },
+  "countdown": {
+    "in": "in",
+    "days": "d",
+    "hours": "h",
+    "minutes": "m"
+  },
+  "scheduledBy": "Scheduled by",
+  "scheduledFor": "Scheduled for"
+}

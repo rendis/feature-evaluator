@@ -1,0 +1,111 @@
+{
+  "title": "Segmentos",
+  "description": "Gestione segmentos dinamicos y sus datasets JSON",
+  "createSegment": "Crear segmento",
+  "editSegment": "Editar segmento",
+  "fields": {
+    "key": "Key",
+    "name": "Nombre",
+    "description": "Descripcion",
+    "lastImport": "Ultima importacion",
+    "metadata": "Metadata"
+  },
+  "form": {
+    "createTitle": "Crear nuevo segmento",
+    "editTitle": "Editar segmento",
+    "keyInvalid": "Formato invalido: use snake_case seguro con letras, numeros y guion bajo; debe comenzar con una letra",
+    "keyPattern": "Se normaliza automaticamente a snake_case seguro para usarlo luego como namespace",
+    "nameRequired": "El nombre es requerido",
+    "generatedKey": "Se genera automaticamente",
+    "generatedKeyHelp": "Se genera automaticamente a partir del nombre.",
+    "success": "Segmento guardado exitosamente",
+    "error": "Error al guardar segmento"
+  },
+  "delete": {
+    "title": "Eliminar segmento",
+    "description": "Esta seguro que desea eliminar el segmento \"{{key}}\"?",
+    "success": "Segmento eliminado",
+    "error": "Error al eliminar"
+  },
+  "empty": {
+    "title": "Sin segmentos",
+    "description": "Cree su primer segmento para comenzar"
+  },
+  "schema": {
+    "title": "Schema",
+    "keyPath": "Path de key",
+    "sourceType": "Origen",
+    "recordCount": "Registros",
+    "path": "Path",
+    "type": "Tipo",
+    "required": "Requerido",
+    "nullable": "Nullable",
+    "raw": "Schema JSON"
+  },
+  "data": {
+    "title": "Data",
+    "empty": "Sin registros en este segmento",
+    "filterKey": "Buscar por key...",
+    "recordKey": "Record Key",
+    "createdAt": "Creado",
+    "recordCountLabel": "{{count}} registros"
+  },
+  "import": {
+    "title": "Importar data",
+    "uploadTitle": "Paso 1: Cargar datos",
+    "sourceType": "Tipo de fuente",
+    "delimiter": "Separador CSV",
+    "fileTitle": "Elegir archivo",
+    "fileHelpCsv": "Cargue un archivo CSV o pegue su contenido abajo.",
+    "fileHelpJson": "Cargue un archivo JSON o pegue su contenido abajo.",
+    "chooseFile": "Elegir archivo",
+    "replaceFile": "Reemplazar archivo",
+    "noFileSelected": "Todavia no hay archivo seleccionado",
+    "selectedFile": "Seleccionado: {{name}}",
+    "paste": "Pegar contenido",
+    "keyTitle": "Paso 2: Elegir key",
+    "keyField": "Campo usado como key",
+    "selectKey": "Seleccione un field path",
+    "recommended": "Recomendado",
+    "unique": "Unico",
+    "notUnique": "Repetido",
+    "keySuggestions": "{{count}} candidatos de key unicos encontrados ({{analyzed}} campos escalares analizados).",
+    "excludedTitle": "Descartados porque contienen duplicados",
+    "duplicateField": "Campo duplicado",
+    "selectDuplicateField": "Seleccione un campo duplicado",
+    "duplicateValuesTitle": "Valores duplicados detectados",
+    "rowsSummary": "{{count}} filas: {{rows}}",
+    "moreDuplicateValues": "+{{count}} valores duplicados adicionales en el reporte",
+    "duplicatePreviewHint": "El preview resalta las filas duplicadas para el campo seleccionado.",
+    "downloadDuplicateReport": "Descargar reporte de duplicados",
+    "distinctSummary": "{{count}} valores distintos de {{total}} registros",
+    "duplicateSummary": "{{count}} duplicados",
+    "sampleValue": "Ejemplo: {{value}}",
+    "schemaTitle": "Paso 3: Revisar schema",
+    "confirmTitle": "Paso 4: Confirmacion",
+    "summaryRecords": "{{count}} registros listos para importar",
+    "summaryKey": "Key path: {{key}}",
+    "summarySource": "Origen: {{source}}",
+    "startImport": "Iniciar importacion",
+    "importing": "Importando...",
+    "error": "Error al importar",
+    "resultsTitle": "Resultados",
+    "inserted": "{{count}} insertados",
+    "next": "Siguiente",
+    "back": "Anterior",
+    "delimiters": {
+      "auto": "Automatico (recomendado)",
+      "comma": "Coma (,)",
+      "semicolon": "Punto y coma (;)",
+      "tab": "Tab (\\t)",
+      "pipe": "Barra vertical (|)"
+    },
+    "errors": {
+      "noRecords": "No se encontraron registros validos",
+      "noKeyCandidates": "No hay field paths validos que resuelvan a string o number en todos los registros",
+      "noUniqueKeyCandidates": "Todavia no hay un campo usable como key. Una key valida debe ser string o number y no tener duplicados.",
+      "invalidDelimiter": "El separador seleccionado {{current}} no coincide con este archivo. Pruebe con {{suggested}}.",
+      "noDuplicateValuesForReport": "No hay duplicados para exportar en el campo seleccionado."
+    }
+  }
+}

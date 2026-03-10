@@ -1,0 +1,59 @@
+{
+  "title": "Workspaces",
+  "description": "Manage your organization's workspaces",
+  "create": "Create workspace",
+  "current": "Current",
+  "selector": {
+    "label": "Workspace",
+    "placeholder": "Select workspace",
+    "switch": "Switch workspace",
+    "switchTo": "Switch to {{name}}"
+  },
+  "fields": {
+    "key": "Key",
+    "name": "Name",
+    "description": "Description",
+    "createdAt": "Created",
+    "createdBy": "Created by"
+  },
+  "form": {
+    "createTitle": "Create workspace",
+    "editTitle": "Edit workspace",
+    "createDescription": "Create a new workspace to organize your features",
+    "editDescription": "Update workspace information",
+    "nameRequired": "Name is required",
+    "keyInvalid": "Invalid format: use safe snake_case with letters, numbers, and underscores; it must start with a letter (2-128 characters)",
+    "keyPattern": "Only lowercase letters, numbers, and underscores; the key is normalized automatically to safe snake_case and must start with a letter",
+    "success": "Workspace saved successfully",
+    "error": "Error saving workspace"
+  },
+  "sections": {
+    "active": "Active",
+    "archived": "Archived"
+  },
+  "archive": {
+    "title": "Archive workspace",
+    "description": "Are you sure you want to archive the workspace \"{{name}}\"? You can restore it later.",
+    "success": "Workspace archived",
+    "error": "Error archiving workspace"
+  },
+  "restore": {
+    "action": "Restore",
+    "success": "Workspace restored",
+    "error": "Error restoring workspace"
+  },
+  "onboarding": {
+    "title": "Create a workspace first",
+    "description": "There are no active workspaces. Create a new one or restore an archived workspace to start using the platform.",
+    "create": "Create first workspace",
+    "restoreDescription": "You can also restore one of the archived workspaces."
+  },
+  "empty": {
+    "title": "No workspaces",
+    "description": "Create a workspace to get started",
+    "activeTitle": "No active workspaces",
+    "activeDescription": "Active workspaces will appear here.",
+    "archivedTitle": "No archived workspaces",
+    "archivedDescription": "Archived workspaces will appear here."
+  }
+}

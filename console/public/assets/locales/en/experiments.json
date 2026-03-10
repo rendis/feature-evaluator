@@ -1,0 +1,94 @@
+{
+  "title": "Experiments",
+  "description": "Manage A/B tests and experiments",
+  "create": "Create experiment",
+  "featureKey": "Feature",
+  "variantsCount": "variants",
+  "winner": "Winner",
+  "startedAt": "Started",
+  "completedAt": "Completed",
+  "status": {
+    "draft": "Draft",
+    "running": "Running",
+    "paused": "Paused",
+    "completed": "Completed"
+  },
+  "empty": {
+    "title": "No experiments",
+    "description": "Create an experiment to get started with A/B testing"
+  },
+  "form": {
+    "createTitle": "Create experiment",
+    "createDescription": "Configure a new A/B experiment",
+    "editTitle": "Edit experiment",
+    "name": "Name",
+    "description": "Description",
+    "featureKey": "Feature",
+    "selectFeature": "Select feature",
+    "variants": "Variants",
+    "addVariant": "Add variant",
+    "variantKey": "Key",
+    "variantValue": "Value",
+    "weight": "Weight",
+    "metrics": "Metrics",
+    "addMetric": "Add metric",
+    "noMetrics": "No metrics defined",
+    "metricKey": "Key",
+    "metricName": "Name",
+    "create": "Create",
+    "save": "Save",
+    "success": "Experiment saved",
+    "error": "Error saving experiment"
+  },
+  "actions": {
+    "start": "Start",
+    "pause": "Pause",
+    "complete": "Complete",
+    "declareWinner": "Declare winner",
+    "declareWinnerConfirm": "Are you sure you want to declare \"{{variant}}\" as the winner?",
+    "started": "Experiment started",
+    "startSuccess": "Experiment started",
+    "startError": "Error starting experiment",
+    "paused": "Experiment paused",
+    "pauseSuccess": "Experiment paused",
+    "pauseError": "Error pausing experiment",
+    "completed": "Experiment completed",
+    "completeSuccess": "Experiment completed",
+    "completeError": "Error completing experiment",
+    "winnerDeclared": "Winner declared",
+    "declareWinnerSuccess": "Winner declared successfully",
+    "winnerError": "Error declaring winner",
+    "declareWinnerError": "Error declaring winner"
+  },
+  "results": {
+    "title": "Results",
+    "totalExposures": "Total exposures",
+    "totalConversions": "Total conversions",
+    "significant": "Significant",
+    "variant": "Variant",
+    "exposures": "Exposures",
+    "conversions": "Conversions",
+    "conversionRate": "Conversion rate",
+    "confidence": "Confidence interval"
+  },
+  "confirm": {
+    "start": {
+      "title": "Start experiment",
+      "description": "Are you sure you want to start this experiment?"
+    },
+    "pause": {
+      "title": "Pause experiment",
+      "description": "Are you sure you want to pause this experiment?"
+    },
+    "complete": {
+      "title": "Complete experiment",
+      "description": "Are you sure you want to complete this experiment? It cannot be resumed."
+    },
+    "declareWinner": {
+      "title": "Declare winner",
+      "description": "Select the winning variant. This action cannot be undone.",
+      "selectVariant": "Winning variant",
+      "selectPlaceholder": "Select variant"
+    }
+  }
+}

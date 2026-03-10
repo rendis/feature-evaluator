@@ -1,0 +1,301 @@
+{
+  "members": {
+    "title": "Miembros del equipo",
+    "description": "Gestione los miembros y roles de su equipo",
+    "addMember": "Agregar miembro",
+    "email": "Correo electronico",
+    "role": "Rol",
+    "displayName": "Nombre",
+    "addedBy": "Agregado por",
+    "createdAt": "Fecha de registro",
+    "actions": "Acciones",
+    "changeRole": "Cambiar rol",
+    "removeMember": "Eliminar miembro",
+    "transferOwnership": "Transferir propiedad",
+    "addForm": {
+      "title": "Agregar nuevo miembro",
+      "emailPlaceholder": "correo@empresa.com",
+      "emailRequired": "El correo es requerido",
+      "emailInvalid": "Ingrese un correo valido",
+      "roleRequired": "Seleccione un rol",
+      "success": "Miembro agregado exitosamente",
+      "error": "Error al agregar miembro"
+    },
+    "deleteConfirm": {
+      "title": "Eliminar miembro",
+      "description": "Esta seguro que desea eliminar a {{email}}? Esta accion no se puede deshacer."
+    },
+    "transferConfirm": {
+      "title": "Transferir propiedad",
+      "description": "Esta seguro que desea transferir la propiedad a {{email}}? Usted sera degradado a Admin."
+    },
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "editor": "Editor",
+      "viewer": "Viewer"
+    },
+    "roleDescriptions": {
+      "owner": "Control total del workspace",
+      "admin": "Gestion completa incluyendo equipo",
+      "editor": "Gestion de features, reglas y segmentos",
+      "viewer": "Solo lectura"
+    },
+    "empty": {
+      "title": "Sin miembros",
+      "description": "Agregue miembros a su equipo para comenzar"
+    }
+  },
+  "apiKeys": {
+    "title": "API Keys",
+    "subtitle": "Gestione las API keys de administracion para acceso programatico",
+    "create": "Crear API key",
+    "createTitle": "Crear nueva API key",
+    "name": "Nombre",
+    "namePlaceholder": "Mi API key",
+    "nameRequired": "El nombre es requerido",
+    "description": "Descripcion",
+    "descriptionPlaceholder": "Descripcion opcional para esta clave",
+    "type": "Tipo",
+    "typeAdmin": "Admin",
+    "permissions": "Permisos",
+    "expiration": "Fecha de expiracion",
+    "created": "Creado",
+    "lastUsed": "Ultimo uso",
+    "expires": "Expira",
+    "statusLabel": "Estado",
+    "actions": "Acciones",
+    "revoke": "Revocar",
+    "rotate": "Rotar",
+    "copyKey": "Copiar clave",
+    "keyCreated": "API key creada",
+    "keyWarning": "Copie esta clave ahora. No podra verla de nuevo.",
+    "keyCopied": "Ya copie la clave",
+    "createError": "Error al crear API key",
+    "revokeSuccess": "API key revocada",
+    "revokeError": "Error al revocar API key",
+    "rotateError": "Error al rotar API key",
+    "status": {
+      "active": "Activa",
+      "expired": "Expirada",
+      "revoked": "Revocada",
+      "expiring_soon": "Por expirar"
+    },
+    "revokeConfirm": {
+      "title": "Revocar API key",
+      "description": "Esta seguro que desea revocar \"{{name}}\"? Esta accion no se puede deshacer."
+    },
+    "rotateConfirm": {
+      "title": "Rotar API key",
+      "description": "Esta seguro que desea rotar \"{{name}}\"? La clave actual dejara de funcionar inmediatamente."
+    },
+    "perm": {
+      "features.read": "Lectura de features",
+      "features.write": "Escritura de features",
+      "segments.read": "Lectura de segmentos",
+      "segments.write": "Escritura de segmentos",
+      "packs.read": "Lectura de packs",
+      "packs.write": "Escritura de packs",
+      "audit.read": "Lectura de auditoria"
+    },
+    "empty": {
+      "title": "Sin API keys",
+      "description": "Cree una API key para comenzar con el acceso programatico"
+    }
+  },
+  "authProfiles": {
+    "title": "Auth profiles",
+    "subtitle": "Define cómo autenticar solicitudes de /eval con perfiles reutilizables ligados a cada feature",
+    "create": "Crear auth profile",
+    "createTitle": "Crear auth profile",
+    "steps": {
+      "profile": "Perfil",
+      "config": "Configuración",
+      "validation": "Validación",
+      "test": "Prueba",
+      "validationDisabledTooltip": "Solo los perfiles custom requieren validación configurable.",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    },
+    "editTitle": "Editar auth profile",
+    "description": "Define el mecanismo de autenticación entrante, la configuración y los secretos cifrados de este auth profile.",
+    "key": "Key",
+    "name": "Nombre",
+    "nameRequired": "El nombre es obligatorio",
+    "namePlaceholder": "Stripe OAuth",
+    "type": "Tipo",
+    "typeHelp": "Elige el mecanismo mínimo necesario para validar la solicitud que llega a /eval.",
+    "typeOptions": {
+      "api_key": "API key o secreto fijo",
+      "oidc_standard": "OIDC estándar",
+      "custom": "Custom"
+    },
+    "generatedKey": "Se genera automáticamente",
+    "generatedKeyHelp": "Se genera automáticamente a partir del nombre.",
+    "validationTitle": "Validación y caché",
+    "validationHelp": "Solo los auth profiles que llaman a un sistema externo usan caché.",
+    "cacheValidation": "Cachear validación",
+    "cacheHelp": "Esta caché aplica a la validación de credenciales del auth profile, no al resultado final de una regla.",
+    "cacheTTL": "TTL de caché (segundos)",
+    "cacheTTLPlaceholder": "300",
+    "cacheLocal": "La validación es local; no usa caché.",
+    "cacheLocalHelp": "La API key configurada se compara localmente y no agrega latencia externa.",
+    "cacheOIDC": "Usa caché interna de metadata/JWKS",
+    "cacheOIDCHelp": "OIDC estándar usa discovery y JWKS con caché interna. No requiere caché configurable por profile.",
+    "cacheCustom": "Cachear validación custom",
+    "createSuccess": "Auth profile creado",
+    "createError": "No se pudo crear el auth profile",
+    "updateSuccess": "Auth profile actualizado",
+    "updateError": "No se pudo actualizar el auth profile",
+    "deleteSuccess": "Auth profile eliminado",
+    "deleteError": "No se pudo eliminar el auth profile",
+    "deleteTitle": "Eliminar auth profile",
+    "deleteDescription": "¿Estás seguro de que quieres eliminar \"{{key}}\"?",
+    "test": "Probar",
+    "testing": "Probando...",
+    "testOk": "Validación local correcta",
+    "testSuccess": "Prueba ejecutada correctamente ({{status}})",
+    "testError": "No se pudo probar el auth profile",
+    "testInvalidRequest": "Los datos de prueba no son JSON válido",
+    "testNotAttempted": "La validación no pudo ejecutarse con los datos de prueba",
+    "testRejected": "La credencial fue rechazada por el validador",
+    "testSectionTitle": "Probar conexión",
+    "testSectionDescription": "La prueba usa la configuración en borrador y evita la caché por defecto.",
+    "testHeadersLabel": "Headers de la solicitud de /eval",
+    "testHeadersHelp": "Ejemplo: {\"Authorization\":\"Bearer token\"}",
+    "testQueryLabel": "Query de la solicitud de /eval",
+    "testQueryHelp": "Ejemplo: {\"api_key\":\"abc123\"}",
+    "testBodyLabel": "Body de la solicitud de /eval",
+    "testBodyHelp": "Ejemplo: {\"session\":{\"token\":\"...\"}}",
+    "testPresets": {
+      "bearer": "Solicitud con Bearer",
+      "apiKey": "Solicitud con API key",
+      "customHeader": "Solicitud con header custom"
+    },
+    "testNotAttemptedBadge": "SIN EJECUTAR",
+    "testOkBadge": "OK",
+    "testRejectedBadge": "RECHAZADA",
+    "testCached": "cache",
+    "testNotCached": "sin caché",
+    "saveBeforeTest": "Guarda el auth profile antes de probarlo.",
+    "invalidConfig": "El JSON de config no es válido",
+    "invalidSecrets": "El JSON de secret payload no es válido",
+    "validationModeLabel": "Validación:",
+    "cacheEnabledValue": "Caché activa ({{ttl}}s)",
+    "cacheDisabledValue": "Sin caché de credenciales",
+    "secretConfigured": "Secreto configurado",
+    "secretMissing": "Sin secreto configurado",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "currentTypeTitle": "Tipo actual",
+    "currentTypeDescription": "El tipo no puede cambiarse después de crear el auth profile. Si necesitas otro tipo, crea uno nuevo.",
+    "useCaseTitle": "Qué necesitas hacer",
+    "useCaseDescription": "Elige el caso de uso. El builder deriva internamente el tipo técnico.",
+    "useCaseDescriptions": {
+      "api_key": "Valida localmente el request de /eval sin llamar a un sistema externo.",
+      "oidc_standard": "Valida el bearer token usando discovery y JWKS del proveedor OIDC externo.",
+      "custom": "Arma un request HTTP con headers y body mapeados desde el request de /eval."
+    },
+    "apiKeyForm": {
+      "title": "API key o secreto fijo",
+      "description": "Valida el request de /eval localmente. No llama a ningún sistema externo.",
+      "location": "Dónde se envía",
+      "locationOptions": {
+        "header": "Header",
+        "query": "Query param"
+      },
+      "headerName": "Nombre del header",
+      "queryParamName": "Nombre del query param",
+      "prefix": "Prefijo opcional",
+      "prefixHelp": "Si el valor llega como Bearer abc123, el prefijo es Bearer.",
+      "secret": "API key",
+      "secretPlaceholder": "Ingresa el secreto esperado"
+    },
+    "oidcForm": {
+      "title": "OIDC estándar",
+      "description": "Valida el bearer token usando discovery y JWKS del proveedor OIDC externo.",
+      "discoveryNotice": "El issuer debe exponer /.well-known/openid-configuration y jwks_uri accesibles desde el evaluator.",
+      "issuer": "Issuer URL",
+      "audience": "Audience",
+      "testToken": "Bearer token de prueba",
+      "testTokenPlaceholder": "eyJhbGciOiJSUzI1NiIs...",
+      "testTokenHelp": "Ingresa solo el token, sin el prefijo Bearer."
+    },
+    "customForm": {
+      "title": "Custom",
+      "description": "Arma el request al validador externo con mappings visuales desde headers o body del request de /eval.",
+      "url": "URL",
+      "method": "Método",
+      "timeout": "Timeout (ms)",
+      "outboundHeader": "Header API key extra (opcional)",
+      "outboundHeaderPlaceholder": "X-Service-Key",
+      "outboundApiKey": "API key extra (opcional)"
+    },
+    "mapping": {
+      "title": "Mapeo del request",
+      "description": "Usa los toggles para definir si cada extremo viaja por header o por body.",
+      "add": "Agregar mapeo",
+      "header": "Header",
+      "body": "Body",
+      "origin": "Origen",
+      "destination": "Destino",
+      "removeAria": "Quitar mapeo",
+      "stripPrefix": "Quitar prefijo (opcional)",
+      "stripPrefixPlaceholder": "Bearer ",
+      "sourceHeaderPlaceholder": "Authorization",
+      "sourceBodyPlaceholder": "session.token",
+      "targetHeaderPlaceholder": "X-Session-Token",
+      "targetBodyPlaceholder": "payload.token",
+      "commonHeaders": "Headers comunes",
+      "searchHeaders": "Buscar header...",
+      "noHeaders": "Sin coincidencias"
+    },
+    "successRule": {
+      "title": "Cómo sabremos que la respuesta es válida",
+      "description": "El contrato recomendado es: 2xx válido, 401/403 inválido y 5xx/timeout error operativo.",
+      "label": "Regla de éxito",
+      "types": {
+        "any_2xx": "Cualquier 2xx es válido",
+        "status": "Status exacto",
+        "json_field": "Campo JSON",
+        "response_header": "Header de respuesta",
+        "text_contains": "Texto contiene"
+      },
+      "status": "Status",
+      "jsonPath": "Path JSON",
+      "expectedValue": "Valor esperado",
+      "responseHeader": "Header",
+      "expectedText": "Texto esperado"
+    },
+    "validation": {
+      "invalidGeneratedKey": "El nombre debe generar un profile_key válido",
+      "apiKeyNameRequired": "Debes indicar el nombre del header o query param",
+      "apiKeySecretRequired": "Debes ingresar la API key esperada",
+      "oidcIssuerRequired": "Debes indicar el issuer OIDC",
+      "oidcAudienceRequired": "Debes indicar el audience OIDC",
+      "customUrlRequired": "Debes indicar la URL del validador custom",
+      "mappingRequired": "Agrega al menos un mapeo de origen a destino",
+      "jsonObjectRequired": "Debes ingresar un objeto JSON"
+    },
+    "summary": {
+      "location": {
+        "header": "header",
+        "query": "query param"
+      },
+      "unnamed": "sin nombre",
+      "configuredUrl": "la URL configurada",
+      "configuredIssuer": "el issuer configurado",
+      "configuredAudience": "el audience configurado",
+      "apiKey": "Valida localmente una API key recibida por {{location}} ({{name}}).",
+      "oidc": "Valida tokens con issuer {{issuer}} y audience {{audience}}.",
+      "custom": "Construye un request custom hacia {{url}} con {{headerCount}} mappings de header y {{bodyCount}} mappings de body."
+    },
+    "advancedTitle": "Configuración avanzada",
+    "humanSummary": "Resumen humano",
+    "generatedPayload": "Payload generado",
+    "empty": {
+      "title": "Sin auth profiles",
+      "description": "Crea un auth profile para validar la solicitud que llega a /eval."
+    }
+  }
+}

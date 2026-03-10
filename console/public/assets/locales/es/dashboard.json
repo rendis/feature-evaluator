@@ -1,0 +1,78 @@
+{
+  "title": "Panel",
+  "description": "Vista general del sistema",
+  "stats": {
+    "totalFeatures": "Total features",
+    "activeFeatures": "Features activos",
+    "totalSegments": "Total segmentos",
+    "totalMembers": "Total miembros"
+  },
+  "activity": {
+    "title": "Actividad reciente",
+    "empty": "Sin actividad reciente",
+    "types": {
+      "feature_created": "Creado",
+      "feature_updated": "Actualizado",
+      "feature_toggled": "Alternado",
+      "rule_created": "Regla creada",
+      "rule_updated": "Regla actualizada"
+    }
+  },
+  "errors": {
+    "title": "Resumen de errores",
+    "empty": "Sin errores recientes",
+    "viewAll": "Ver auditoria completa"
+  },
+  "operations": {
+    "title": "Estado del sistema",
+    "globalLabel": "Global",
+    "globalScope": "Estado operativo global de PostgreSQL, Redis y métricas de runtime.",
+    "lastChecked": "Ultima revision: {{time}}",
+    "refresh": "Actualizar estado",
+    "latency": "Latencia",
+    "unavailable": "No disponible",
+    "error": "No se pudo cargar el estado del sistema.",
+    "circuitOpenUntil": "Circuito abierto hasta {{time}}",
+    "status": {
+      "healthy": "Saludable",
+      "degraded": "Degradado",
+      "unhealthy": "No saludable"
+    },
+    "services": {
+      "postgresql": "PostgreSQL",
+      "redis": "Redis"
+    },
+    "metrics": {
+      "evaluationsToday": "Evaluaciones hoy",
+      "errorsToday": "Errores hoy",
+      "cacheHitRatio": "Cache hit ratio",
+      "rateLimitRejectsToday": "Rechazos por rate limit",
+      "externalLatency": "Latencia externa",
+      "circuitBreakerEvents": "Eventos del circuit breaker"
+    }
+  },
+  "empty": {
+    "title": "Sin features",
+    "description": "Comience creando su primer feature flag",
+    "cta": "Crear feature"
+  },
+  "metrics": {
+    "title": "Metricas de Evaluacion",
+    "totalEvals": "Evaluaciones Hoy",
+    "errorRate": "Tasa de Error",
+    "cacheHitRatio": "Cache Hit Ratio",
+    "topFeatures": "Top Features",
+    "reasonsTitle": "Razones de Evaluacion",
+    "environments": "Por Ambiente",
+    "empty": "Sin datos de evaluacion",
+    "reasons": {
+      "matched_rule": "Regla aplicada",
+      "default_value": "Valor por defecto",
+      "feature_disabled": "Feature deshabilitado",
+      "error": "Error",
+      "not_yet_active": "Aun no activo",
+      "expired": "Expirado",
+      "environment_mismatch": "Ambiente no coincide"
+    }
+  }
+}

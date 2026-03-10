@@ -1,0 +1,94 @@
+{
+  "title": "Experimentos",
+  "description": "Gestiona pruebas A/B y experimentos",
+  "create": "Crear experimento",
+  "featureKey": "Feature",
+  "variantsCount": "variantes",
+  "winner": "Ganador",
+  "startedAt": "Iniciado",
+  "completedAt": "Completado",
+  "status": {
+    "draft": "Borrador",
+    "running": "En ejecucion",
+    "paused": "Pausado",
+    "completed": "Completado"
+  },
+  "empty": {
+    "title": "Sin experimentos",
+    "description": "Crea un experimento para comenzar con pruebas A/B"
+  },
+  "form": {
+    "createTitle": "Crear experimento",
+    "createDescription": "Configura un nuevo experimento A/B",
+    "editTitle": "Editar experimento",
+    "name": "Nombre",
+    "description": "Descripcion",
+    "featureKey": "Feature",
+    "selectFeature": "Seleccionar feature",
+    "variants": "Variantes",
+    "addVariant": "Agregar variante",
+    "variantKey": "Clave",
+    "variantValue": "Valor",
+    "weight": "Peso",
+    "metrics": "Metricas",
+    "addMetric": "Agregar metrica",
+    "noMetrics": "Sin metricas definidas",
+    "metricKey": "Clave",
+    "metricName": "Nombre",
+    "create": "Crear",
+    "save": "Guardar",
+    "success": "Experimento guardado",
+    "error": "Error al guardar experimento"
+  },
+  "actions": {
+    "start": "Iniciar",
+    "pause": "Pausar",
+    "complete": "Completar",
+    "declareWinner": "Declarar ganador",
+    "declareWinnerConfirm": "Estas seguro que deseas declarar \"{{variant}}\" como ganador?",
+    "started": "Experimento iniciado",
+    "startSuccess": "Experimento iniciado",
+    "startError": "Error al iniciar experimento",
+    "paused": "Experimento pausado",
+    "pauseSuccess": "Experimento pausado",
+    "pauseError": "Error al pausar experimento",
+    "completed": "Experimento completado",
+    "completeSuccess": "Experimento completado",
+    "completeError": "Error al completar experimento",
+    "winnerDeclared": "Ganador declarado",
+    "declareWinnerSuccess": "Ganador declarado exitosamente",
+    "winnerError": "Error al declarar ganador",
+    "declareWinnerError": "Error al declarar ganador"
+  },
+  "results": {
+    "title": "Resultados",
+    "totalExposures": "Exposiciones totales",
+    "totalConversions": "Conversiones totales",
+    "significant": "Significativo",
+    "variant": "Variante",
+    "exposures": "Exposiciones",
+    "conversions": "Conversiones",
+    "conversionRate": "Tasa de conversion",
+    "confidence": "Intervalo de confianza"
+  },
+  "confirm": {
+    "start": {
+      "title": "Iniciar experimento",
+      "description": "Esta seguro que desea iniciar este experimento?"
+    },
+    "pause": {
+      "title": "Pausar experimento",
+      "description": "Esta seguro que desea pausar este experimento?"
+    },
+    "complete": {
+      "title": "Completar experimento",
+      "description": "Esta seguro que desea completar este experimento? No se podra reanudar."
+    },
+    "declareWinner": {
+      "title": "Declarar ganador",
+      "description": "Seleccione la variante ganadora. Esta accion no se puede deshacer.",
+      "selectVariant": "Variante ganadora",
+      "selectPlaceholder": "Seleccionar variante"
+    }
+  }
+}

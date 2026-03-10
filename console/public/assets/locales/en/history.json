@@ -1,0 +1,45 @@
+{
+  "title": "Change History",
+  "description": "Record of all modifications made in the system",
+  "empty": {
+    "title": "No changes",
+    "description": "No changes found with the selected filters"
+  },
+  "filters": {
+    "entityType": "Entity type",
+    "allEntities": "All entities",
+    "action": "Action",
+    "allActions": "All actions",
+    "actor": "Actor",
+    "from": "From",
+    "to": "To"
+  },
+  "entityType": {
+    "feature": "Feature",
+    "rule": "Rule",
+    "segment": "Segment",
+    "pack": "Pack"
+  },
+  "action": {
+    "create": "Create",
+    "update": "Update",
+    "delete": "Delete",
+    "toggle": "Toggle",
+    "reorder": "Reorder"
+  },
+  "changes": {
+    "viewDiff_one": "{{count}} change",
+    "viewDiff_other": "{{count}} changes"
+  },
+  "diff": {
+    "title": "Change details",
+    "by": "by {{actor}}",
+    "old": "Previous",
+    "new": "New",
+    "noChanges": "No field changes recorded"
+  },
+  "recent": {
+    "title": "Recent changes",
+    "viewAll": "View all history"
+  }
+}

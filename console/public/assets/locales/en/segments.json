@@ -1,0 +1,111 @@
+{
+  "title": "Segments",
+  "description": "Manage dynamic segments and their JSON datasets",
+  "createSegment": "Create segment",
+  "editSegment": "Edit segment",
+  "fields": {
+    "key": "Key",
+    "name": "Name",
+    "description": "Description",
+    "lastImport": "Last import",
+    "metadata": "Metadata"
+  },
+  "form": {
+    "createTitle": "Create new segment",
+    "editTitle": "Edit segment",
+    "keyInvalid": "Invalid format: use safe snake_case with letters, numbers, and underscores; it must start with a letter",
+    "keyPattern": "The key is normalized automatically to safe snake_case for later namespace use",
+    "nameRequired": "Name is required",
+    "generatedKey": "Auto-generated",
+    "generatedKeyHelp": "Automatically generated from the name.",
+    "success": "Segment saved successfully",
+    "error": "Error saving segment"
+  },
+  "delete": {
+    "title": "Delete segment",
+    "description": "Are you sure you want to delete segment \"{{key}}\"?",
+    "success": "Segment deleted",
+    "error": "Error deleting"
+  },
+  "empty": {
+    "title": "No segments",
+    "description": "Create your first segment to get started"
+  },
+  "schema": {
+    "title": "Schema",
+    "keyPath": "Key path",
+    "sourceType": "Source",
+    "recordCount": "Records",
+    "path": "Path",
+    "type": "Type",
+    "required": "Required",
+    "nullable": "Nullable",
+    "raw": "Schema JSON"
+  },
+  "data": {
+    "title": "Data",
+    "empty": "No records in this segment",
+    "filterKey": "Search by key...",
+    "recordKey": "Record Key",
+    "createdAt": "Created",
+    "recordCountLabel": "{{count}} records"
+  },
+  "import": {
+    "title": "Import data",
+    "uploadTitle": "Step 1: Upload data",
+    "sourceType": "Source type",
+    "delimiter": "CSV separator",
+    "fileTitle": "Choose a file",
+    "fileHelpCsv": "Upload a CSV file or paste its contents below.",
+    "fileHelpJson": "Upload a JSON file or paste its contents below.",
+    "chooseFile": "Choose file",
+    "replaceFile": "Replace file",
+    "noFileSelected": "No file selected yet",
+    "selectedFile": "Selected: {{name}}",
+    "paste": "Paste content",
+    "keyTitle": "Step 2: Choose key",
+    "keyField": "Field used as key",
+    "selectKey": "Select a field path",
+    "recommended": "Recommended",
+    "unique": "Unique",
+    "notUnique": "Repeated",
+    "keySuggestions": "{{count}} unique key candidates found ({{analyzed}} scalar fields analyzed).",
+    "excludedTitle": "Discarded because they contain duplicates",
+    "duplicateField": "Duplicated field",
+    "selectDuplicateField": "Select a duplicated field",
+    "duplicateValuesTitle": "Detected duplicate values",
+    "rowsSummary": "{{count}} rows: {{rows}}",
+    "moreDuplicateValues": "+{{count}} more duplicated values in the report",
+    "duplicatePreviewHint": "The preview highlights rows duplicated for the selected field.",
+    "downloadDuplicateReport": "Download duplicate report",
+    "distinctSummary": "{{count}} distinct values out of {{total}} records",
+    "duplicateSummary": "{{count}} duplicates",
+    "sampleValue": "Example: {{value}}",
+    "schemaTitle": "Step 3: Review schema",
+    "confirmTitle": "Step 4: Confirmation",
+    "summaryRecords": "{{count}} records ready to import",
+    "summaryKey": "Key path: {{key}}",
+    "summarySource": "Source: {{source}}",
+    "startImport": "Start import",
+    "importing": "Importing...",
+    "error": "Error importing",
+    "resultsTitle": "Results",
+    "inserted": "{{count}} inserted",
+    "next": "Next",
+    "back": "Back",
+    "delimiters": {
+      "auto": "Auto (recommended)",
+      "comma": "Comma (,)",
+      "semicolon": "Semicolon (;)",
+      "tab": "Tab (\\t)",
+      "pipe": "Pipe (|)"
+    },
+    "errors": {
+      "noRecords": "No valid records were found",
+      "noKeyCandidates": "There are no valid field paths resolving to string or number across all records",
+      "noUniqueKeyCandidates": "No field can be used as key yet. A valid key must be string or number and have no duplicates.",
+      "invalidDelimiter": "The selected separator {{current}} does not match this file. Try {{suggested}}.",
+      "noDuplicateValuesForReport": "There are no duplicates to export for the selected field."
+    }
+  }
+}

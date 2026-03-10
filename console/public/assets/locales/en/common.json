@@ -1,0 +1,90 @@
+{
+  "app": {
+    "name": "Feature Evaluator"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "features": "Features",
+    "segments": "Segments",
+    "settings": "Settings",
+    "members": "Members",
+    "apiKeys": "API keys",
+    "authProfiles": "Auth profiles",
+    "externalApis": "External APIs",
+    "packs": "Packs",
+    "audit": "Audit",
+    "history": "History",
+    "workspaces": "Workspaces",
+    "experiments": "Experiments"
+  },
+  "actions": {
+    "create": "Create",
+    "edit": "Edit",
+    "configureSchema": "Configure schema",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "search": "Search",
+    "filter": "Filter",
+    "back": "Back",
+    "close": "Close",
+    "add": "Add",
+    "remove": "Remove",
+    "retry": "Retry",
+    "loading": "Loading..."
+  },
+  "status": {
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "pagination": {
+    "page": "Page",
+    "of": "of",
+    "showing": "Showing",
+    "results": "results",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "errors": {
+    "unknown": "An unexpected error occurred",
+    "notFound": "Not found",
+    "forbidden": "Forbidden",
+    "unauthorized": "Session expired",
+    "validation": "Validation error"
+  },
+  "empty": {
+    "title": "No data",
+    "description": "There is no data to display"
+  },
+  "confirm": {
+    "title": "Confirm action",
+    "description": "Are you sure you want to continue?",
+    "deleteTitle": "Confirm deletion",
+    "deleteDescription": "This action cannot be undone."
+  },
+  "unsavedChanges": {
+    "title": "Unsaved changes",
+    "description": "You have unsaved changes. Are you sure you want to leave?",
+    "leave": "Leave",
+    "stay": "Stay"
+  },
+  "loadingModal": {
+    "creatingTitle": "Creating record",
+    "savingTitle": "Saving changes",
+    "updatingTitle": "Updating record",
+    "description": "Please wait while we complete the operation."
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "change": "Change language",
+    "es": "Español",
+    "en": "English"
+  }
+}

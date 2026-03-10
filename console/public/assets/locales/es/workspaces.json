@@ -1,0 +1,59 @@
+{
+  "title": "Workspaces",
+  "description": "Gestione los workspaces de su organizacion",
+  "create": "Crear workspace",
+  "current": "Actual",
+  "selector": {
+    "label": "Workspace",
+    "placeholder": "Seleccionar espacio",
+    "switch": "Cambiar espacio de trabajo",
+    "switchTo": "Cambiar a {{name}}"
+  },
+  "fields": {
+    "key": "Clave",
+    "name": "Nombre",
+    "description": "Descripcion",
+    "createdAt": "Creado",
+    "createdBy": "Creado por"
+  },
+  "form": {
+    "createTitle": "Crear workspace",
+    "editTitle": "Editar workspace",
+    "createDescription": "Cree un nuevo workspace para organizar sus features",
+    "editDescription": "Actualice la informacion del workspace",
+    "nameRequired": "El nombre es requerido",
+    "keyInvalid": "Formato invalido: use snake_case seguro con letras, numeros y guion bajo; debe comenzar con una letra (2-128 caracteres)",
+    "keyPattern": "Solo letras minusculas, numeros y guion bajo; el key se normaliza automaticamente a snake_case seguro y debe comenzar con una letra",
+    "success": "Workspace guardado exitosamente",
+    "error": "Error al guardar workspace"
+  },
+  "sections": {
+    "active": "Activos",
+    "archived": "Archivados"
+  },
+  "archive": {
+    "title": "Archivar workspace",
+    "description": "Esta seguro que desea archivar el workspace \"{{name}}\"? Podra restaurarlo mas adelante.",
+    "success": "Workspace archivado",
+    "error": "Error al archivar workspace"
+  },
+  "restore": {
+    "action": "Restaurar",
+    "success": "Workspace restaurado",
+    "error": "Error al restaurar workspace"
+  },
+  "onboarding": {
+    "title": "Primero cree un workspace",
+    "description": "No hay workspaces activos. Cree uno nuevo o restaure uno archivado para empezar a usar la plataforma.",
+    "create": "Crear primer workspace",
+    "restoreDescription": "Tambien puede restaurar uno de los workspaces archivados."
+  },
+  "empty": {
+    "title": "Sin workspaces",
+    "description": "Cree un workspace para comenzar",
+    "activeTitle": "Sin workspaces activos",
+    "activeDescription": "Archive y restore no aplican hasta que exista al menos un workspace activo.",
+    "archivedTitle": "Sin workspaces archivados",
+    "archivedDescription": "Cuando archive workspaces apareceran aqui."
+  }
+}

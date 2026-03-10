@@ -1,0 +1,23 @@
+{
+  "title": "Auditoria de errores",
+  "description": "Registro de errores de evaluacion",
+  "filters": {
+    "featureKey": "Feature key",
+    "tenantId": "Tenant ID",
+    "errorType": "Tipo de error",
+    "from": "Desde",
+    "to": "Hasta"
+  },
+  "columns": {
+    "date": "Fecha",
+    "featureKey": "Feature",
+    "errorType": "Tipo",
+    "message": "Mensaje",
+    "tenantId": "Tenant",
+    "requestId": "Request ID"
+  },
+  "empty": {
+    "title": "Sin errores",
+    "description": "No se encontraron errores de evaluacion"
+  }
+}

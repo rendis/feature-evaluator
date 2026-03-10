@@ -1,0 +1,265 @@
+{
+  "listTitle": "External APIs",
+  "createTitle": "Create External API",
+  "editTitle": "Edit External API: {{name}}",
+  "subtitle": "Define reusable requests with placeholders, encrypted secrets, and testable response validation.",
+  "steps": {
+    "urlMethod": "1. URL and method",
+    "request": "2. Request",
+    "validation": "3. Validation",
+    "test": "4. Test"
+  },
+  "sections": {
+    "params": "Detected parameters",
+    "headers": "Headers",
+    "body": "Body",
+    "bodyStructure": "Body structure",
+    "bodyPreview": "Preview",
+    "secrets": "Secrets",
+    "responseMode": "Validation mode",
+    "responseLogic": "Logical content validation",
+    "testInputs": "Test values",
+    "testResult": "Test result",
+    "trafficInspection": "Traffic inspection",
+    "requestSent": "Request sent",
+    "responseReceived": "Response received"
+  },
+  "fields": {
+    "name": "Name",
+    "key": "Key",
+    "active": "Active",
+    "inactive": "Inactive",
+    "method": "Method",
+    "url": "URL template",
+    "paramType": "Type",
+    "required": "Required",
+    "bodyRootType": "Body root",
+    "httpValidation": "HTTP validation",
+    "httpCodes": "HTTP codes",
+    "httpStatus": "HTTP",
+    "responseSchema": "Response schema",
+    "expression": "Expression",
+    "sampleResponse": "Sample response",
+    "replaceSecrets": "Replace secrets"
+  },
+  "types": {
+    "any": "Any",
+    "string": "String",
+    "number": "Number",
+    "boolean": "Boolean",
+    "object": "Object",
+    "array": "Array"
+  },
+  "responseModes": {
+    "httpCode": "HTTP code only",
+    "responseBody": "Response body only",
+    "both": "HTTP and body"
+  },
+  "actions": {
+    "back": "Back",
+    "save": "Save",
+    "saveSchema": "Save schema",
+    "confirmSchema": "Confirm schema",
+    "variablesManager": "Variables Manager ({{count}})",
+    "delete": "Delete",
+    "create": "Create External API",
+    "edit": "Edit",
+    "editSchema": "Edit",
+    "configureSchema": "Configure schema",
+    "formatJson": "Format JSON",
+    "addHeader": "Add header",
+    "addField": "Add field",
+    "addItem": "Add item",
+    "previous": "Previous",
+    "next": "Next",
+    "test": "Run test",
+    "testing": "Testing...",
+    "useResponseAsSchema": "Use response as schema"
+  },
+  "hints": {
+    "key": "It is generated automatically from the name.",
+    "url": "Use {{param}} for dynamic values and {{secret.name}} for encrypted secrets.",
+    "urlDetectedParams": "This panel only shows variables detected inside the URL. The full catalog lives in the variables manager.",
+    "params": "The builder detects placeholders automatically. Adjust type and optionality here.",
+    "headers": "You can mix fixed values, params, and secrets in both key and value.",
+    "body": "The body is stored as canonical JSON. You can edit it from raw JSON or the visual builder.",
+    "responseSchema": "Define the structure from an example, the visual builder, or the latest successful test.",
+    "secrets": "Every {{secret.*}} placeholder is encrypted in the backend and never returned in plaintext.",
+    "forcedRequired": "Required because it is used in the domain or path.",
+    "optionalSupported": "If an optional value is missing, that node is omitted.",
+    "http2xx": "Any response in the 200-299 range is considered successful.",
+    "testInputs": "Provide values for detected params and execute the full request.",
+    "testInspection": "Inspect the final rendered request and the real response."
+  },
+  "placeholders": {
+    "name": "Premium eligibility",
+    "sampleResponse": "{\n  \"approved\": true\n}",
+    "paramValue": "Value",
+    "paramValueFor": "Value for {{name}}",
+    "keyName": "Key",
+    "requestBody": "{\n  \"key\": \"value\"\n}",
+    "secret": "Enter the secret",
+    "urlTemplate": "https://api.{{env}}.example.com/path/{{id}}?query={{value}}",
+    "headerKey": "Key (eg. Authorization)",
+    "headerValue": "Value or {{parameter}}",
+    "httpCodes": "Eg: 200, 201, 204"
+  },
+  "empty": {
+    "listTitle": "No External APIs yet",
+    "listDescription": "Create a reusable External API to test requests and validations outside rules.",
+    "generatedKey": "Generated automatically",
+    "params": "No dynamic params detected yet.",
+    "headers": "No headers configured.",
+    "secrets": "No secret placeholders detected.",
+    "testResult": "Run a test to inspect the rendered request and response.",
+    "testPending": "Waiting for the request to run...",
+    "requestPreview": "Could not build a request preview.",
+    "responsePreview": "No response content received."
+  },
+  "badges": {
+    "required": "Required",
+    "optional": "Optional",
+    "hasSecrets": "Has secrets",
+    "passed": "Passed",
+    "failed": "Blocked",
+    "active": "Active",
+    "inactive": "Inactive"
+  },
+  "evaluationDebug": {
+    "buttonLabel": "View test evaluations",
+    "openTooltip": "View test evaluations",
+    "pendingTooltip": "Evaluation details will be available when the test finishes.",
+    "title": "Test evaluations",
+    "description": "Review the final result and each check applied during execution.",
+    "httpTitle": "HTTP validation",
+    "expressionTitle": "Expression validation",
+    "notApplicable": "Not applicable",
+    "fields": {
+      "finalResult": "Final result",
+      "mode": "Mode",
+      "applied": "Applied",
+      "expectedCodes": "Expected codes",
+      "actualStatus": "Actual HTTP",
+      "passed": "Result",
+      "expression": "Expression",
+      "resolution": "Resolution",
+      "error": "Error"
+    },
+    "values": {
+      "yes": "Yes",
+      "true": "true",
+      "false": "false"
+    }
+  },
+  "list": {
+    "params": "{{count}} params",
+    "headers": "{{count}} headers",
+    "version": "v{{version}}"
+  },
+  "delete": {
+    "title": "Delete External API",
+    "description": "Are you sure you want to delete \"{{key}}\"?"
+  },
+  "errors": {
+    "invalidJson": "JSON is invalid.",
+    "bodyObject": "The body must be a JSON object or array.",
+    "schemaExampleObject": "The response example must be a JSON object or array to use the visual builder.",
+    "testResponseSchemaObject": "The latest test response must be a JSON object or array to use it as schema.",
+    "keyRequired": "Key is required.",
+    "nameRequired": "Name is required.",
+    "urlRequired": "URL is required.",
+    "invalidExpression": "Invalid expression.",
+    "expressionRequired": "A response expression is required.",
+    "httpCodesRequired": "Enter at least one HTTP status code."
+  },
+  "schemaModal": {
+    "title": "Response Schema Builder",
+    "description": "Load an example, build it visually, or use the latest test response to define the schema.",
+    "tabs": {
+      "sample": "Paste Example (Manual)",
+      "visual": "Build Visually",
+      "test": "Use Real Test Response"
+    },
+    "sampleHint": "Paste a valid example of the expected JSON response.",
+    "visualTitle": "Visual schema builder",
+    "visualStringPlaceholder": "example value",
+    "visualKeyPlaceholder": "Key",
+    "addRootField": "Add root field",
+    "addRootItem": "Add root item",
+    "rootType": "Root Structure:",
+    "rootTypes": {
+      "object": "Object",
+      "array": "Array"
+    },
+    "emptyVisual": "No fields defined yet.",
+    "testTitle": "Use real test response",
+    "testHint": "Use the same real test flow from step 4 to inspect the response and load it as schema.",
+    "emptySchemaTitle": "No schema configured yet",
+    "emptySchemaDescription": "Open the builder to load an example, compose the structure, or reuse the latest test.",
+    "emptyTestTitle": "No test available",
+    "emptyTestDescription": "Run the API in step 4 and then come back here to use that responseBody as the schema."
+  },
+  "expressionEditor": {
+    "noSchema": "No response schema yet. Autocomplete only shows global symbols until you configure the sample or response schema.",
+    "shortcuts": "Open contextual suggestions with"
+  },
+  "schemaCard": {
+    "configured": "Schema configured"
+  },
+  "bodyModes": {
+    "visual": "Visual Builder",
+    "raw": "Raw JSON"
+  },
+  "bodyRootTypes": {
+    "object": "Object {}",
+    "array": "Array []"
+  },
+  "bodyActions": {
+    "addRootField": "Add Root Field",
+    "addRootItem": "Add Root Item",
+    "empty": "No fields defined."
+  },
+  "httpModes": {
+    "2xx": "Any Success (2xx)",
+    "custom": "Specific Codes..."
+  },
+  "variablesModal": {
+    "title": "Dynamic System Variables",
+    "description": "Manage auto-detected variables and manual variables available under vars.*.",
+    "helper": "Variables detected from URL, headers, and body are recalculated automatically. You can also add manual variables here to use them in expressions as vars.name.",
+    "addVariable": "Add variable",
+    "manualHint": "Manual variables only live under vars.* and do not interpolate the request URL, headers, or body.",
+    "empty": "No dynamic variables have been detected yet.",
+    "snakeCaseWarning": "Error: Must be snake_case",
+    "forcedRequired": "Forced by URL",
+    "badges": {
+      "manual": "manual",
+      "detected": "detected"
+    },
+    "validation": {
+      "required": "Name is required.",
+      "snakeCase": "Must be snake_case.",
+      "duplicate": "Another variable already uses that name.",
+      "conflict": "Conflicts with a detected variable."
+    },
+    "columns": {
+      "name": "Name (Snake Case)",
+      "locations": "Locations",
+      "type": "Type",
+      "required": "Required",
+      "actions": "Actions"
+    }
+  },
+  "validationIntro": "Translate the API response into a simple True or False so the rules engine can make the final decision.",
+  "messages": {
+    "created": "External API created.",
+    "updated": "External API updated.",
+    "deleted": "External API deleted.",
+    "saveError": "Could not save the External API.",
+    "deleteError": "Could not delete the External API.",
+    "testPassed": "Final validation returned true.",
+    "testBlocked": "Final validation returned false.",
+    "testError": "Could not execute the test.",
+    "schemaError": "Could not infer a schema from the sample."
+  }
+}

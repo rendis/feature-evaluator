@@ -1,0 +1,49 @@
+{
+  "title": "Cambios programados",
+  "scheduleChange": "Programar cambio",
+  "noPending": "Sin cambios pendientes",
+  "pending": "Pendientes",
+  "changeTypes": {
+    "toggle": "Cambiar estado",
+    "update": "Actualizar feature",
+    "default_value": "Cambiar valor por defecto",
+    "environment": "Cambiar ambientes"
+  },
+  "status": {
+    "pending": "Pendiente",
+    "executing": "Ejecutando",
+    "completed": "Completado",
+    "failed": "Fallido",
+    "cancelled": "Cancelado"
+  },
+  "form": {
+    "title": "Programar cambio",
+    "description": "Programe un cambio futuro para este feature",
+    "changeType": "Tipo de cambio",
+    "scheduledAt": "Fecha y hora",
+    "scheduledAtHelper": "El cambio se aplicara en la fecha y hora seleccionada (UTC)",
+    "payload": "Configuracion",
+    "toggleEnable": "Activar feature",
+    "toggleDisable": "Desactivar feature",
+    "newDefaultValue": "Nuevo valor por defecto",
+    "environments": "Ambientes",
+    "success": "Cambio programado exitosamente",
+    "error": "Error al programar cambio",
+    "dateRequired": "La fecha es requerida",
+    "dateFuture": "La fecha debe ser futura"
+  },
+  "cancel": {
+    "title": "Cancelar cambio programado",
+    "description": "Esta seguro que desea cancelar este cambio programado?",
+    "success": "Cambio cancelado",
+    "error": "Error al cancelar"
+  },
+  "countdown": {
+    "in": "en",
+    "days": "d",
+    "hours": "h",
+    "minutes": "m"
+  },
+  "scheduledBy": "Programado por",
+  "scheduledFor": "Programado para"
+}

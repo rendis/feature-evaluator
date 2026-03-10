@@ -1,0 +1,45 @@
+{
+  "title": "Historial de Cambios",
+  "description": "Registro de todas las modificaciones realizadas en el sistema",
+  "empty": {
+    "title": "Sin cambios",
+    "description": "No se encontraron cambios con los filtros seleccionados"
+  },
+  "filters": {
+    "entityType": "Tipo de entidad",
+    "allEntities": "Todas las entidades",
+    "action": "Accion",
+    "allActions": "Todas las acciones",
+    "actor": "Actor",
+    "from": "Desde",
+    "to": "Hasta"
+  },
+  "entityType": {
+    "feature": "Feature",
+    "rule": "Regla",
+    "segment": "Segmento",
+    "pack": "Pack"
+  },
+  "action": {
+    "create": "Crear",
+    "update": "Actualizar",
+    "delete": "Eliminar",
+    "toggle": "Activar/Desactivar",
+    "reorder": "Reordenar"
+  },
+  "changes": {
+    "viewDiff_one": "{{count}} cambio",
+    "viewDiff_other": "{{count}} cambios"
+  },
+  "diff": {
+    "title": "Detalle del cambio",
+    "by": "por {{actor}}",
+    "old": "Anterior",
+    "new": "Nuevo",
+    "noChanges": "Sin cambios de campos registrados"
+  },
+  "recent": {
+    "title": "Cambios recientes",
+    "viewAll": "Ver todo el historial"
+  }
+}

@@ -1,0 +1,301 @@
+{
+  "members": {
+    "title": "Team members",
+    "description": "Manage your team members and roles",
+    "addMember": "Add member",
+    "email": "Email",
+    "role": "Role",
+    "displayName": "Name",
+    "addedBy": "Added by",
+    "createdAt": "Registration date",
+    "actions": "Actions",
+    "changeRole": "Change role",
+    "removeMember": "Remove member",
+    "transferOwnership": "Transfer ownership",
+    "addForm": {
+      "title": "Add new member",
+      "emailPlaceholder": "email@company.com",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Enter a valid email",
+      "roleRequired": "Select a role",
+      "success": "Member added successfully",
+      "error": "Error adding member"
+    },
+    "deleteConfirm": {
+      "title": "Remove member",
+      "description": "Are you sure you want to remove {{email}}? This action cannot be undone."
+    },
+    "transferConfirm": {
+      "title": "Transfer ownership",
+      "description": "Are you sure you want to transfer ownership to {{email}}? You will be demoted to Admin."
+    },
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "editor": "Editor",
+      "viewer": "Viewer"
+    },
+    "roleDescriptions": {
+      "owner": "Full workspace control",
+      "admin": "Full management including team",
+      "editor": "Manage features, rules and segments",
+      "viewer": "Read only"
+    },
+    "empty": {
+      "title": "No members",
+      "description": "Add members to your team to get started"
+    }
+  },
+  "apiKeys": {
+    "title": "API Keys",
+    "subtitle": "Manage admin API keys for programmatic access",
+    "create": "Create API key",
+    "createTitle": "Create new API key",
+    "name": "Name",
+    "namePlaceholder": "My API key",
+    "nameRequired": "Name is required",
+    "description": "Description",
+    "descriptionPlaceholder": "Optional description for this key",
+    "type": "Type",
+    "typeAdmin": "Admin",
+    "permissions": "Permissions",
+    "expiration": "Expiration date",
+    "created": "Created",
+    "lastUsed": "Last used",
+    "expires": "Expires",
+    "statusLabel": "Status",
+    "actions": "Actions",
+    "revoke": "Revoke",
+    "rotate": "Rotate",
+    "copyKey": "Copy key",
+    "keyCreated": "API key created",
+    "keyWarning": "Copy this key now. You will not be able to see it again.",
+    "keyCopied": "I've copied the key",
+    "createError": "Error creating API key",
+    "revokeSuccess": "API key revoked",
+    "revokeError": "Error revoking API key",
+    "rotateError": "Error rotating API key",
+    "status": {
+      "active": "Active",
+      "expired": "Expired",
+      "revoked": "Revoked",
+      "expiring_soon": "Expiring soon"
+    },
+    "revokeConfirm": {
+      "title": "Revoke API key",
+      "description": "Are you sure you want to revoke \"{{name}}\"? This action cannot be undone."
+    },
+    "rotateConfirm": {
+      "title": "Rotate API key",
+      "description": "Are you sure you want to rotate \"{{name}}\"? The current key will stop working immediately."
+    },
+    "perm": {
+      "features.read": "Features read",
+      "features.write": "Features write",
+      "segments.read": "Segments read",
+      "segments.write": "Segments write",
+      "packs.read": "Packs read",
+      "packs.write": "Packs write",
+      "audit.read": "Audit read"
+    },
+    "empty": {
+      "title": "No API keys",
+      "description": "Create an API key to get started with programmatic access"
+    }
+  },
+  "authProfiles": {
+    "title": "Auth profiles",
+    "subtitle": "Define how /eval requests are authenticated with reusable feature-bound profiles",
+    "create": "Create profile",
+    "createTitle": "Create auth profile",
+    "steps": {
+      "profile": "Profile",
+      "config": "Configuration",
+      "validation": "Validation",
+      "test": "Test",
+      "validationDisabledTooltip": "Only custom profiles require configurable validation.",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "editTitle": "Edit auth profile",
+    "description": "Define the inbound authentication mechanism, config, and encrypted secret payload for this profile.",
+    "key": "Key",
+    "name": "Name",
+    "nameRequired": "Name is required",
+    "namePlaceholder": "Stripe OAuth",
+    "type": "Type",
+    "typeHelp": "Choose the smallest mechanism that can validate the request sent to /eval.",
+    "typeOptions": {
+      "api_key": "API key or fixed secret",
+      "oidc_standard": "Standard OIDC",
+      "custom": "Custom"
+    },
+    "generatedKey": "Generated automatically",
+    "generatedKeyHelp": "Generated automatically from the name.",
+    "validationTitle": "Validation and cache",
+    "validationHelp": "Only profiles that call an external system use cache.",
+    "cacheValidation": "Cache validation",
+    "cacheHelp": "This cache applies to inbound credential validation for the profile, not to the final rule result.",
+    "cacheTTL": "Cache TTL (seconds)",
+    "cacheTTLPlaceholder": "300",
+    "cacheLocal": "Validation is local; cache is not used.",
+    "cacheLocalHelp": "The configured API key is compared locally and does not add external latency.",
+    "cacheOIDC": "Uses internal metadata/JWKS cache",
+    "cacheOIDCHelp": "Standard OIDC uses discovery and JWKS with internal cache. It does not need profile-level cache.",
+    "cacheCustom": "Cache custom validation",
+    "createSuccess": "Auth profile created",
+    "createError": "Could not create the auth profile",
+    "updateSuccess": "Auth profile updated",
+    "updateError": "Could not update the auth profile",
+    "deleteSuccess": "Auth profile deleted",
+    "deleteError": "Could not delete the auth profile",
+    "deleteTitle": "Delete auth profile",
+    "deleteDescription": "Are you sure you want to delete \"{{key}}\"?",
+    "test": "Test",
+    "testing": "Testing...",
+    "testOk": "Local validation OK",
+    "testSuccess": "Test completed successfully ({{status}})",
+    "testError": "Could not test the auth profile",
+    "testInvalidRequest": "Test data is not valid JSON",
+    "testNotAttempted": "Validation could not run with the provided test data",
+    "testRejected": "The credential was rejected by the validator",
+    "testSectionTitle": "Test connection",
+    "testSectionDescription": "The test uses the draft configuration and bypasses cache by default.",
+    "testHeadersLabel": "Headers from the /eval request",
+    "testHeadersHelp": "Example: {\"Authorization\":\"Bearer token\"}",
+    "testQueryLabel": "Query from the /eval request",
+    "testQueryHelp": "Example: {\"api_key\":\"abc123\"}",
+    "testBodyLabel": "Body from the /eval request",
+    "testBodyHelp": "Example: {\"session\":{\"token\":\"...\"}}",
+    "testPresets": {
+      "bearer": "Request with Bearer",
+      "apiKey": "Request with API key",
+      "customHeader": "Request with custom header"
+    },
+    "testNotAttemptedBadge": "NOT RUN",
+    "testOkBadge": "OK",
+    "testRejectedBadge": "REJECTED",
+    "testCached": "cache",
+    "testNotCached": "no cache",
+    "saveBeforeTest": "Save the profile before testing it.",
+    "invalidConfig": "Config JSON is invalid",
+    "invalidSecrets": "Secret payload JSON is invalid",
+    "validationModeLabel": "Validation:",
+    "cacheEnabledValue": "Credential cache enabled ({{ttl}}s)",
+    "cacheDisabledValue": "No credential cache",
+    "secretConfigured": "Secret configured",
+    "secretMissing": "No secret configured",
+    "active": "Active",
+    "inactive": "Inactive",
+    "currentTypeTitle": "Current type",
+    "currentTypeDescription": "The type cannot change after the auth profile is created. If you need another type, create a new one.",
+    "useCaseTitle": "What do you need to do?",
+    "useCaseDescription": "Choose the use case. The builder derives the underlying technical type.",
+    "useCaseDescriptions": {
+      "api_key": "Validates the /eval request locally without calling an external system.",
+      "oidc_standard": "Validates the bearer token using discovery and JWKS from the external OIDC provider.",
+      "custom": "Builds an HTTP request with headers and body mapped from the /eval request."
+    },
+    "apiKeyForm": {
+      "title": "API key or fixed secret",
+      "description": "Validates the /eval request locally. It does not call any external system.",
+      "location": "Where it is sent",
+      "locationOptions": {
+        "header": "Header",
+        "query": "Query param"
+      },
+      "headerName": "Header name",
+      "queryParamName": "Query param name",
+      "prefix": "Optional prefix",
+      "prefixHelp": "If the value arrives as Bearer abc123, the prefix is Bearer.",
+      "secret": "API key",
+      "secretPlaceholder": "Enter the expected secret"
+    },
+    "oidcForm": {
+      "title": "Standard OIDC",
+      "description": "Validates the bearer token using discovery and JWKS from the external OIDC provider.",
+      "discoveryNotice": "The issuer must expose /.well-known/openid-configuration and jwks_uri reachable from the evaluator.",
+      "issuer": "Issuer URL",
+      "audience": "Audience",
+      "testToken": "Test bearer token",
+      "testTokenPlaceholder": "eyJhbGciOiJSUzI1NiIs...",
+      "testTokenHelp": "Enter only the token, without the Bearer prefix."
+    },
+    "customForm": {
+      "title": "Custom",
+      "description": "Builds the validator request with visual mappings from the /eval request headers or body.",
+      "url": "URL",
+      "method": "Method",
+      "timeout": "Timeout (ms)",
+      "outboundHeader": "Extra API key header (optional)",
+      "outboundHeaderPlaceholder": "X-Service-Key",
+      "outboundApiKey": "Extra API key (optional)"
+    },
+    "mapping": {
+      "title": "Request mapping",
+      "description": "Use the toggles to define whether each endpoint travels through a header or the body.",
+      "add": "Add mapping",
+      "header": "Header",
+      "body": "Body",
+      "origin": "Source",
+      "destination": "Target",
+      "removeAria": "Remove mapping",
+      "stripPrefix": "Strip prefix (optional)",
+      "stripPrefixPlaceholder": "Bearer ",
+      "sourceHeaderPlaceholder": "Authorization",
+      "sourceBodyPlaceholder": "session.token",
+      "targetHeaderPlaceholder": "X-Session-Token",
+      "targetBodyPlaceholder": "payload.token",
+      "commonHeaders": "Common headers",
+      "searchHeaders": "Search header...",
+      "noHeaders": "No matches"
+    },
+    "successRule": {
+      "title": "How we know the response is valid",
+      "description": "The recommended contract is: valid 2xx, invalid 401/403, and operational 5xx/timeout errors.",
+      "label": "Success rule",
+      "types": {
+        "any_2xx": "Any 2xx is valid",
+        "status": "Exact status",
+        "json_field": "JSON field",
+        "response_header": "Response header",
+        "text_contains": "Text contains"
+      },
+      "status": "Status",
+      "jsonPath": "JSON path",
+      "expectedValue": "Expected value",
+      "responseHeader": "Header",
+      "expectedText": "Expected text"
+    },
+    "validation": {
+      "invalidGeneratedKey": "The name must generate a valid profile_key",
+      "apiKeyNameRequired": "You must provide the header or query param name",
+      "apiKeySecretRequired": "You must enter the expected API key",
+      "oidcIssuerRequired": "You must provide the OIDC issuer",
+      "oidcAudienceRequired": "You must provide the OIDC audience",
+      "customUrlRequired": "You must provide the custom validator URL",
+      "mappingRequired": "Add at least one source-to-target mapping",
+      "jsonObjectRequired": "You must provide a JSON object"
+    },
+    "summary": {
+      "location": {
+        "header": "header",
+        "query": "query param"
+      },
+      "unnamed": "unnamed",
+      "configuredUrl": "the configured URL",
+      "configuredIssuer": "the configured issuer",
+      "configuredAudience": "the configured audience",
+      "apiKey": "Validates an API key received through {{location}} ({{name}}) locally.",
+      "oidc": "Validates tokens with issuer {{issuer}} and audience {{audience}}.",
+      "custom": "Builds a custom request to {{url}} with {{headerCount}} header mappings and {{bodyCount}} body mappings."
+    },
+    "advancedTitle": "Advanced configuration",
+    "humanSummary": "Human summary",
+    "generatedPayload": "Generated payload",
+    "empty": {
+      "title": "No auth profiles",
+      "description": "Create an Auth Profile to validate the request that reaches /eval."
+    }
+  }
+}
