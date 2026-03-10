@@ -177,6 +177,24 @@ func (s *Service) Evaluate(ctx context.Context, req Request, evalCtx EvalContext
 		}
 	}
 
+	// Trial: bypass rules if active
+	trialActive, trialEndsAt := s.resolveTrial(ctx, f, now)
+	tierKeys := s.resolveTierKeys(ctx, f.Key)
+	if trialActive && f.TrialValue != nil {
+		return Result{
+			FeatureKey:  f.Key,
+			Value:       f.TrialValue,
+			ValueType:   string(f.ValueType),
+			Environment: evalCtx.Environment,
+			InTrial:     true,
+			TrialEndsAt: trialEndsAt,
+			TierKeys:    tierKeys,
+			Metadata:    f.Metadata,
+			Reason:      ReasonTrialActive,
+			EvaluatedAt: now,
+		}
+	}
+
 	// Check for active experiment — overrides rules when running
 	userID := extractNamespaceID(evalCtx.Context, "user")
 	if result, ok := s.tryExperiment(ctx, f, userID, evalCtx, now); ok {
@@ -250,6 +268,7 @@ func (s *Service) Evaluate(ctx context.Context, req Request, evalCtx EvalContext
 				Environment: evalCtx.Environment,
 				MatchedRule: &MatchedRule{ID: rule.ID, Name: rule.Name},
 				PackGrant:   packKey,
+				TierKeys:    tierKeys,
 				Segments:    buildSegmentResults(segmentResults),
 				Metadata:    mergeMetadata(f.Metadata, rule.Metadata),
 				Reason:      ReasonMatchedRule,
@@ -265,6 +284,7 @@ func (s *Service) Evaluate(ctx context.Context, req Request, evalCtx EvalContext
 		ValueType:   string(f.ValueType),
 		Environment: evalCtx.Environment,
 		PackGrant:   packKey,
+		TierKeys:    tierKeys,
 		Segments:    buildSegmentResults(segmentResults),
 		Metadata:    f.Metadata,
 		Reason:      ReasonDefaultValue,
@@ -405,6 +425,24 @@ func (s *Service) evaluateFeature(ctx context.Context, f *feature.Feature, evalC
 		}
 	}
 
+	// Trial: bypass rules if active
+	trialActive, trialEndsAt := s.resolveTrial(ctx, f, now)
+	tierKeys := s.resolveTierKeys(ctx, f.Key)
+	if trialActive && f.TrialValue != nil {
+		return Result{
+			FeatureKey:  f.Key,
+			Value:       f.TrialValue,
+			ValueType:   string(f.ValueType),
+			Environment: evalCtx.Environment,
+			InTrial:     true,
+			TrialEndsAt: trialEndsAt,
+			TierKeys:    tierKeys,
+			Metadata:    f.Metadata,
+			Reason:      ReasonTrialActive,
+			EvaluatedAt: now,
+		}
+	}
+
 	// Check for active experiment — overrides rules when running
 	userID := extractNamespaceID(evalCtx.Context, "user")
 	if result, ok := s.tryExperiment(ctx, f, userID, evalCtx, now); ok {
@@ -476,6 +514,7 @@ func (s *Service) evaluateFeature(ctx context.Context, f *feature.Feature, evalC
 				Environment: evalCtx.Environment,
 				MatchedRule: &MatchedRule{ID: rule.ID, Name: rule.Name},
 				PackGrant:   packKey,
+				TierKeys:    tierKeys,
 				Segments:    buildSegmentResults(segmentResults),
 				Metadata:    mergeMetadata(f.Metadata, rule.Metadata),
 				Reason:      ReasonMatchedRule,
@@ -491,6 +530,7 @@ func (s *Service) evaluateFeature(ctx context.Context, f *feature.Feature, evalC
 		ValueType:   string(f.ValueType),
 		Environment: evalCtx.Environment,
 		PackGrant:   packKey,
+		TierKeys:    tierKeys,
 		Segments:    buildSegmentResults(segmentResults),
 		Metadata:    f.Metadata,
 		Reason:      ReasonDefaultValue,
@@ -500,7 +540,7 @@ func (s *Service) evaluateFeature(ctx context.Context, f *feature.Feature, evalC
 
 // isActiveResult returns true if the result represents an active feature.
 func isActiveResult(r Result) bool {
-	return r.Reason == ReasonMatchedRule || r.Reason == ReasonDefaultValue || r.Reason == ReasonExperiment
+	return r.Reason == ReasonMatchedRule || r.Reason == ReasonDefaultValue || r.Reason == ReasonExperiment || r.Reason == ReasonTrialActive
 }
 
 func (s *Service) enforceAccessPolicy(
@@ -815,6 +855,49 @@ func (s *Service) tryExperiment(ctx context.Context, f *feature.Feature, userID 
 		Reason:      ReasonExperiment,
 		EvaluatedAt: now,
 	}, true
+}
+
+// resolveTrial checks feature-level and pack-level trials. Feature trial takes priority.
+func (s *Service) resolveTrial(ctx context.Context, f *feature.Feature, now time.Time) (bool, *time.Time) {
+	// Feature-level trial takes priority
+	if f.TrialUntil != nil && now.Before(*f.TrialUntil) {
+		return true, f.TrialUntil
+	}
+	// Pack-level trial
+	if s.packSvc == nil {
+		return false, nil
+	}
+	packs, err := s.packSvc.FindByFeatureKey(ctx, f.Key)
+	if err != nil {
+		slog.Warn("resolving pack trial", "featureKey", f.Key, "error", err)
+		return false, nil
+	}
+	for _, p := range packs {
+		if p.Enabled && p.TrialUntil != nil && now.Before(*p.TrialUntil) {
+			return true, p.TrialUntil
+		}
+	}
+	return false, nil
+}
+
+// resolveTierKeys collects unique tier keys from packs that contain the feature.
+func (s *Service) resolveTierKeys(ctx context.Context, featureKey string) []string {
+	if s.packSvc == nil {
+		return nil
+	}
+	packs, err := s.packSvc.FindByFeatureKey(ctx, featureKey)
+	if err != nil {
+		return nil
+	}
+	var tierKeys []string
+	seen := make(map[string]bool)
+	for _, p := range packs {
+		if p.TierKey != nil && *p.TierKey != "" && !seen[*p.TierKey] {
+			tierKeys = append(tierKeys, *p.TierKey)
+			seen[*p.TierKey] = true
+		}
+	}
+	return tierKeys
 }
 
 func (s *Service) logEvalError(ctx context.Context, featureKey, ruleID string, err error, evalCtx EvalContext) {
