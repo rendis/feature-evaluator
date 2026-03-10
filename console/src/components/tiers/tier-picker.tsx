@@ -16,7 +16,7 @@ function TierIcon({ spriteId, color, className }: { spriteId: string; color: str
         '--icon-stroke': color,
       } as React.CSSProperties}
     >
-      <use href={`${import.meta.env.BASE_URL}tiers-sprite.svg#${spriteId}`} />
+      <use href={`${import.meta.env.BASE_URL}assets/tiers-sprite.svg#${spriteId}`} />
     </svg>
   );
 }
