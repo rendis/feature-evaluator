@@ -107,5 +107,23 @@
     "campus": "Campus",
     "program": "Programa"
   },
+  "tier": {
+    "label": "Tier de plan",
+    "placeholder": "Seleccione un tier",
+    "none": "Sin tier"
+  },
+  "inheritance": {
+    "label": "Hereda de",
+    "placeholder": "Buscar packs para heredar...",
+    "noResults": "No se encontraron packs"
+  },
+  "trial": {
+    "label": "Trial hasta",
+    "helper": "Mientras el trial este activo, las rules seran ignoradas"
+  },
+  "resolvedFeatures": "{{count}} con herencia",
+  "trialActive": "Trial activo hasta {{date}}",
+  "trialExpired": "Trial finalizado",
+  "inheritsFromLabel": "Hereda de",
   "packs": "Packs"
 }

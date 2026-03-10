@@ -107,5 +107,23 @@
     "campus": "Campus",
     "program": "Program"
   },
+  "tier": {
+    "label": "Plan tier",
+    "placeholder": "Select a tier",
+    "none": "No tier"
+  },
+  "inheritance": {
+    "label": "Inherits from",
+    "placeholder": "Search packs to inherit from...",
+    "noResults": "No packs found"
+  },
+  "trial": {
+    "label": "Trial until",
+    "helper": "While the trial is active, rules will be ignored"
+  },
+  "resolvedFeatures": "{{count}} with inheritance",
+  "trialActive": "Trial active until {{date}}",
+  "trialExpired": "Trial expired",
+  "inheritsFromLabel": "Inherits from",
   "packs": "Packs"
 }
