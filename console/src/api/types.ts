@@ -70,6 +70,9 @@ export interface Feature {
   accessPolicy?: FeatureAccessPolicy;
   authProfileKey?: string;
   inputContract: InputContract;
+  trialUntil?: string | null;
+  trialValue?: unknown;
+  tiers?: TierRef[];
   packs?: PackRef[];
   ruleCount?: number;
   rules?: Rule[];
@@ -90,6 +93,8 @@ export interface FeatureSummary {
   accessPolicy?: FeatureAccessPolicy;
   authProfileKey?: string;
   tags: Tag[];
+  trialUntil?: string | null;
+  tiers?: TierRef[];
   packCount: number;
   ruleCount: number;
   createdAt: string;
@@ -426,6 +431,33 @@ export interface Tag {
   color: string;
 }
 
+export interface Tier {
+  id: string;
+  key: string;
+  name: string;
+  level: number;
+  color: string;
+  icon: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+}
+
+export interface TierRef {
+  key: string;
+  name: string;
+  level: number;
+  color: string;
+  icon: string;
+}
+
+export interface TierIcon {
+  id: string;
+  name: string;
+  contentType: string;
+  createdAt: string;
+}
+
 export type ApiKeyType = 'admin';
 
 export type ApiKeyPermission =
@@ -510,6 +542,11 @@ export interface Pack {
   featureKeys: string[];
   enabled: boolean;
   metadata: Record<string, unknown>;
+  tierKey?: string | null;
+  tier?: TierRef | null;
+  inheritsFrom?: PackRef[];
+  trialUntil?: string | null;
+  resolvedFeatureCount?: number;
   createdAt: string;
   updatedAt: string;
   createdBy: string;
@@ -532,12 +569,18 @@ export interface CreatePackRequest {
   name: string;
   description?: string;
   featureKeys?: string[];
+  tierKey?: string | null;
+  inheritsFrom?: string[];
+  trialUntil?: string | null;
 }
 
 export interface UpdatePackRequest {
   name?: string;
   description?: string;
   featureKeys?: string[];
+  tierKey?: string | null;
+  inheritsFrom?: string[];
+  trialUntil?: string | null;
 }
 
 export interface ActivatePackRequest {

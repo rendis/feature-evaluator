@@ -37,6 +37,8 @@ export interface CreateFeatureRequest {
   accessPolicy?: FeatureAccessPolicy;
   authProfileKey?: string;
   inputContract?: InputContract;
+  trialUntil?: string | null;
+  trialValue?: unknown;
 }
 
 export interface UpdateFeatureRequest {
@@ -51,6 +53,8 @@ export interface UpdateFeatureRequest {
   accessPolicy?: FeatureAccessPolicy;
   authProfileKey?: string;
   inputContract?: InputContract;
+  trialUntil?: string | null;
+  trialValue?: unknown;
 }
 
 export type FeatureListResponse<T extends Feature | FeatureSummary = Feature> =
