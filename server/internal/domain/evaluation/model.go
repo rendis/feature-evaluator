@@ -96,6 +96,7 @@ const (
 	ReasonExperiment          Reason = "experiment"
 	ReasonRolloutExcluded     Reason = "rollout_excluded"
 	ReasonError               Reason = "error"
+	ReasonTrialActive         Reason = "trial_active"
 )
 
 // ExperimentInfo holds experiment assignment info for the response.
@@ -112,6 +113,9 @@ type Result struct {
 	Environment string          `json:"environment,omitempty"`
 	MatchedRule *MatchedRule    `json:"matchedRule"`
 	PackGrant   string          `json:"packGrant,omitempty"`
+	InTrial     bool            `json:"inTrial,omitempty"`
+	TrialEndsAt *time.Time      `json:"trialEndsAt,omitempty"`
+	TierKeys    []string        `json:"tierKeys,omitempty"`
 	Experiment  *ExperimentInfo `json:"experiment,omitempty"`
 	Segments    []SegmentResult `json:"segments"`
 	Metadata    map[string]any  `json:"metadata,omitempty"`
