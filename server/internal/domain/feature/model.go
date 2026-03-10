@@ -109,6 +109,8 @@ type Feature struct {
 	RolloutSalt    string         `json:"rolloutSalt,omitempty"`
 	RuleCount      int            `json:"ruleCount,omitempty"`
 	PackCount      int            `json:"packCount,omitempty"`
+	TrialUntil     *time.Time     `json:"trialUntil,omitempty"`
+	TrialValue     any            `json:"trialValue,omitempty"`
 	Rules          []Rule         `json:"rules,omitempty"`
 	CreatedAt      time.Time      `json:"createdAt"`
 	UpdatedAt      time.Time      `json:"updatedAt"`
