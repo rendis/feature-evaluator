@@ -50,9 +50,9 @@ function PackInheritsBadges({ pack }: { pack: Pack }) {
   return (
     <div className="mt-2 flex flex-wrap items-center gap-1.5">
       <span className="text-muted-foreground text-xs">{t('inheritsFromLabel')}:</span>
-      {pack.inheritsFrom.map((parent) => (
-        <Badge key={parent.key} variant="outline" className="text-xs">
-          {parent.name}
+      {pack.inheritsFrom.map((key) => (
+        <Badge key={key} variant="outline" className="text-xs">
+          {key}
         </Badge>
       ))}
     </div>

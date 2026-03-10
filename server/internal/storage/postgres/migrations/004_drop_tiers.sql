@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS tier_icons;
+DROP TABLE IF EXISTS tiers;

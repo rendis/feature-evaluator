@@ -10,6 +10,7 @@ import { PackToggle } from './pack-toggle';
 import type { Pack } from '@/api/types';
 
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { TierBadge } from '@/components/shared/tier-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -72,13 +73,16 @@ function PackDesktopRow({
   return (
     <tr className="border-b last:border-0">
       <td className="px-4 py-3">
-        <Link
-          to="/settings/packs/$packKey"
-          params={{ packKey: pack.key }}
-          className="hover:text-primary font-medium transition-colors"
-        >
-          {pack.name}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/settings/packs/$packKey"
+            params={{ packKey: pack.key }}
+            className="hover:text-primary font-medium transition-colors"
+          >
+            {pack.name}
+          </Link>
+          {pack.tier ? <TierBadge tier={pack.tier} size="sm" /> : null}
+        </div>
       </td>
       <td className="text-muted-foreground hidden px-4 py-3 font-mono text-xs sm:table-cell">{pack.key}</td>
       <td className="px-4 py-3">

@@ -308,18 +308,3 @@ type TestExternalAPIRequest struct {
 	ParamValues         map[string]any                   `json:"paramValues"`
 }
 
-// CreateTierRequest is the request body for creating a tier.
-type CreateTierRequest struct {
-	Name  string `json:"name" binding:"required"`
-	Level int    `json:"level" binding:"required,min=1"`
-	Color string `json:"color" binding:"required"`
-	Icon  string `json:"icon" binding:"required"`
-}
-
-// UpdateTierRequest is the request body for updating a tier.
-type UpdateTierRequest struct {
-	Name  string `json:"name" binding:"required"`
-	Level int    `json:"level" binding:"required,min=1"`
-	Color string `json:"color" binding:"required"`
-	Icon  string `json:"icon" binding:"required"`
-}

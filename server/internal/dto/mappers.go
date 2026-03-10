@@ -401,47 +401,20 @@ func PacksToRefs(packs []pack.Pack) []PackRef {
 	return refs
 }
 
-// ToTierResponse maps a domain Tier to its API response.
-func ToTierResponse(t *tier.Tier) TierResponse {
-	return TierResponse{
-		ID:        t.ID,
-		Key:       t.Key,
-		Name:      t.Name,
-		Level:     t.Level,
-		Color:     t.Color,
-		Icon:      t.Icon,
-		CreatedAt: formatTime(t.CreatedAt),
-		UpdatedAt: formatTime(t.UpdatedAt),
-		CreatedBy: t.CreatedBy,
-	}
-}
-
-// ToTierRef maps a domain Tier to a lightweight reference.
-func ToTierRef(t *tier.Tier) TierRef {
+// ToTierRef maps a predefined TierDef to a lightweight reference.
+func ToTierRef(t *tier.TierDef) TierRef {
 	return TierRef{
 		Key:   t.Key,
 		Name:  t.Name,
-		Level: t.Level,
 		Color: t.Color,
-		Icon:  t.Icon,
 	}
 }
 
-// TiersToRefs maps a slice of domain Tiers to refs.
-func TiersToRefs(tiers []tier.Tier) []TierRef {
+// TiersToRefs maps a slice of predefined TierDefs to refs.
+func TiersToRefs(tiers []tier.TierDef) []TierRef {
 	refs := make([]TierRef, 0, len(tiers))
 	for i := range tiers {
 		refs = append(refs, ToTierRef(&tiers[i]))
 	}
 	return refs
-}
-
-// ToTierIconResponse maps a domain TierIcon to its API response.
-func ToTierIconResponse(icon *tier.TierIcon) TierIconResponse {
-	return TierIconResponse{
-		ID:          icon.ID,
-		Name:        icon.Name,
-		ContentType: icon.ContentType,
-		CreatedAt:   formatTime(icon.CreatedAt),
-	}
 }

@@ -22,7 +22,6 @@ import { Route as AuthenticatedHistoryIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedFeaturesIndexRouteImport } from './routes/_authenticated/features/index'
 import { Route as AuthenticatedExperimentsIndexRouteImport } from './routes/_authenticated/experiments/index'
 import { Route as AuthenticatedSettingsWorkspacesRouteImport } from './routes/_authenticated/settings/workspaces'
-import { Route as AuthenticatedSettingsTiersRouteImport } from './routes/_authenticated/settings/tiers'
 import { Route as AuthenticatedSettingsMembersRouteImport } from './routes/_authenticated/settings/members'
 import { Route as AuthenticatedSettingsExternalApisRouteImport } from './routes/_authenticated/settings/external-apis'
 import { Route as AuthenticatedSettingsAuthProfilesRouteImport } from './routes/_authenticated/settings/auth-profiles'
@@ -115,12 +114,6 @@ const AuthenticatedSettingsWorkspacesRoute =
   AuthenticatedSettingsWorkspacesRouteImport.update({
     id: '/settings/workspaces',
     path: '/settings/workspaces',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedSettingsTiersRoute =
-  AuthenticatedSettingsTiersRouteImport.update({
-    id: '/settings/tiers',
-    path: '/settings/tiers',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedSettingsMembersRoute =
@@ -279,7 +272,6 @@ export interface FileRoutesByFullPath {
   '/settings/auth-profiles': typeof AuthenticatedSettingsAuthProfilesRouteWithChildren
   '/settings/external-apis': typeof AuthenticatedSettingsExternalApisRouteWithChildren
   '/settings/members': typeof AuthenticatedSettingsMembersRoute
-  '/settings/tiers': typeof AuthenticatedSettingsTiersRoute
   '/settings/workspaces': typeof AuthenticatedSettingsWorkspacesRoute
   '/experiments/': typeof AuthenticatedExperimentsIndexRoute
   '/features/': typeof AuthenticatedFeaturesIndexRoute
@@ -311,7 +303,6 @@ export interface FileRoutesByTo {
   '/features/new': typeof AuthenticatedFeaturesNewRoute
   '/settings/api-keys': typeof AuthenticatedSettingsApiKeysRoute
   '/settings/members': typeof AuthenticatedSettingsMembersRoute
-  '/settings/tiers': typeof AuthenticatedSettingsTiersRoute
   '/settings/workspaces': typeof AuthenticatedSettingsWorkspacesRoute
   '/experiments': typeof AuthenticatedExperimentsIndexRoute
   '/features': typeof AuthenticatedFeaturesIndexRoute
@@ -350,7 +341,6 @@ export interface FileRoutesById {
   '/_authenticated/settings/auth-profiles': typeof AuthenticatedSettingsAuthProfilesRouteWithChildren
   '/_authenticated/settings/external-apis': typeof AuthenticatedSettingsExternalApisRouteWithChildren
   '/_authenticated/settings/members': typeof AuthenticatedSettingsMembersRoute
-  '/_authenticated/settings/tiers': typeof AuthenticatedSettingsTiersRoute
   '/_authenticated/settings/workspaces': typeof AuthenticatedSettingsWorkspacesRoute
   '/_authenticated/experiments/': typeof AuthenticatedExperimentsIndexRoute
   '/_authenticated/features/': typeof AuthenticatedFeaturesIndexRoute
@@ -390,7 +380,6 @@ export interface FileRouteTypes {
     | '/settings/auth-profiles'
     | '/settings/external-apis'
     | '/settings/members'
-    | '/settings/tiers'
     | '/settings/workspaces'
     | '/experiments/'
     | '/features/'
@@ -422,7 +411,6 @@ export interface FileRouteTypes {
     | '/features/new'
     | '/settings/api-keys'
     | '/settings/members'
-    | '/settings/tiers'
     | '/settings/workspaces'
     | '/experiments'
     | '/features'
@@ -460,7 +448,6 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/auth-profiles'
     | '/_authenticated/settings/external-apis'
     | '/_authenticated/settings/members'
-    | '/_authenticated/settings/tiers'
     | '/_authenticated/settings/workspaces'
     | '/_authenticated/experiments/'
     | '/_authenticated/features/'
@@ -580,13 +567,6 @@ declare module '@tanstack/react-router' {
       path: '/settings/workspaces'
       fullPath: '/settings/workspaces'
       preLoaderRoute: typeof AuthenticatedSettingsWorkspacesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/settings/tiers': {
-      id: '/_authenticated/settings/tiers'
-      path: '/settings/tiers'
-      fullPath: '/settings/tiers'
-      preLoaderRoute: typeof AuthenticatedSettingsTiersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/settings/members': {
@@ -891,7 +871,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSettingsAuthProfilesRoute: typeof AuthenticatedSettingsAuthProfilesRouteWithChildren
   AuthenticatedSettingsExternalApisRoute: typeof AuthenticatedSettingsExternalApisRouteWithChildren
   AuthenticatedSettingsMembersRoute: typeof AuthenticatedSettingsMembersRoute
-  AuthenticatedSettingsTiersRoute: typeof AuthenticatedSettingsTiersRoute
   AuthenticatedSettingsWorkspacesRoute: typeof AuthenticatedSettingsWorkspacesRoute
   AuthenticatedFeaturesIndexRoute: typeof AuthenticatedFeaturesIndexRoute
   AuthenticatedSegmentsIndexRoute: typeof AuthenticatedSegmentsIndexRoute
@@ -915,7 +894,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSettingsExternalApisRoute:
     AuthenticatedSettingsExternalApisRouteWithChildren,
   AuthenticatedSettingsMembersRoute: AuthenticatedSettingsMembersRoute,
-  AuthenticatedSettingsTiersRoute: AuthenticatedSettingsTiersRoute,
   AuthenticatedSettingsWorkspacesRoute: AuthenticatedSettingsWorkspacesRoute,
   AuthenticatedFeaturesIndexRoute: AuthenticatedFeaturesIndexRoute,
   AuthenticatedSegmentsIndexRoute: AuthenticatedSegmentsIndexRoute,

@@ -10,7 +10,7 @@ import { z } from 'zod';
 import type { Feature, Pack } from '@/api/types';
 
 import { localToUtc, utcToLocal } from '@/components/features/feature-builder-utils';
-import { TierBadge } from '@/components/shared/tier-badge';
+import { TierPicker } from '@/components/tiers/tier-picker';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,20 +23,12 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useSubmissionLoadingModal } from '@/hooks/use-global-loading';
 import { getVisibleErrorMessage } from '@/lib/display-error';
 import { buildNormalizedKeyFieldProps, resourceKeySchema, slugifyResourceKey } from '@/lib/resource-key';
 import { useCreatePack, useUpdatePack } from '@/mutations/pack-mutations';
 import { featureQueries } from '@/queries/feature-queries';
 import { packQueries } from '@/queries/pack-queries';
-import { tierQueries } from '@/queries/tier-queries';
 
 const packSchema = z.object({
   key: resourceKeySchema,
@@ -299,32 +291,14 @@ function PackTierSelector({
   onTierChange: (value: string | null) => void;
 }) {
   const { t } = useTranslation('packs');
-  const { data: tiers } = useQuery(tierQueries.list());
-
-  const selectedTier = tiers?.find((tier) => tier.key === selectedTierKey);
 
   return (
     <div className="space-y-2">
       <Label>{t('tier.label')}</Label>
-      <div className="flex items-center gap-2">
-        <Select
-          value={selectedTierKey ?? '__none__'}
-          onValueChange={(value) => onTierChange(value === '__none__' ? null : value)}
-        >
-          <SelectTrigger className="flex-1">
-            <SelectValue placeholder={t('tier.placeholder')} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__none__">{t('tier.none')}</SelectItem>
-            {tiers?.map((tier) => (
-              <SelectItem key={tier.key} value={tier.key}>
-                {tier.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {selectedTier ? <TierBadge tier={selectedTier} size="sm" /> : null}
-      </div>
+      <TierPicker
+        value={selectedTierKey ?? ''}
+        onChange={(key) => onTierChange(key || null)}
+      />
     </div>
   );
 }
@@ -340,6 +314,7 @@ function PackInheritanceSelector({
 }) {
   const { t } = useTranslation('packs');
   const [inheritSearch, setInheritSearch] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const { data: packsResponse } = useQuery(packQueries.list({ pageSize: 200 }));
   const allPacks = packsResponse?.data ?? [];
 
@@ -348,7 +323,8 @@ function PackInheritanceSelector({
     (p) =>
       p.key !== currentPackKey &&
       !selectedInheritsFrom.includes(p.key) &&
-      (p.name.toLowerCase().includes(normalizedSearch) ||
+      (normalizedSearch === '' ||
+        p.name.toLowerCase().includes(normalizedSearch) ||
         p.key.toLowerCase().includes(normalizedSearch)),
   );
 
@@ -378,13 +354,16 @@ function PackInheritanceSelector({
           placeholder={t('inheritance.placeholder')}
           value={inheritSearch}
           onChange={(event) => setInheritSearch(event.target.value)}
+          onFocus={() => setDropdownOpen(true)}
+          onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
         />
-        {inheritSearch && availablePacks.length > 0 ? (
+        {dropdownOpen && availablePacks.length > 0 ? (
           <div className="bg-popover absolute z-10 mt-1 max-h-36 w-full overflow-y-auto rounded-md border shadow-md">
             {availablePacks.slice(0, 8).map((p) => (
               <button
                 key={p.key}
                 type="button"
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={() => {
                   onInheritsFromChange([...selectedInheritsFrom, p.key]);
                   setInheritSearch('');
@@ -397,7 +376,7 @@ function PackInheritanceSelector({
             ))}
           </div>
         ) : null}
-        {inheritSearch && availablePacks.length === 0 ? (
+        {dropdownOpen && availablePacks.length === 0 ? (
           <div className="bg-popover absolute z-10 mt-1 w-full rounded-md border p-3 shadow-md">
             <p className="text-muted-foreground text-sm">{t('inheritance.noResults')}</p>
           </div>
@@ -565,7 +544,7 @@ export function PackForm({ pack, open, onOpenChange, onSuccess }: PackFormProps)
   const [autoSlug, setAutoSlug] = useState(!isEditing);
   const [selectedTierKey, setSelectedTierKey] = useState<string | null>(pack?.tierKey ?? null);
   const [selectedInheritsFrom, setSelectedInheritsFrom] = useState<string[]>(
-    pack?.inheritsFrom?.map((p) => p.key) ?? [],
+    pack?.inheritsFrom ?? [],
   );
   const [trialUntil, setTrialUntil] = useState<string>(utcToLocal(pack?.trialUntil));
   const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm<FormValues>({

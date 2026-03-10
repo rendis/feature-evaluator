@@ -1,51 +1,18 @@
-import {
-  CheckCircle,
-  Crown,
-  Diamond,
-  Flame,
-  Gem,
-  Lock,
-  Rocket,
-  Shield,
-  Star,
-  Trophy,
-  Zap,
-  type LucideIcon,
-} from 'lucide-react';
-import { createElement } from 'react';
+import type React from 'react';
 
-import type { TierRef } from '@/api/types';
-
+import { findTier } from '@/lib/tier-icons';
 import { cn } from '@/lib/utils';
 
-const BUILTIN_ICONS: Record<string, LucideIcon> = {
-  crown: Crown,
-  star: Star,
-  diamond: Diamond,
-  shield: Shield,
-  rocket: Rocket,
-  lightning: Zap,
-  gem: Gem,
-  fire: Flame,
-  lock: Lock,
-  'check-circle': CheckCircle,
-  zap: Zap,
-  trophy: Trophy,
-};
-
-export function getBuiltinIcon(icon: string): LucideIcon | null {
-  const iconKey = icon.startsWith('builtin:') ? icon.replace('builtin:', '') : null;
-  return iconKey ? (BUILTIN_ICONS[iconKey] ?? null) : null;
-}
-
 interface TierBadgeProps {
-  tier: TierRef;
+  tier: { key: string; name: string; color: string };
   size?: 'sm' | 'default';
 }
 
 export function TierBadge({ tier, size = 'default' }: TierBadgeProps) {
-  const icon = getBuiltinIcon(tier.icon);
+  const tierDef = findTier(tier.key);
   const iconSize = size === 'sm' ? 'h-2.5 w-2.5' : 'h-3 w-3';
+  const color = tierDef?.color ?? tier.color;
+  const spriteId = tierDef?.spriteId ?? `tier-${tier.key}`;
 
   return (
     <span
@@ -54,12 +21,20 @@ export function TierBadge({ tier, size = 'default' }: TierBadgeProps) {
         size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-0.5 text-xs',
       )}
       style={{
-        backgroundColor: `${tier.color}26`,
-        color: tier.color,
-        border: `1px solid ${tier.color}4D`,
+        backgroundColor: `${color}26`,
+        color: color,
+        border: `1px solid ${color}4D`,
       }}
     >
-      {icon ? createElement(icon, { className: iconSize }) : null}
+      <svg
+        className={iconSize}
+        style={{
+          '--icon-fill': `${color}26`,
+          '--icon-stroke': color,
+        } as React.CSSProperties}
+      >
+        <use href={`/tiers-sprite.svg#${spriteId}`} />
+      </svg>
       {tier.name}
     </span>
   );

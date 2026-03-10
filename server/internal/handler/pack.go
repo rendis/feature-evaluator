@@ -16,25 +16,24 @@ import (
 // PackHandler handles pack CRUD and activation endpoints.
 type PackHandler struct {
 	svc          *pack.Service
-	tierSvc      *tier.Service
 	changelogSvc *changelog.Service
 }
 
 // NewPackHandler creates a new PackHandler.
-func NewPackHandler(svc *pack.Service, tierSvc *tier.Service, changelogSvc *changelog.Service) *PackHandler {
-	return &PackHandler{svc: svc, tierSvc: tierSvc, changelogSvc: changelogSvc}
+func NewPackHandler(svc *pack.Service, changelogSvc *changelog.Service) *PackHandler {
+	return &PackHandler{svc: svc, changelogSvc: changelogSvc}
 }
 
 // buildTierRef resolves a tier ref for a pack's tier key.
-func (h *PackHandler) buildTierRef(c *gin.Context, tierKey *string) *dto.TierRef {
-	if tierKey == nil || *tierKey == "" || h.tierSvc == nil {
+func (h *PackHandler) buildTierRef(tierKey *string) *dto.TierRef {
+	if tierKey == nil || *tierKey == "" {
 		return nil
 	}
-	tiers, err := h.tierSvc.FindByKeys(c.Request.Context(), []string{*tierKey})
-	if err != nil || len(tiers) == 0 {
+	td := tier.FindByKey(*tierKey)
+	if td == nil {
 		return nil
 	}
-	ref := dto.ToTierRef(&tiers[0])
+	ref := dto.ToTierRef(td)
 	return &ref
 }
 
@@ -60,7 +59,7 @@ func (h *PackHandler) List(c *gin.Context) {
 
 	data := make([]dto.PackResponse, 0, len(packs))
 	for i := range packs {
-		tierRef := h.buildTierRef(c, packs[i].TierKey)
+		tierRef := h.buildTierRef(packs[i].TierKey)
 		resolvedCount := h.resolveFeatureCount(c, packs[i].Key)
 		data = append(data, dto.ToPackResponse(&packs[i], tierRef, resolvedCount))
 	}
@@ -77,7 +76,7 @@ func (h *PackHandler) Get(c *gin.Context) {
 		return
 	}
 
-	tierRef := h.buildTierRef(c, p.TierKey)
+	tierRef := h.buildTierRef(p.TierKey)
 	resolvedCount := h.resolveFeatureCount(c, p.Key)
 	c.JSON(http.StatusOK, dto.ToPackResponse(p, tierRef, resolvedCount))
 }
@@ -87,6 +86,11 @@ func (h *PackHandler) Create(c *gin.Context) {
 	var req dto.CreatePackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		dto.RespondError(c, err)
+		return
+	}
+
+	if req.TierKey != nil && *req.TierKey != "" && !tier.ValidKey(*req.TierKey) {
+		dto.RespondError(c, apierror.NewBadRequest("invalid tier key", "error.invalidTierKey"))
 		return
 	}
 
@@ -127,7 +131,7 @@ func (h *PackHandler) Create(c *gin.Context) {
 		Action:     changelog.ActionCreate,
 	})
 
-	tierRef := h.buildTierRef(c, p.TierKey)
+	tierRef := h.buildTierRef(p.TierKey)
 	resolvedCount := h.resolveFeatureCount(c, p.Key)
 	c.JSON(http.StatusCreated, dto.ToPackResponse(p, tierRef, resolvedCount))
 }
@@ -138,6 +142,11 @@ func (h *PackHandler) Update(c *gin.Context) {
 	var req dto.UpdatePackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		dto.RespondError(c, err)
+		return
+	}
+
+	if req.TierKey != nil && *req.TierKey != "" && !tier.ValidKey(*req.TierKey) {
+		dto.RespondError(c, apierror.NewBadRequest("invalid tier key", "error.invalidTierKey"))
 		return
 	}
 
@@ -180,7 +189,7 @@ func (h *PackHandler) Update(c *gin.Context) {
 		Action:     changelog.ActionUpdate,
 	})
 
-	tierRef := h.buildTierRef(c, existing.TierKey)
+	tierRef := h.buildTierRef(existing.TierKey)
 	resolvedCount := h.resolveFeatureCount(c, existing.Key)
 	c.JSON(http.StatusOK, dto.ToPackResponse(existing, tierRef, resolvedCount))
 }

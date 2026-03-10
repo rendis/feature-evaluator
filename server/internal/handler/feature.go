@@ -26,13 +26,12 @@ type FeatureHandler struct {
 	svc          *feature.Service
 	tagSvc       *tag.Service
 	packSvc      *pack.Service
-	tierSvc      *tier.Service
 	changelogSvc *changelog.Service
 }
 
 // NewFeatureHandler creates a new FeatureHandler.
-func NewFeatureHandler(svc *feature.Service, tagSvc *tag.Service, packSvc *pack.Service, tierSvc *tier.Service, changelogSvc *changelog.Service) *FeatureHandler {
-	return &FeatureHandler{svc: svc, tagSvc: tagSvc, packSvc: packSvc, tierSvc: tierSvc, changelogSvc: changelogSvc}
+func NewFeatureHandler(svc *feature.Service, tagSvc *tag.Service, packSvc *pack.Service, changelogSvc *changelog.Service) *FeatureHandler {
+	return &FeatureHandler{svc: svc, tagSvc: tagSvc, packSvc: packSvc, changelogSvc: changelogSvc}
 }
 
 // buildTagMap collects all unique tag keys from features, looks them up, and returns a map.
@@ -103,19 +102,14 @@ func (h *FeatureHandler) buildPackMap(c *gin.Context) map[string][]dto.PackRef {
 
 // buildTierRefs resolves tier refs for a single feature via its packs.
 func (h *FeatureHandler) buildTierRefs(c *gin.Context, featureKey string) []dto.TierRef {
-	if h.packSvc == nil || h.tierSvc == nil {
+	if h.packSvc == nil {
 		return nil
 	}
 	tierKeys := h.packSvc.ResolveTierKeysForFeature(c.Request.Context(), featureKey)
 	if len(tierKeys) == 0 {
 		return []dto.TierRef{}
 	}
-	tiers, err := h.tierSvc.FindByKeys(c.Request.Context(), tierKeys)
-	if err != nil {
-		//nolint:gosec // Structured logging records the feature key for operator debugging only.
-		slog.Warn("fetching tiers for feature", "featureKey", featureKey, "error", err, "requestId", middleware.GetRequestID(c))
-		return []dto.TierRef{}
-	}
+	tiers := tier.FindByKeys(tierKeys)
 	return dto.TiersToRefs(tiers)
 }
 
@@ -142,7 +136,7 @@ func collectFeatureTierKeys(packs []pack.Pack) (featureTierKeys map[string]map[s
 
 // buildTierMap returns a map of featureKey -> []TierRef for all features.
 func (h *FeatureHandler) buildTierMap(c *gin.Context, _ []feature.Feature) map[string][]dto.TierRef {
-	if h.packSvc == nil || h.tierSvc == nil {
+	if h.packSvc == nil {
 		return nil
 	}
 	allPacks, err := h.packSvc.List(c.Request.Context())
@@ -159,21 +153,16 @@ func (h *FeatureHandler) buildTierMap(c *gin.Context, _ []feature.Feature) map[s
 	for k := range allTierKeys {
 		keys = append(keys, k)
 	}
-	tiers, err := h.tierSvc.FindByKeys(c.Request.Context(), keys)
-	if err != nil {
-		//nolint:gosec // Structured logging, no user-controlled data in tier enrichment path.
-		slog.Warn("fetching tiers for feature list", "error", err, "requestId", middleware.GetRequestID(c))
-		return nil
-	}
-	tierByKey := make(map[string]dto.TierRef, len(tiers))
+	tiers := tier.FindByKeys(keys)
+	tierByKeyMap := make(map[string]dto.TierRef, len(tiers))
 	for i := range tiers {
-		tierByKey[tiers[i].Key] = dto.ToTierRef(&tiers[i])
+		tierByKeyMap[tiers[i].Key] = dto.ToTierRef(&tiers[i])
 	}
 	result := make(map[string][]dto.TierRef)
 	for fk, tkSet := range featureTierKeys {
 		refs := make([]dto.TierRef, 0, len(tkSet))
 		for tk := range tkSet {
-			if ref, ok := tierByKey[tk]; ok {
+			if ref, ok := tierByKeyMap[tk]; ok {
 				refs = append(refs, ref)
 			}
 		}

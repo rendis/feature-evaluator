@@ -431,31 +431,10 @@ export interface Tag {
   color: string;
 }
 
-export interface Tier {
-  id: string;
-  key: string;
-  name: string;
-  level: number;
-  color: string;
-  icon: string;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-}
-
 export interface TierRef {
   key: string;
   name: string;
-  level: number;
   color: string;
-  icon: string;
-}
-
-export interface TierIcon {
-  id: string;
-  name: string;
-  contentType: string;
-  createdAt: string;
 }
 
 export type ApiKeyType = 'admin';
@@ -544,7 +523,7 @@ export interface Pack {
   metadata: Record<string, unknown>;
   tierKey?: string | null;
   tier?: TierRef | null;
-  inheritsFrom?: PackRef[];
+  inheritsFrom?: string[];
   trialUntil?: string | null;
   resolvedFeatureCount?: number;
   createdAt: string;
