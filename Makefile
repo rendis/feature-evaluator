@@ -43,7 +43,7 @@ server: ## Run Go backend (port 8080, requires local PostgreSQL + Redis)
 			''|\#*) continue ;; \
 		esac; \
 		export "$$line"; \
-	done < $(SERVER_DIR)/.env; \
+	done < $(PROJECT_DIR)/.env; \
 	go run -C $(SERVER_DIR) ./cmd/server
 
 console: ## Run React frontend (port 5173)
