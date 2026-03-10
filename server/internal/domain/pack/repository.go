@@ -12,6 +12,7 @@ type Repository interface {
 	Toggle(ctx context.Context, key string, enabled bool, updatedBy string) error
 	FindByFeatureKey(ctx context.Context, featureKey string) ([]Pack, error)
 	ListEnabled(ctx context.Context) ([]Pack, error)
+	ListAllInheritance(ctx context.Context) (map[string][]string, error)
 }
 
 // ActivationRepository defines the persistence interface for pack activations.

@@ -60,12 +60,21 @@ func (s *Service) Create(ctx context.Context, p *Pack) error {
 		}
 	}
 
+	if len(p.InheritsFrom) > 0 {
+		if err := s.validateInheritance(ctx, p.Key, p.InheritsFrom); err != nil {
+			return err
+		}
+	}
+
 	now := time.Now().UTC()
 	p.CreatedAt = now
 	p.UpdatedAt = now
 
 	if p.FeatureKeys == nil {
 		p.FeatureKeys = []string{}
+	}
+	if p.InheritsFrom == nil {
+		p.InheritsFrom = []string{}
 	}
 
 	return s.repo.Create(ctx, p)
@@ -96,6 +105,16 @@ func (s *Service) Update(ctx context.Context, p *Pack) error {
 		if err := s.validateFeatureKeys(ctx, p.FeatureKeys); err != nil {
 			return err
 		}
+	}
+
+	if len(p.InheritsFrom) > 0 {
+		if err := s.validateInheritance(ctx, p.Key, p.InheritsFrom); err != nil {
+			return err
+		}
+	}
+
+	if p.InheritsFrom == nil {
+		p.InheritsFrom = []string{}
 	}
 
 	p.UpdatedAt = time.Now().UTC()
@@ -202,6 +221,80 @@ func (s *Service) FindActiveFeatureKeys(ctx context.Context, tenantID, campusID,
 	return keys, nil
 }
 
+// ResolveFeatureKeys returns all feature keys for a pack, including inherited ones.
+func (s *Service) ResolveFeatureKeys(ctx context.Context, packKey string) ([]string, error) {
+	p, err := s.repo.GetByKey(ctx, packKey)
+	if err != nil {
+		return nil, err
+	}
+	return s.resolveFeatureKeysRecursive(ctx, p, make(map[string]bool))
+}
+
+func (s *Service) resolveFeatureKeysRecursive(ctx context.Context, p *Pack, visited map[string]bool) ([]string, error) {
+	if visited[p.Key] {
+		return nil, nil
+	}
+	visited[p.Key] = true
+
+	keys := make([]string, len(p.FeatureKeys))
+	copy(keys, p.FeatureKeys)
+
+	for _, parentKey := range p.InheritsFrom {
+		parent, err := s.repo.GetByKey(ctx, parentKey)
+		if err != nil {
+			continue
+		}
+		if !parent.Enabled {
+			continue
+		}
+		parentKeys, err := s.resolveFeatureKeysRecursive(ctx, parent, visited)
+		if err != nil {
+			continue
+		}
+		keys = append(keys, parentKeys...)
+	}
+
+	return deduplicate(keys), nil
+}
+
+// ResolveTierKeysForFeature returns tier keys from all packs that contain the given feature.
+func (s *Service) ResolveTierKeysForFeature(ctx context.Context, featureKey string) []string {
+	packs, err := s.repo.FindByFeatureKey(ctx, featureKey)
+	if err != nil {
+		return nil
+	}
+	tierKeys := make([]string, 0)
+	for _, p := range packs {
+		if p.TierKey != nil && *p.TierKey != "" {
+			tierKeys = append(tierKeys, *p.TierKey)
+		}
+	}
+	return deduplicate(tierKeys)
+}
+
+// validateInheritance checks parent packs exist and that no cycle would be created.
+func (s *Service) validateInheritance(ctx context.Context, packKey string, parentKeys []string) error {
+	for _, key := range parentKeys {
+		if _, err := s.repo.GetByKey(ctx, key); err != nil {
+			return apierror.NewBadRequest(
+				fmt.Sprintf("parent pack %q does not exist", key),
+				"error.packNotFound",
+			)
+		}
+	}
+
+	allInheritance, err := s.repo.ListAllInheritance(ctx)
+	if err != nil {
+		return fmt.Errorf("loading inheritance graph: %w", err)
+	}
+
+	if err := DetectCycle(packKey, parentKeys, allInheritance); err != nil {
+		return apierror.NewBadRequest(err.Error(), "error.packInheritanceCycle")
+	}
+
+	return nil
+}
+
 // validateFeatureKeys checks that all feature keys exist.
 func (s *Service) validateFeatureKeys(ctx context.Context, keys []string) error {
 	for _, key := range keys {
@@ -213,4 +306,17 @@ func (s *Service) validateFeatureKeys(ctx context.Context, keys []string) error 
 		}
 	}
 	return nil
+}
+
+// deduplicate removes duplicate strings preserving order.
+func deduplicate(keys []string) []string {
+	seen := make(map[string]bool, len(keys))
+	result := make([]string, 0, len(keys))
+	for _, k := range keys {
+		if !seen[k] {
+			seen[k] = true
+			result = append(result, k)
+		}
+	}
+	return result
 }
