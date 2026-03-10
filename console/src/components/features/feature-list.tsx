@@ -8,6 +8,7 @@ import { FeatureToggle } from './feature-toggle';
 import type { FeatureListItem } from '@/api/types';
 
 import { TagBadge } from '@/components/shared/tag-badge';
+import { TierBadge } from '@/components/shared/tier-badge';
 import { Badge } from '@/components/ui/badge';
 import { useMobile } from '@/hooks/use-mobile';
 
@@ -94,11 +95,18 @@ function FeatureDesktopTable({ features }: { features: FeatureListItem[] }) {
                 </div>
               </td>
               <td className="hidden px-4 py-3 md:table-cell">
-                {('packCount' in f ? f.packCount : (f.packs?.length ?? 0)) > 0 ? (
-                  <Badge variant="secondary" className="text-xs">
-                    {'packCount' in f ? f.packCount : (f.packs?.length ?? 0)}
-                  </Badge>
-                ) : null}
+                <div className="flex flex-wrap items-center gap-1">
+                  {('packCount' in f ? f.packCount : (f.packs?.length ?? 0)) > 0 ? (
+                    <Badge variant="secondary" className="text-xs">
+                      {'packCount' in f ? f.packCount : (f.packs?.length ?? 0)}
+                    </Badge>
+                  ) : null}
+                  {'tiers' in f && f.tiers && f.tiers.length > 0
+                    ? f.tiers.map((tier) => (
+                        <TierBadge key={tier.key} tier={tier} size="sm" />
+                      ))
+                    : null}
+                </div>
               </td>
               <td className="px-4 py-3 text-center">
                 <FeatureToggle featureKey={f.key} enabled={f.enabled} />

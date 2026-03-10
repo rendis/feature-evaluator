@@ -8,6 +8,7 @@ import { FeatureToggle } from './feature-toggle';
 import type { FeatureListItem } from '@/api/types';
 
 import { TagBadge } from '@/components/shared/tag-badge';
+import { TierBadge } from '@/components/shared/tier-badge';
 import { Badge } from '@/components/ui/badge';
 
 interface FeatureCardProps {
@@ -47,6 +48,11 @@ export function FeatureCard({ feature }: FeatureCardProps) {
         {feature.tags.map((tag) => (
           <TagBadge key={tag.key} tag={tag} size="sm" />
         ))}
+        {'tiers' in feature && feature.tiers && feature.tiers.length > 0
+          ? feature.tiers.map((tier) => (
+              <TierBadge key={tier.key} tier={tier} size="sm" />
+            ))
+          : null}
         {feature.environments && feature.environments.length > 0
           ? feature.environments.map((env) => (
               <Badge key={env} variant="secondary" className="text-xs">
