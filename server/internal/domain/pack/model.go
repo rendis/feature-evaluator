@@ -39,6 +39,9 @@ type Pack struct {
 	UpdatedAt    time.Time      `json:"updatedAt"`
 	CreatedBy    string         `json:"createdBy"`
 	UpdatedBy    string         `json:"updatedBy"`
+	TierKey      *string        `json:"tierKey,omitempty"`
+	InheritsFrom []string       `json:"inheritsFrom,omitempty"`
+	TrialUntil   *time.Time     `json:"trialUntil,omitempty"`
 }
 
 // Activation represents the activation of a pack for a specific target.
