@@ -66,14 +66,16 @@ func getFeature(c *client.Client) func(context.Context, *mcp.CallToolRequest, Ge
 // --- Create Feature ---
 
 type CreateFeatureInput struct {
-	Key          string   `json:"key" jsonschema:"required,unique feature key (kebab-case)"`
-	Name         string   `json:"name" jsonschema:"required,display name"`
-	Description  string   `json:"description,omitempty" jsonschema:"optional description"`
-	Enabled      bool     `json:"enabled,omitempty" jsonschema:"start enabled (default false)"`
-	ValueType    string   `json:"value_type" jsonschema:"required,value type: boolean or string or number or json"`
-	DefaultValue any      `json:"default_value" jsonschema:"required,default value when no rule matches"`
-	Environments []string `json:"environments,omitempty" jsonschema:"restrict to environments (empty = all)"`
-	Tags         []string `json:"tags,omitempty" jsonschema:"tag keys to attach"`
+	Key            string   `json:"key" jsonschema:"required,unique feature key (kebab-case)"`
+	Name           string   `json:"name" jsonschema:"required,display name"`
+	Description    string   `json:"description,omitempty" jsonschema:"optional description"`
+	Enabled        bool     `json:"enabled,omitempty" jsonschema:"start enabled (default false)"`
+	ValueType      string   `json:"value_type" jsonschema:"required,value type: boolean or string or number or json"`
+	DefaultValue   any      `json:"default_value" jsonschema:"required,default value when no rule matches"`
+	AccessPolicy   string   `json:"access_policy,omitempty" jsonschema:"access policy: public or optional or required (default required)"`
+	AuthProfileKey string   `json:"auth_profile_key,omitempty" jsonschema:"auth profile key (required when access_policy is required)"`
+	Environments   []string `json:"environments,omitempty" jsonschema:"restrict to environments (empty = all)"`
+	Tags           []string `json:"tags,omitempty" jsonschema:"tag keys to attach"`
 }
 
 type CreateFeatureOutput struct {
@@ -83,14 +85,16 @@ type CreateFeatureOutput struct {
 func createFeature(c *client.Client) func(context.Context, *mcp.CallToolRequest, CreateFeatureInput) (*mcp.CallToolResult, CreateFeatureOutput, error) {
 	return func(_ context.Context, _ *mcp.CallToolRequest, input CreateFeatureInput) (*mcp.CallToolResult, CreateFeatureOutput, error) {
 		body := map[string]any{
-			"key":          input.Key,
-			"name":         input.Name,
-			"description":  input.Description,
-			"enabled":      input.Enabled,
-			"valueType":    input.ValueType,
-			"defaultValue": input.DefaultValue,
-			"environments": input.Environments,
-			"tags":         input.Tags,
+			"key":            input.Key,
+			"name":           input.Name,
+			"description":    input.Description,
+			"enabled":        input.Enabled,
+			"valueType":      input.ValueType,
+			"defaultValue":   input.DefaultValue,
+			"accessPolicy":   input.AccessPolicy,
+			"authProfileKey": input.AuthProfileKey,
+			"environments":   input.Environments,
+			"tags":           input.Tags,
 		}
 		result, err := c.Post("/features", body)
 		if err != nil {
@@ -103,14 +107,16 @@ func createFeature(c *client.Client) func(context.Context, *mcp.CallToolRequest,
 // --- Update Feature ---
 
 type UpdateFeatureInput struct {
-	Key          string   `json:"key" jsonschema:"required,feature key to update"`
-	Name         string   `json:"name" jsonschema:"required,display name"`
-	Description  string   `json:"description,omitempty" jsonschema:"description"`
-	Enabled      *bool    `json:"enabled,omitempty" jsonschema:"enabled state"`
-	ValueType    string   `json:"value_type,omitempty" jsonschema:"value type"`
-	DefaultValue any      `json:"default_value,omitempty" jsonschema:"default value"`
-	Environments []string `json:"environments,omitempty" jsonschema:"environments"`
-	Tags         []string `json:"tags,omitempty" jsonschema:"tags"`
+	Key            string   `json:"key" jsonschema:"required,feature key to update"`
+	Name           string   `json:"name" jsonschema:"required,display name"`
+	Description    string   `json:"description,omitempty" jsonschema:"description"`
+	Enabled        *bool    `json:"enabled,omitempty" jsonschema:"enabled state"`
+	ValueType      string   `json:"value_type,omitempty" jsonschema:"value type"`
+	DefaultValue   any      `json:"default_value,omitempty" jsonschema:"default value"`
+	AccessPolicy   string   `json:"access_policy,omitempty" jsonschema:"access policy: public or optional or required"`
+	AuthProfileKey string   `json:"auth_profile_key,omitempty" jsonschema:"auth profile key"`
+	Environments   []string `json:"environments,omitempty" jsonschema:"environments"`
+	Tags           []string `json:"tags,omitempty" jsonschema:"tags"`
 }
 
 type UpdateFeatureOutput struct {
@@ -120,13 +126,15 @@ type UpdateFeatureOutput struct {
 func updateFeature(c *client.Client) func(context.Context, *mcp.CallToolRequest, UpdateFeatureInput) (*mcp.CallToolResult, UpdateFeatureOutput, error) {
 	return func(_ context.Context, _ *mcp.CallToolRequest, input UpdateFeatureInput) (*mcp.CallToolResult, UpdateFeatureOutput, error) {
 		body := map[string]any{
-			"name":         input.Name,
-			"description":  input.Description,
-			"enabled":      input.Enabled,
-			"valueType":    input.ValueType,
-			"defaultValue": input.DefaultValue,
-			"environments": input.Environments,
-			"tags":         input.Tags,
+			"name":           input.Name,
+			"description":    input.Description,
+			"enabled":        input.Enabled,
+			"valueType":      input.ValueType,
+			"defaultValue":   input.DefaultValue,
+			"accessPolicy":   input.AccessPolicy,
+			"authProfileKey": input.AuthProfileKey,
+			"environments":   input.Environments,
+			"tags":           input.Tags,
 		}
 		result, err := c.Put("/features/"+input.Key, body)
 		if err != nil {
