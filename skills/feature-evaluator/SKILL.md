@@ -65,8 +65,8 @@ For custom OIDC providers set `FE_OIDC_ISSUER` and `FE_OIDC_CLIENT_ID` env vars.
 |------|---------|----------|
 | `fe_list_features` | List features (paginated) | `search?`, `value_type?`, `enabled?`, `tag?`, `environment?` |
 | `fe_get_feature` | Get feature with rules | `key` |
-| `fe_create_feature` | Create feature | `key`, `name`, `value_type`, `default_value` |
-| `fe_update_feature` | Update feature | `key`, `name` |
+| `fe_create_feature` | Create feature | `key`, `name`, `value_type`, `default_value`, `access_policy?`, `auth_profile_key?` |
+| `fe_update_feature` | Update feature | `key`, `name`, `access_policy?`, `auth_profile_key?` |
 | `fe_toggle_feature` | Enable/disable | `key`, `enabled` |
 | `fe_delete_feature` | Delete feature | `key` |
 
@@ -142,28 +142,83 @@ Tiers are predefined (24 total across 6 categories: entry, growth, advanced, top
 
 ## Expression Language (expr-lang)
 
-Rules use `expr-lang/expr` for targeting conditions.
+Rules use `expr-lang/expr`. Full reference: [references/expressions.md](references/expressions.md)
 
-### Available Context Variables
+### Eval Request
 
-- `user.*` — User attributes (role, email, id, etc.)
-- `tenant.*` — Tenant attributes
-- `campus.*` — Campus attributes
-- `program.*` — Program attributes
-- `authenticated` — Boolean, true if request is authenticated
-- `inSegment(key)` — Check if user is in a segment
-- `now()` — Current time
-- `dateBefore(date)` / `dateAfter(date)` — Date comparisons
+```json
+{
+  "featureKey": "my-feature",
+  "context": {
+    "user": { "id": "u-1", "email": "alice@empresa.com", "role": "admin" },
+    "tenant": { "id": "t-1" },
+    "campus": { "id": "c-1" },
+    "program": { "id": "p-1" },
+    "custom": { "country": "US" }
+  },
+  "environment": "production"
+}
+```
+
+Each `context` key becomes a top-level variable in expressions (`user.*`, `tenant.*`, etc.).
+
+### Expression Variables
+
+| Variable | Source |
+|----------|--------|
+| `user.*`, `tenant.*`, `campus.*`, `program.*` | `context` in request body |
+| `headers.*` | HTTP headers (via feature InputContract) |
+| `requestBody.*` | Request body fields |
+| `authenticated` | True if auth profile validation passed |
+| `derived.email` | JWT `email` claim, fallback `context.user.email` |
+| `derived.userId` | JWT `sub` claim, fallback `context.user.id` |
+| `derived.subject` | JWT `sub` claim (no fallback) |
+| `derived.name` | JWT `name` claim (no fallback) |
+| `derived.bearerTokenPresent` | True if Bearer token in request |
+| `derived.apiKeyPresent` | True if API key in request |
+
+**JWT auto-extraction:** Send `Authorization: Bearer <jwt>` → claims `sub`, `email`, `name` auto-populate `derived.*`. JWT claims take priority over context body.
+
+### Builtin Functions
+
+| Function | Description |
+|----------|-------------|
+| `now()` | Current UTC time |
+| `dateBefore(date, ref)` | True if date < ref (RFC3339, `YYYY-MM-DD`) |
+| `dateAfter(date, ref)` | True if date > ref |
+| `contains(val, needle)` | String containment |
+| `startsWith(val, prefix)` | String prefix |
+| `endsWith(val, suffix)` | String suffix |
+| `inSegment(key)` | Segment membership check |
+| `externalApi(key)` | External API validation |
 
 ### Common Patterns
 
 ```
-user.role == "admin"
-tenant.id == "tenant-123"
-authenticated && user.email endsWith "@example.com"
+# Email targeting (from JWT)
+derived.email == "admin@empresa.com"
+endsWith(derived.email, "@empresa.com")
+
+# Email targeting (from context body)
+user.email == "admin@empresa.com"
+
+# Auth + role
+authenticated && user.role == "admin"
+
+# Segments
 inSegment("beta-users")
-dateBefore("2025-12-31")
+
+# Date range
+dateAfter(now(), "2025-06-01") && dateBefore(now(), "2025-12-31")
+
+# Combined
+tenant.id == "acme" && inSegment("early-access") && authenticated
 ```
+
+### Security Limits
+
+Max AST depth: 10, max nodes: 100, max `inSegment()` calls: 5, max string length: 1000.
+Denied: exec, system, import, require, __proto__, constructor, prototype, eval, Function, process.
 
 ## Known API Behaviors
 
@@ -172,4 +227,4 @@ dateBefore("2025-12-31")
 - Errors: `{"error": {"code": "...", "message": "...", "messageKey": "..."}}`
 - Pack targets: `tenant`, `campus`, `program`
 - Value types: `boolean`, `string`, `number`, `json`
-- Access policies: `public` (default), `authenticated`, `custom`
+- Access policies: `public` (default), `optional`, `required`
