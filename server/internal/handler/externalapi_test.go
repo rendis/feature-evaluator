@@ -152,7 +152,7 @@ func TestExternalAPIHandlerValidateExpression(t *testing.T) {
 	}
 }
 
-func TestExternalAPIHandlerTestIncludesEvaluationDetails(t *testing.T) {
+func TestExternalAPIHandlerTestIncludesEvaluationDetails(t *testing.T) { //nolint:funlen // test setup
 	t.Parallel()
 
 	gin.SetMode(gin.TestMode)

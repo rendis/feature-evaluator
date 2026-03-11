@@ -1,7 +1,7 @@
 package tier
 
-// TierDef represents a predefined tier.
-type TierDef struct {
+// Def represents a predefined tier.
+type Def struct {
 	Key      string `json:"key"`
 	Name     string `json:"name"`
 	Color    string `json:"color"`
@@ -10,7 +10,7 @@ type TierDef struct {
 }
 
 // AllTiers is the hardcoded catalog of 24 predefined tiers.
-var AllTiers = []TierDef{
+var AllTiers = []Def{
 	// Entry/Access
 	{Key: "free", Name: "Free", Color: "#6B7280", Icon: "tier-free", Category: "entry"},
 	{Key: "starter", Name: "Starter", Color: "#64748B", Icon: "tier-starter", Category: "entry"},
@@ -52,23 +52,23 @@ var AllTiers = []TierDef{
 }
 
 // tierByKey provides O(1) lookup by key.
-var tierByKey map[string]*TierDef
+var tierByKey map[string]*Def
 
 func init() {
-	tierByKey = make(map[string]*TierDef, len(AllTiers))
+	tierByKey = make(map[string]*Def, len(AllTiers))
 	for i := range AllTiers {
 		tierByKey[AllTiers[i].Key] = &AllTiers[i]
 	}
 }
 
 // FindByKey returns the predefined tier with the given key, or nil if not found.
-func FindByKey(key string) *TierDef {
+func FindByKey(key string) *Def {
 	return tierByKey[key]
 }
 
 // FindByKeys returns the predefined tiers matching the given keys.
-func FindByKeys(keys []string) []TierDef {
-	result := make([]TierDef, 0, len(keys))
+func FindByKeys(keys []string) []Def {
+	result := make([]Def, 0, len(keys))
 	for _, k := range keys {
 		if td, ok := tierByKey[k]; ok {
 			result = append(result, *td)

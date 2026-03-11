@@ -167,7 +167,7 @@ func renderHeaderTemplates(
 	return rendered, nil
 }
 
-func renderBodyTemplate(
+func renderBodyTemplate( //nolint:gocognit,cyclop // template rendering
 	template any,
 	values map[string]placeholderValue,
 	secrets map[string]string,
@@ -254,7 +254,7 @@ func renderStringTemplateMaybeOmit(
 		if missingOptional {
 			return "", true, nil
 		}
-		builder.WriteString(fmt.Sprint(value))
+		fmt.Fprint(&builder, value)
 		lastIndex = match[1]
 	}
 	builder.WriteString(template[lastIndex:])

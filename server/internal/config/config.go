@@ -138,8 +138,8 @@ func Load() (*Config, error) {
 		},
 		Postgres: PostgresConfig{
 			DatabaseURL:       v.GetString("DATABASE_URL"),
-			MaxConns:          int32(v.GetInt("POSTGRES_MAX_CONNS")),
-			MinConns:          int32(v.GetInt("POSTGRES_MIN_CONNS")),
+			MaxConns:          int32(min(v.GetInt("POSTGRES_MAX_CONNS"), 100)), //nolint:gosec // clamped to 100
+			MinConns:          int32(min(v.GetInt("POSTGRES_MIN_CONNS"), 100)), //nolint:gosec // clamped to 100
 			MaxConnLifetime:   parseDurationOrDefault(v, "POSTGRES_MAX_CONN_LIFETIME", 30*time.Minute),
 			MaxConnIdleTime:   parseDurationOrDefault(v, "POSTGRES_MAX_CONN_IDLE_TIME", 5*time.Minute),
 			HealthcheckPeriod: parseDurationOrDefault(v, "POSTGRES_HEALTHCHECK_PERIOD", time.Minute),

@@ -128,7 +128,7 @@ type Rule struct {
 	Value               any                  `json:"value"`
 	RolloutPercentage   *int                 `json:"rolloutPercentage,omitempty"`
 	SourceBindings      SourceBindings       `json:"sourceBindings,omitempty"`
-	ExternalApiBindings []ExternalApiBinding `json:"externalApiBindings,omitempty"`
+	ExternalAPIBindings []ExternalAPIBinding `json:"externalAPIBindings,omitempty"`
 	Metadata            map[string]any       `json:"metadata,omitempty"`
 	CreatedAt           time.Time            `json:"createdAt"`
 	UpdatedAt           time.Time            `json:"updatedAt"`
@@ -171,10 +171,10 @@ const (
 	FailModeClosed FailMode = "closed"
 )
 
-// ExternalApiBinding references a workspace-level ExternalApi with param mappings
+// ExternalAPIBinding references a workspace-level ExternalAPI with param mappings
 // for use inside rule expressions via externalApi("key").
-type ExternalApiBinding struct {
-	ExternalApiKey string         `json:"externalApiKey"`
+type ExternalAPIBinding struct {
+	ExternalAPIKey string         `json:"externalApiKey"`
 	ParamMappings  []ParamMapping `json:"paramMappings,omitempty"`
 	FailMode       FailMode       `json:"failMode"`
 	CacheTTL       int            `json:"cacheTTL"`

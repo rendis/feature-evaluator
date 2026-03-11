@@ -27,7 +27,7 @@ func (r *SegmentRecordRepo) ListRecords(ctx context.Context, params segment.Reco
 		return nil, err
 	}
 
-	query := sanitizeSearch(params.Query, 200)
+	query := sanitizeSearch(params.Query)
 	var total int64
 	if err := r.client.db(ctx).QueryRow(ctx, `
 		SELECT COUNT(*)

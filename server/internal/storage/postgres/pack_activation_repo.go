@@ -137,18 +137,17 @@ func (r *PackActivationRepo) FindByTarget(ctx context.Context, targetType pack.T
 // FindActiveFeatureKeys returns feature keys granted by active pack activations.
 func (r *PackActivationRepo) FindActiveFeatureKeys(ctx context.Context, tenantID, campusID, programID string) ([]string, error) {
 	targetTypes := make([]string, 0, 3)
-	targetIDs := make([]string, 0, 3)
 	if tenantID != "" {
 		targetTypes = append(targetTypes, string(pack.TargetTenant))
-		targetIDs = append(targetIDs, tenantID)
+
 	}
 	if campusID != "" {
 		targetTypes = append(targetTypes, string(pack.TargetCampus))
-		targetIDs = append(targetIDs, campusID)
+
 	}
 	if programID != "" {
 		targetTypes = append(targetTypes, string(pack.TargetProgram))
-		targetIDs = append(targetIDs, programID)
+
 	}
 	if len(targetTypes) == 0 {
 		return []string{}, nil
@@ -193,10 +192,6 @@ func (r *PackActivationRepo) FindActiveFeatureKeys(ctx context.Context, tenantID
 		return []string{}, nil
 	}
 	return keys, nil
-}
-
-type activationScanner interface {
-	Scan(dest ...any) error
 }
 
 func scanActivations(rows interface {

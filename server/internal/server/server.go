@@ -124,8 +124,8 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 
 	// External caller (created early so resolver can reference it)
 	extCaller := external.NewCaller(redis, secretCipher)
-	extApiResolver := external.NewExternalApiResolver(externalAPISvc, extCaller)
-	evalSvc.SetExternalApiResolver(extApiResolver)
+	extAPIResolver := external.NewAPIResolver(externalAPISvc, extCaller)
+	evalSvc.SetExternalAPIResolver(extAPIResolver)
 
 	// Metrics collector
 	metricsCollector := evalmetrics.NewCollector(redis)
@@ -169,7 +169,7 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 	featureHandler := handler.NewFeatureHandler(featureSvc, tagSvc, packSvc, changelogSvc)
 	tagHandler := handler.NewTagHandler(tagSvc)
 	packHandler := handler.NewPackHandler(packSvc, changelogSvc)
-	ruleHandler := handler.NewRuleHandler(featureSvc, segmentSvc, externalAPISvc, extApiResolver, exprEngine, changelogSvc)
+	ruleHandler := handler.NewRuleHandler(featureSvc, segmentSvc, externalAPISvc, extAPIResolver, exprEngine, changelogSvc)
 	changelogHandler := handler.NewChangelogHandler(changelogSvc)
 	evalHandler := handler.NewEvalHandler(evalSvc, metricsCollector)
 	ofrepHandler := handler.NewOFREPHandler(evalSvc, metricsCollector)

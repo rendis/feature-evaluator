@@ -187,15 +187,15 @@ func ToRuleResponse(r *feature.Rule) RuleResponse {
 		Value:               r.Value,
 		RolloutPercentage:   r.RolloutPercentage,
 		SourceBindings:      toSourceBindingsResponse(r.SourceBindings),
-		ExternalApiBindings: toExternalApiBindingsResponse(r.ExternalApiBindings),
+		ExternalAPIBindings: toExternalAPIBindingsResponse(r.ExternalAPIBindings),
 		Metadata:            r.Metadata,
 		CreatedAt:           formatTime(r.CreatedAt),
 		UpdatedAt:           formatTime(r.UpdatedAt),
 	}
 }
 
-func toExternalApiBindingsResponse(bindings []feature.ExternalApiBinding) []ExternalApiBindingResponse {
-	result := make([]ExternalApiBindingResponse, 0, len(bindings))
+func toExternalAPIBindingsResponse(bindings []feature.ExternalAPIBinding) []ExternalAPIBindingResponse {
+	result := make([]ExternalAPIBindingResponse, 0, len(bindings))
 	for _, b := range bindings {
 		mappings := make([]ParamMappingResponse, 0, len(b.ParamMappings))
 		for _, m := range b.ParamMappings {
@@ -206,8 +206,8 @@ func toExternalApiBindingsResponse(bindings []feature.ExternalApiBinding) []Exte
 				LiteralValue: m.LiteralValue,
 			})
 		}
-		result = append(result, ExternalApiBindingResponse{
-			ExternalApiKey: b.ExternalApiKey,
+		result = append(result, ExternalAPIBindingResponse{
+			ExternalAPIKey: b.ExternalAPIKey,
 			ParamMappings:  mappings,
 			FailMode:       string(b.FailMode),
 			CacheTTL:       b.CacheTTL,
@@ -401,8 +401,8 @@ func PacksToRefs(packs []pack.Pack) []PackRef {
 	return refs
 }
 
-// ToTierRef maps a predefined TierDef to a lightweight reference.
-func ToTierRef(t *tier.TierDef) TierRef {
+// ToTierRef maps a predefined tier.Def to a lightweight reference.
+func ToTierRef(t *tier.Def) TierRef {
 	return TierRef{
 		Key:   t.Key,
 		Name:  t.Name,
@@ -410,8 +410,8 @@ func ToTierRef(t *tier.TierDef) TierRef {
 	}
 }
 
-// TiersToRefs maps a slice of predefined TierDefs to refs.
-func TiersToRefs(tiers []tier.TierDef) []TierRef {
+// TiersToRefs maps a slice of predefined tier.Def to refs.
+func TiersToRefs(tiers []tier.Def) []TierRef {
 	refs := make([]TierRef, 0, len(tiers))
 	for i := range tiers {
 		refs = append(refs, ToTierRef(&tiers[i]))

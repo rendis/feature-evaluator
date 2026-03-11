@@ -99,8 +99,8 @@ func newOIDCTestServer(t *testing.T) (string, *rsa.PrivateKey) {
 						"use": "sig",
 						"kid": "test-kid",
 						"alg": "RS256",
-						"n":   base64.RawURLEncoding.EncodeToString(privateKey.PublicKey.N.Bytes()),
-						"e":   base64.RawURLEncoding.EncodeToString(big.NewInt(int64(privateKey.PublicKey.E)).Bytes()),
+						"n":   base64.RawURLEncoding.EncodeToString(privateKey.N.Bytes()),
+						"e":   base64.RawURLEncoding.EncodeToString(big.NewInt(int64(privateKey.E)).Bytes()),
 					},
 				},
 			})

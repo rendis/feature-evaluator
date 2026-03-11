@@ -229,7 +229,7 @@ func intConfig(config map[string]any, key string) int {
 	}
 }
 
-func normalizeMappings(raw any) ([]map[string]any, bool) {
+func normalizeMappings(raw any) ([]map[string]any, bool) { //nolint:gocognit,cyclop // mapping normalization
 	if raw == nil {
 		return []map[string]any{}, true
 	}

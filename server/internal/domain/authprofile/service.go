@@ -79,7 +79,7 @@ func (s *Service) List(ctx context.Context) ([]Profile, error) {
 }
 
 // Update persists profile changes, supports key renames and optionally rotates its secret payload.
-func (s *Service) Update(
+func (s *Service) Update( //nolint:cyclop,funlen // update validates many optional fields
 	ctx context.Context,
 	currentKey string,
 	profile *Profile,

@@ -123,7 +123,7 @@ func (s *Service) GetRecordByKey(ctx context.Context, segmentKey, recordKey stri
 }
 
 // ReplaceRecords imports a new dataset version for a segment.
-func (s *Service) ReplaceRecords(ctx context.Context, segmentKey string, input ReplaceInput) (int64, error) {
+func (s *Service) ReplaceRecords(ctx context.Context, segmentKey string, input ReplaceInput) (int64, error) { //nolint:gocognit,cyclop,funlen // batch record replacement
 	if input.SourceType != SourceTypeCSV && input.SourceType != SourceTypeJSON {
 		return 0, fmt.Errorf("invalid source type %q", input.SourceType)
 	}

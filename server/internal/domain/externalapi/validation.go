@@ -109,7 +109,7 @@ func validateExpressionVariables(api *ExternalAPI) error {
 	return nil
 }
 
-func validateParams(api *ExternalAPI) error {
+func validateParams(api *ExternalAPI) error { //nolint:gocognit,cyclop // parameter validation
 	detectedParams, secretRefs := CollectTemplateReferences(api.Request)
 	declared := make(map[string]Param, len(api.Params))
 	for i := range api.Params {
@@ -202,7 +202,7 @@ func validateBodyTemplate(bodyTemplate any) error {
 	return nil
 }
 
-func validateResponseValidation(validation *ResponseValidation) error {
+func validateResponseValidation(validation *ResponseValidation) error { //nolint:cyclop // validates response config fields
 	if validation == nil {
 		return apierror.NewBadRequest("response validation is required", "error.invalidExternalAPIResponseValidation")
 	}
@@ -277,7 +277,7 @@ type PlaceholderUsage struct {
 }
 
 // CollectTemplateReferences walks the request template and returns non-secret placeholders and secret refs.
-func CollectTemplateReferences(request RequestConfig) (map[string]PlaceholderUsage, map[string]bool) {
+func CollectTemplateReferences(request RequestConfig) (map[string]PlaceholderUsage, map[string]bool) { //nolint:gocognit // template reference collection
 	params := map[string]PlaceholderUsage{}
 	secrets := map[string]bool{}
 

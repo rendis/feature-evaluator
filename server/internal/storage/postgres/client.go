@@ -16,13 +16,13 @@ type Client struct {
 
 // Config configures the PostgreSQL client.
 type Config struct {
-	DatabaseURL         string
-	MaxConns            int32
-	MinConns            int32
-	MaxConnLifetime     time.Duration
-	HealthcheckPeriod   time.Duration
-	MaxConnIdleTime     time.Duration
-	ConnectionTimeout   time.Duration
+	DatabaseURL       string
+	MaxConns          int32
+	MinConns          int32
+	MaxConnLifetime   time.Duration
+	HealthcheckPeriod time.Duration
+	MaxConnIdleTime   time.Duration
+	ConnectionTimeout time.Duration
 }
 
 // NewClient creates and validates a PostgreSQL pool.
@@ -86,8 +86,4 @@ func (c *Client) Close() {
 // Ping checks if PostgreSQL is reachable.
 func (c *Client) Ping(ctx context.Context) error {
 	return c.pool.Ping(ctx)
-}
-
-func (c *Client) poolRef() *pgxpool.Pool {
-	return c.pool
 }

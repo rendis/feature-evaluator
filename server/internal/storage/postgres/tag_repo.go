@@ -159,7 +159,7 @@ func (r *TagRepo) FindByKeys(ctx context.Context, keys []string) ([]tag.Tag, err
 
 // List returns all tags with optional search.
 func (r *TagRepo) List(ctx context.Context, search string) ([]tag.Tag, error) {
-	search = sanitizeSearch(search, 200)
+	search = sanitizeSearch(search)
 	rows, err := r.client.db(ctx).Query(ctx, `
 		SELECT id, workspace_key, key, name, color, created_at, updated_at, created_by
 		FROM tags

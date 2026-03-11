@@ -10,12 +10,12 @@ import (
 // It is injected at evaluation time with pre-resolved memberships.
 type SegmentChecker func(segmentKey string) bool
 
-// ExternalApiChecker is a function that checks if an external API call passes.
+// ExternalAPIChecker is a function that checks if an external API call passes.
 // It is injected at evaluation time with pre-resolved results.
-type ExternalApiChecker func(apiKey string) bool
+type ExternalAPIChecker func(apiKey string) bool
 
 // BuiltinFunctions returns the custom functions available in expressions.
-func BuiltinFunctions(segmentChecker SegmentChecker, externalApiChecker ExternalApiChecker) map[string]any {
+func BuiltinFunctions(segmentChecker SegmentChecker, externalAPIChecker ExternalAPIChecker) map[string]any {
 	funcs := map[string]any{
 		"now": func() time.Time { return time.Now().UTC() },
 		"dateBefore": func(dateValue, refValue any) bool {
@@ -53,8 +53,8 @@ func BuiltinFunctions(segmentChecker SegmentChecker, externalApiChecker External
 	if segmentChecker != nil {
 		funcs["inSegment"] = segmentChecker
 	}
-	if externalApiChecker != nil {
-		funcs["externalApi"] = externalApiChecker
+	if externalAPIChecker != nil {
+		funcs["externalApi"] = externalAPIChecker
 	}
 	return funcs
 }

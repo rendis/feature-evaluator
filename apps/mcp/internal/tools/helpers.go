@@ -1,24 +1,9 @@
 package tools
 
 import (
-	"encoding/json"
-	"fmt"
 	"net/url"
 	"strconv"
 )
-
-// rawJSON wraps a JSON string so it marshals as raw JSON (not double-encoded).
-type rawJSON string
-
-func (r rawJSON) MarshalJSON() ([]byte, error) {
-	if r == "" {
-		return []byte("null"), nil
-	}
-	if !json.Valid([]byte(r)) {
-		return nil, fmt.Errorf("rawJSON: value is not valid JSON")
-	}
-	return []byte(r), nil
-}
 
 // queryParams builds a URL query string from key-value pairs, skipping empty values.
 func queryParams(pairs ...string) string {
@@ -45,7 +30,7 @@ func itoa(n int) string {
 	return strconv.Itoa(n)
 }
 
-// btoa converts bool to string, returning empty string for false.
+// btoa converts bool to "true" or empty string for false.
 func btoa(b bool) string {
 	if !b {
 		return ""

@@ -179,7 +179,7 @@ func (r *SegmentRepo) Delete(ctx context.Context, key string) error {
 
 // List returns paginated segments.
 func (r *SegmentRepo) List(ctx context.Context, params segment.ListParams) (*segment.ListResult, error) {
-	search := sanitizeSearch(params.Search, 200)
+	search := sanitizeSearch(params.Search)
 
 	var total int64
 	if err := r.client.db(ctx).QueryRow(ctx, `

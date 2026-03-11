@@ -6,8 +6,8 @@ import (
 	"math"
 	"slices"
 
-	"github.com/santhosh-tekuri/jsonschema/v6"
 	"github.com/rendis/feature-evaluator/pkg/apierror"
+	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
 func validateSchemaRecords(schemaDoc map[string]any, records []map[string]any) (map[string]any, error) {
@@ -66,7 +66,7 @@ func normalizeSchemaForRecords(schemaDoc map[string]any, records []map[string]an
 	return normalizeSchemaNode(schemaDoc, rootSamples)
 }
 
-func normalizeSchemaNode(node map[string]any, samples []any) map[string]any {
+func normalizeSchemaNode(node map[string]any, samples []any) map[string]any { //nolint:gocognit // JSON schema normalization
 	normalized := cloneSchemaMap(node)
 	observedTypes := collectObservedTypes(samples)
 
@@ -87,7 +87,7 @@ func normalizeSchemaNode(node map[string]any, samples []any) map[string]any {
 		normalized["items"] = normalizeSchemaNode(items, collectArraySamples(samples))
 	}
 
-	if anyOf, ok := node["anyOf"].([]any); ok {
+	if anyOf, ok := node["anyOf"].([]any); ok { //nolint:nestif // anyOf normalization
 		normalizedAlternatives := make([]any, 0, len(anyOf))
 		for _, alternative := range anyOf {
 			alternativeSchema, ok := alternative.(map[string]any)

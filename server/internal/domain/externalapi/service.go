@@ -174,7 +174,7 @@ func (s *Service) resolveDraftSecrets(
 	replaceSecret bool,
 ) (map[string]string, error) {
 	merged := map[string]string{}
-	if currentKey != "" {
+	if currentKey != "" { //nolint:nestif // key rename validation
 		existing, err := s.repo.GetByKey(ctx, currentKey)
 		if err != nil {
 			return nil, err

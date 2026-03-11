@@ -39,21 +39,21 @@ type httpCallResult struct {
 	RequestBody    any
 }
 
-// ExternalAPITestRequestPreview describes the rendered outbound request shown in the test UI.
-type ExternalAPITestRequestPreview struct {
+// APITestRequestPreview describes the rendered outbound request shown in the test UI.
+type APITestRequestPreview struct {
 	URL     string            `json:"url,omitempty"`
 	Method  string            `json:"method,omitempty"`
 	Headers map[string]string `json:"headers"`
 	Body    any               `json:"body,omitempty"`
 }
 
-// ExternalAPITestDetails captures the request/response debug payload returned by the test endpoint.
-type ExternalAPITestDetails struct {
-	Request         ExternalAPITestRequestPreview `json:"request"`
-	ResponseText    string                        `json:"responseText,omitempty"`
-	ResponseHeaders map[string]string             `json:"responseHeaders,omitempty"`
-	ResponseBody    any                           `json:"responseBody,omitempty"`
-	Evaluations     ExternalAPIEvaluationDetails  `json:"evaluations"`
+// APITestDetails captures the request/response debug payload returned by the test endpoint.
+type APITestDetails struct {
+	Request         APITestRequestPreview `json:"request"`
+	ResponseText    string                `json:"responseText,omitempty"`
+	ResponseHeaders map[string]string     `json:"responseHeaders,omitempty"`
+	ResponseBody    any                   `json:"responseBody,omitempty"`
+	Evaluations     APIEvaluationDetails  `json:"evaluations"`
 }
 
 const defaultOutboundUserAgent = "feature-evaluator/1.0"
@@ -144,7 +144,7 @@ func (c *Caller) TestExternalAPI(
 	api *externalapi.ExternalAPI,
 	paramValues map[string]any,
 	secretValues map[string]string,
-) (*CallResult, *ExternalAPITestDetails, error) {
+) (*CallResult, *APITestDetails, error) {
 	expressionVars, err := buildExternalAPIExpressionVars(api, paramValues)
 	if err != nil {
 		return nil, nil, err
@@ -174,8 +174,8 @@ func (c *Caller) TestExternalAPI(
 	return &CallResult{
 			Passed:     evaluations.Final.Passed,
 			HTTPStatus: callResult.HTTPStatus,
-		}, &ExternalAPITestDetails{
-			Request: ExternalAPITestRequestPreview{
+		}, &APITestDetails{
+			Request: APITestRequestPreview{
 				URL:     callResult.RequestURL,
 				Method:  callResult.RequestMethod,
 				Headers: callResult.RequestHeaders,
@@ -186,27 +186,6 @@ func (c *Caller) TestExternalAPI(
 			ResponseBody:    requestBodyPreview(callResult.Body),
 			Evaluations:     evaluations,
 		}, nil
-}
-
-func mergeQueryParams(rawURL string, queryParams map[string]string) (string, error) {
-	if len(queryParams) == 0 {
-		return rawURL, nil
-	}
-
-	parsed, err := url.Parse(rawURL)
-	if err != nil {
-		return "", err
-	}
-
-	values := parsed.Query()
-	for key, value := range queryParams {
-		if strings.TrimSpace(key) == "" {
-			continue
-		}
-		values.Set(key, value)
-	}
-	parsed.RawQuery = values.Encode()
-	return parsed.String(), nil
 }
 
 func requestBodyPreview(body []byte) any {

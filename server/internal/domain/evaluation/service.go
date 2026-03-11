@@ -29,11 +29,11 @@ type AuthValidator interface {
 	Validate(ctx context.Context, key string, input map[string]any) (*AuthValidationResult, error)
 }
 
-// ExternalApiResolver resolves external API binding calls during expression evaluation.
+// ExternalAPIResolver resolves external API binding calls during expression evaluation.
 // It takes the rule's bindings plus a flat env map (for resolving param input paths),
 // and returns a map of externalApiKey → passed (bool).
-type ExternalApiResolver interface {
-	Resolve(ctx context.Context, bindings []feature.ExternalApiBinding, env map[string]any) map[string]bool
+type ExternalAPIResolver interface {
+	Resolve(ctx context.Context, bindings []feature.ExternalAPIBinding, env map[string]any) map[string]bool
 }
 
 // AuthValidationResult captures whether the incoming request authenticated for a feature.
@@ -52,7 +52,7 @@ type Service struct {
 	packSvc             *pack.Service
 	experimentSvc       *experiment.Service
 	authValidator       AuthValidator
-	externalApiResolver ExternalApiResolver
+	externalAPIResolver ExternalAPIResolver
 	engine              *engine.Engine
 	onSegmentLookup     SegmentLookupFunc
 }
@@ -87,9 +87,9 @@ func (s *Service) SetAuthValidator(authValidator AuthValidator) {
 	s.authValidator = authValidator
 }
 
-// SetExternalApiResolver sets the resolver for external API binding calls.
-func (s *Service) SetExternalApiResolver(resolver ExternalApiResolver) {
-	s.externalApiResolver = resolver
+// SetExternalAPIResolver sets the resolver for external API binding calls.
+func (s *Service) SetExternalAPIResolver(resolver ExternalAPIResolver) {
+	s.externalAPIResolver = resolver
 }
 
 // SetOnSegmentLookup sets the callback for segment lookup tracking.
@@ -235,7 +235,7 @@ func (s *Service) Evaluate(ctx context.Context, req Request, evalCtx EvalContext
 			}
 		}
 		// Build env with a noop externalApi checker first, then resolve with the full env.
-		noopExtApi := engine.ExternalApiChecker(func(string) bool { return false })
+		noopExtAPI := engine.ExternalAPIChecker(func(string) bool { return false })
 		env := engine.BuildEnv(
 			evalCtx.Context,
 			engine.ExpressionInputData{
@@ -246,16 +246,16 @@ func (s *Service) Evaluate(ctx context.Context, req Request, evalCtx EvalContext
 			},
 			authenticated,
 			segmentChecker,
-			noopExtApi,
+			noopExtAPI,
 		)
 		// Resolve externalApi bindings with the full env so param input paths work.
-		if len(rule.ExternalApiBindings) > 0 && s.externalApiResolver != nil {
-			extResults := s.externalApiResolver.Resolve(ctx, rule.ExternalApiBindings, env)
-			env["externalApi"] = engine.ExternalApiChecker(func(apiKey string) bool {
+		if len(rule.ExternalAPIBindings) > 0 && s.externalAPIResolver != nil {
+			extResults := s.externalAPIResolver.Resolve(ctx, rule.ExternalAPIBindings, env)
+			env["externalApi"] = engine.ExternalAPIChecker(func(apiKey string) bool {
 				return extResults[apiKey]
 			})
 		}
-		matched, err := s.evaluateRule(&rule, env, authState, evalCtx, f.Key, f.RolloutSalt)
+		matched, err := s.evaluateRule(&rule, env, evalCtx, f.Key, f.RolloutSalt)
 		if err != nil {
 			s.logEvalError(ctx, f.Key, rule.ID, err, evalCtx)
 			continue
@@ -373,7 +373,7 @@ func (s *Service) EvaluateAll(ctx context.Context, req AllRequest, evalCtx EvalC
 
 // evaluateFeature evaluates a single pre-loaded feature (skips repo lookup).
 //
-//nolint:funlen,gocognit // Feature-level evaluation keeps all rule, rollout, and experiment decisions in one place.
+//nolint:funlen,gocognit,cyclop // Feature-level evaluation keeps all rule, rollout, and experiment decisions in one place.
 func (s *Service) evaluateFeature(ctx context.Context, f *feature.Feature, evalCtx EvalContext) Result {
 	now := time.Now().UTC()
 
@@ -482,7 +482,7 @@ func (s *Service) evaluateFeature(ctx context.Context, f *feature.Feature, evalC
 				authenticated = true
 			}
 		}
-		noopExtApi := engine.ExternalApiChecker(func(string) bool { return false })
+		noopExtAPI := engine.ExternalAPIChecker(func(string) bool { return false })
 		env := engine.BuildEnv(
 			evalCtx.Context,
 			engine.ExpressionInputData{
@@ -493,15 +493,15 @@ func (s *Service) evaluateFeature(ctx context.Context, f *feature.Feature, evalC
 			},
 			authenticated,
 			segmentChecker,
-			noopExtApi,
+			noopExtAPI,
 		)
-		if len(rule.ExternalApiBindings) > 0 && s.externalApiResolver != nil {
-			extResults := s.externalApiResolver.Resolve(ctx, rule.ExternalApiBindings, env)
-			env["externalApi"] = engine.ExternalApiChecker(func(apiKey string) bool {
+		if len(rule.ExternalAPIBindings) > 0 && s.externalAPIResolver != nil {
+			extResults := s.externalAPIResolver.Resolve(ctx, rule.ExternalAPIBindings, env)
+			env["externalApi"] = engine.ExternalAPIChecker(func(apiKey string) bool {
 				return extResults[apiKey]
 			})
 		}
-		matched, err := s.evaluateRule(&rule, env, authState, evalCtx, f.Key, f.RolloutSalt)
+		matched, err := s.evaluateRule(&rule, env, evalCtx, f.Key, f.RolloutSalt)
 		if err != nil {
 			s.logEvalError(ctx, f.Key, rule.ID, err, evalCtx)
 			continue
@@ -619,7 +619,6 @@ func hasAllTags(featureTags, requiredTags []string) bool {
 func (s *Service) evaluateRule(
 	rule *feature.Rule,
 	env map[string]any,
-	authState AuthValidationResult,
 	evalCtx EvalContext,
 	featureKey,
 	rolloutSalt string,

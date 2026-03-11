@@ -10,8 +10,6 @@ import (
 	"github.com/rendis/feature-evaluator/pkg/apierror"
 )
 
-const maxFeatureSearchLength = 200
-
 // FeatureRepo implements feature.Repository using PostgreSQL.
 type FeatureRepo struct {
 	client *Client
@@ -23,7 +21,7 @@ func NewFeatureRepo(client *Client) *FeatureRepo {
 }
 
 // Create inserts a feature and its tag/rule relations.
-func (r *FeatureRepo) Create(ctx context.Context, f *feature.Feature) error {
+func (r *FeatureRepo) Create(ctx context.Context, f *feature.Feature) error { //nolint:gocognit,funlen // multi-step feature creation
 	if f.ID == "" {
 		id, err := newID()
 		if err != nil {
@@ -439,7 +437,7 @@ func (r *FeatureRepo) UpdateRule(ctx context.Context, featureKey string, rule *f
 		if err != nil {
 			return fmt.Errorf("marshal rule source bindings: %w", err)
 		}
-		externalApiBindingsJSON, err := jsonBytes(rule.ExternalApiBindings, "[]")
+		externalAPIBindingsJSON, err := jsonBytes(rule.ExternalAPIBindings, "[]")
 		if err != nil {
 			return fmt.Errorf("marshal rule external api bindings: %w", err)
 		}
@@ -464,7 +462,7 @@ func (r *FeatureRepo) UpdateRule(ctx context.Context, featureKey string, rule *f
 			valueJSON,
 			rule.RolloutPercentage,
 			sourceBindingsJSON,
-			externalApiBindingsJSON,
+			externalAPIBindingsJSON,
 			metadataJSON,
 			rule.UpdatedAt,
 		)
@@ -556,7 +554,7 @@ func buildFeaturePredicate(ctx context.Context, params feature.ListParams) (stri
 	args := []any{wsKey(ctx)}
 	arg := 2
 
-	search := sanitizeSearch(params.Search, maxFeatureSearchLength)
+	search := sanitizeSearch(params.Search)
 	if search != "" {
 		where = append(where, fmt.Sprintf("f.key ILIKE '%%' || $%d || '%%'", arg))
 		args = append(args, search)
@@ -590,7 +588,6 @@ func buildFeaturePredicate(ctx context.Context, params feature.ListParams) (stri
 			)
 		`, arg, arg+1))
 		args = append(args, params.Tags, len(params.Tags))
-		arg += 2
 	}
 
 	return strings.Join(where, " AND "), args
@@ -713,7 +710,7 @@ func (r *FeatureRepo) insertRule(ctx context.Context, featureID uuid.UUID, rule 
 	if err != nil {
 		return fmt.Errorf("marshal rule source bindings: %w", err)
 	}
-	externalApiBindingsJSON, err := jsonBytes(rule.ExternalApiBindings, "[]")
+	externalAPIBindingsJSON, err := jsonBytes(rule.ExternalAPIBindings, "[]")
 	if err != nil {
 		return fmt.Errorf("marshal rule external api bindings: %w", err)
 	}
@@ -740,7 +737,7 @@ func (r *FeatureRepo) insertRule(ctx context.Context, featureID uuid.UUID, rule 
 		valueJSON,
 		rule.RolloutPercentage,
 		sourceBindingsJSON,
-		externalApiBindingsJSON,
+		externalAPIBindingsJSON,
 		metadataJSON,
 		rule.CreatedAt,
 		rule.UpdatedAt,
@@ -1090,7 +1087,7 @@ func scanRule(scanner ruleScanner) (*feature.Rule, string, error) {
 	var featureID string
 	var valueJSON []byte
 	var sourceBindingsJSON []byte
-	var externalApiBindingsJSON []byte
+	var externalAPIBindingsJSON []byte
 	var metadataJSON []byte
 	var rolloutPercentage *int
 	if err := scanner.Scan(
@@ -1103,7 +1100,7 @@ func scanRule(scanner ruleScanner) (*feature.Rule, string, error) {
 		&valueJSON,
 		&rolloutPercentage,
 		&sourceBindingsJSON,
-		&externalApiBindingsJSON,
+		&externalAPIBindingsJSON,
 		&metadataJSON,
 		&rule.CreatedAt,
 		&rule.UpdatedAt,
@@ -1117,8 +1114,8 @@ func scanRule(scanner ruleScanner) (*feature.Rule, string, error) {
 	if err := decodeJSON(sourceBindingsJSON, &rule.SourceBindings); err != nil {
 		return nil, "", err
 	}
-	if len(externalApiBindingsJSON) > 0 && string(externalApiBindingsJSON) != "null" && string(externalApiBindingsJSON) != "[]" {
-		if err := decodeJSON(externalApiBindingsJSON, &rule.ExternalApiBindings); err != nil {
+	if len(externalAPIBindingsJSON) > 0 && string(externalAPIBindingsJSON) != "null" && string(externalAPIBindingsJSON) != "[]" {
+		if err := decodeJSON(externalAPIBindingsJSON, &rule.ExternalAPIBindings); err != nil {
 			return nil, "", err
 		}
 	}

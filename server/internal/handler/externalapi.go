@@ -235,7 +235,7 @@ func validateExternalAPIExpression(validation externalapi.ResponseValidation) er
 	return nil
 }
 
-func buildExternalAPIExpressionProfile() dto.ExternalAPIExpressionProfileResponse {
+func buildExternalAPIExpressionProfile() dto.ExternalAPIExpressionProfileResponse { //nolint:funlen // static profile definition
 	return dto.ExternalAPIExpressionProfileResponse{
 		Keywords: []string{"and", "or", "not", "true", "false", "null", "nil"},
 		Symbols: []dto.ExternalAPIExpressionSymbolResponse{

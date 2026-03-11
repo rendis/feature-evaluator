@@ -4,12 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"slices"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
 	"github.com/rendis/feature-evaluator/internal/domain/workspace"
 	"github.com/rendis/feature-evaluator/pkg/apierror"
 )
@@ -60,39 +57,14 @@ func decodeJSON(data []byte, target any) error {
 	return json.Unmarshal(data, target)
 }
 
-func nullableString(value string) *string {
-	if strings.TrimSpace(value) == "" {
-		return nil
-	}
-
-	return &value
-}
-
-func nullableTime(value *time.Time) any {
-	if value == nil {
-		return nil
-	}
-
-	return *value
-}
-
-func sanitizeSearch(value string, maxLen int) string {
+func sanitizeSearch(value string) string {
+	const maxLen = 200
 	value = strings.TrimSpace(value)
 	if len(value) > maxLen {
 		return value[:maxLen]
 	}
 
 	return value
-}
-
-func normalizeStringSlice(values []string) []string {
-	if values == nil {
-		return []string{}
-	}
-
-	cloned := slices.Clone(values)
-	slices.Sort(cloned)
-	return cloned
 }
 
 func parseUUIDStrings(values []string) ([]uuid.UUID, error) {
@@ -106,15 +78,4 @@ func parseUUIDStrings(values []string) ([]uuid.UUID, error) {
 	}
 
 	return ids, nil
-}
-
-func closeRows(rows pgx.Rows, err *error) {
-	if rows == nil {
-		return
-	}
-
-	rows.Close()
-	if rowsErr := rows.Err(); rowsErr != nil && *err == nil {
-		*err = rowsErr
-	}
 }

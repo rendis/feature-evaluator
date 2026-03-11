@@ -265,7 +265,7 @@ func (v *Validator) oidcValidator(issuer, audience string) *middleware.JWTValida
 	return validator
 }
 
-func (v *Validator) validateCustomDraft(
+func (v *Validator) validateCustomDraft( //nolint:gocognit,cyclop,funlen // custom auth validation
 	ctx context.Context,
 	profile *authprofile.Profile,
 	secrets map[string]string,
@@ -370,12 +370,12 @@ func (v *Validator) validateCustomDraft(
 		}
 	}
 
-	resp, body, err := v.doRequest(req)
+	result, err := v.doRequest(req)
 	if err != nil {
 		return nil, err
 	}
 
-	passed, evalErr := evaluateSuccessRule(successRule, body, resp.StatusCode, resp.Header)
+	passed, evalErr := evaluateSuccessRule(successRule, result.body, result.statusCode, result.header)
 	if evalErr != nil {
 		return nil, evalErr
 	}
@@ -386,7 +386,7 @@ func (v *Validator) validateCustomDraft(
 		AuthValidationResult: evaluation.AuthValidationResult{
 			Authenticated: passed,
 			Attempted:     true,
-			HTTPStatus:    resp.StatusCode,
+			HTTPStatus:    result.statusCode,
 		},
 		Details: map[string]any{
 			"request": map[string]any{
@@ -395,24 +395,34 @@ func (v *Validator) validateCustomDraft(
 				"headers": redactHeaders(req.Header),
 				"body":    bodyPayload,
 			},
-			"responseText":    string(body),
-			"responseHeaders": normalizeHeaders(resp.Header),
+			"responseText":    string(result.body),
+			"responseHeaders": normalizeHeaders(result.header),
 		},
 	}, nil
 }
 
-func (v *Validator) doRequest(req *http.Request) (*http.Response, []byte, error) {
-	resp, err := v.httpClient.Do(req)
+type doRequestResult struct {
+	statusCode int
+	header     http.Header
+	body       []byte
+}
+
+func (v *Validator) doRequest(req *http.Request) (*doRequestResult, error) {
+	resp, err := v.httpClient.Do(req) //nolint:gosec // URL is validated by isPrivateURL before reaching here
 	if err != nil {
-		return nil, nil, fmt.Errorf("executing auth validation request: %w", err)
+		return nil, fmt.Errorf("executing auth validation request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 	if err != nil {
-		return nil, nil, fmt.Errorf("reading auth validation response: %w", err)
+		return nil, fmt.Errorf("reading auth validation response: %w", err)
 	}
-	return resp, body, nil
+	return &doRequestResult{
+		statusCode: resp.StatusCode,
+		header:     resp.Header.Clone(),
+		body:       body,
+	}, nil
 }
 
 type mappingRow struct {

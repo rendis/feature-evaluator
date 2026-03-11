@@ -28,7 +28,7 @@ func ValidateNormalizedKey(key string) error {
 }
 
 // ExtractRecordKey resolves and canonicalizes the configured record key from a JSON object.
-func ExtractRecordKey(record map[string]any, path string) (string, error) {
+func ExtractRecordKey(record map[string]any, path string) (string, error) { //nolint:cyclop // type switch for key extraction
 	value, ok := ResolvePath(record, path)
 	if !ok {
 		return "", apierror.NewBadRequest(

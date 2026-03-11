@@ -19,7 +19,7 @@ import (
 	"github.com/rendis/feature-evaluator/internal/domain/workspace"
 )
 
-const defaultIntegrationDatabaseURL = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+const defaultIntegrationDatabaseURL = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" //nolint:gosec // test-only local credential
 
 func TestFeatureRepoStoresRulesAndTags(t *testing.T) {
 	client, ctx := newIntegrationClient(t)

@@ -9,21 +9,21 @@ import (
 	"github.com/rendis/feature-evaluator/internal/domain/feature"
 )
 
-// ExternalApiResolver resolves external API bindings during rule evaluation.
-type ExternalApiResolver struct {
+// APIResolver resolves external API bindings during rule evaluation.
+type APIResolver struct {
 	apiSvc *externalapi.Service
 	caller *Caller
 }
 
-// NewExternalApiResolver creates a resolver that calls workspace-level external APIs.
-func NewExternalApiResolver(apiSvc *externalapi.Service, caller *Caller) *ExternalApiResolver {
-	return &ExternalApiResolver{apiSvc: apiSvc, caller: caller}
+// NewAPIResolver creates a resolver that calls workspace-level external APIs.
+func NewAPIResolver(apiSvc *externalapi.Service, caller *Caller) *APIResolver {
+	return &APIResolver{apiSvc: apiSvc, caller: caller}
 }
 
 // Resolve calls each bound external API and returns a map of apiKey → passed.
-func (r *ExternalApiResolver) Resolve(
+func (r *APIResolver) Resolve(
 	ctx context.Context,
-	bindings []feature.ExternalApiBinding,
+	bindings []feature.ExternalAPIBinding,
 	env map[string]any,
 ) map[string]bool {
 	results := make(map[string]bool, len(bindings))
@@ -32,32 +32,32 @@ func (r *ExternalApiResolver) Resolve(
 		passed, err := r.resolveOne(ctx, binding, env)
 		if err != nil {
 			slog.Warn("external api binding call failed",
-				"apiKey", binding.ExternalApiKey,
+				"apiKey", binding.ExternalAPIKey,
 				"failMode", binding.FailMode,
 				"error", err,
 			)
 			// Fail-open: treat failures as passed; fail-closed: treat as failed
-			results[binding.ExternalApiKey] = binding.FailMode == feature.FailModeOpen
+			results[binding.ExternalAPIKey] = binding.FailMode == feature.FailModeOpen
 			continue
 		}
-		results[binding.ExternalApiKey] = passed
+		results[binding.ExternalAPIKey] = passed
 	}
 
 	return results
 }
 
-func (r *ExternalApiResolver) resolveOne(
+func (r *APIResolver) resolveOne(
 	ctx context.Context,
-	binding feature.ExternalApiBinding,
+	binding feature.ExternalAPIBinding,
 	env map[string]any,
 ) (bool, error) {
-	api, err := r.apiSvc.GetByKey(ctx, binding.ExternalApiKey)
+	api, err := r.apiSvc.GetByKey(ctx, binding.ExternalAPIKey)
 	if err != nil {
-		return false, fmt.Errorf("fetching external api %q: %w", binding.ExternalApiKey, err)
+		return false, fmt.Errorf("fetching external api %q: %w", binding.ExternalAPIKey, err)
 	}
 
 	if !api.Active {
-		return false, fmt.Errorf("external api %q is inactive", binding.ExternalApiKey)
+		return false, fmt.Errorf("external api %q is inactive", binding.ExternalAPIKey)
 	}
 
 	// Resolve param values from the eval env using the binding's param mappings
@@ -76,7 +76,7 @@ func (r *ExternalApiResolver) resolveOne(
 	if api.HasSecrets && api.SecretPayloadEncrypted != "" {
 		decrypted, decErr := r.apiSvc.DecryptSecrets(ctx, api)
 		if decErr != nil {
-			return false, fmt.Errorf("decrypting secrets for %q: %w", binding.ExternalApiKey, decErr)
+			return false, fmt.Errorf("decrypting secrets for %q: %w", binding.ExternalAPIKey, decErr)
 		}
 		secretValues = decrypted
 	}

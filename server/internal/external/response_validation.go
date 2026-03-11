@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"reflect"
 	"regexp"
@@ -22,14 +23,14 @@ var responseExpressionFunctionAliases = map[*regexp.Regexp]string{
 	regexp.MustCompile(`\bendsWith\s*\(`):   "fe_endsWith(",
 }
 
-// ExternalAPIFinalEvaluation summarizes the final boolean produced by the test flow.
-type ExternalAPIFinalEvaluation struct {
+// APIFinalEvaluation summarizes the final boolean produced by the test flow.
+type APIFinalEvaluation struct {
 	Mode   externalapi.ValidationMode `json:"mode"`
 	Passed bool                       `json:"passed"`
 }
 
-// ExternalAPIHTTPValidationDetails describes the HTTP validation stage for a test run.
-type ExternalAPIHTTPValidationDetails struct {
+// APIHTTPValidationDetails describes the HTTP validation stage for a test run.
+type APIHTTPValidationDetails struct {
 	Applied       bool                           `json:"applied"`
 	Passed        bool                           `json:"passed"`
 	Mode          externalapi.HTTPValidationMode `json:"mode"`
@@ -37,8 +38,8 @@ type ExternalAPIHTTPValidationDetails struct {
 	ActualStatus  int                            `json:"actualStatus"`
 }
 
-// ExternalAPIExpressionValidationDetails describes the expression validation stage for a test run.
-type ExternalAPIExpressionValidationDetails struct {
+// APIExpressionValidationDetails describes the expression validation stage for a test run.
+type APIExpressionValidationDetails struct {
 	Applied            bool    `json:"applied"`
 	Passed             bool    `json:"passed"`
 	Expression         string  `json:"expression"`
@@ -46,11 +47,11 @@ type ExternalAPIExpressionValidationDetails struct {
 	Error              *string `json:"error"`
 }
 
-// ExternalAPIEvaluationDetails captures all validation stages executed during a test run.
-type ExternalAPIEvaluationDetails struct {
-	Final      ExternalAPIFinalEvaluation             `json:"final"`
-	HTTP       ExternalAPIHTTPValidationDetails       `json:"http"`
-	Expression ExternalAPIExpressionValidationDetails `json:"expression"`
+// APIEvaluationDetails captures all validation stages executed during a test run.
+type APIEvaluationDetails struct {
+	Final      APIFinalEvaluation             `json:"final"`
+	HTTP       APIHTTPValidationDetails       `json:"http"`
+	Expression APIExpressionValidationDetails `json:"expression"`
 }
 
 // ValidateResponseExpression checks whether a response-body expression is syntactically valid.
@@ -122,7 +123,7 @@ func EvaluateExternalAPIResponseDetailed(
 	httpStatus int,
 	headers http.Header,
 	vars map[string]any,
-) (ExternalAPIEvaluationDetails, error) {
+) (APIEvaluationDetails, error) {
 	return evaluateExternalAPIResponseDetailed(validation, responseBody, httpStatus, headers, vars, true)
 }
 
@@ -133,16 +134,16 @@ func evaluateExternalAPIResponseDetailed(
 	headers http.Header,
 	vars map[string]any,
 	captureExpressionError bool,
-) (ExternalAPIEvaluationDetails, error) {
-	details := ExternalAPIEvaluationDetails{
-		Final: ExternalAPIFinalEvaluation{Mode: validation.Mode},
-		HTTP: ExternalAPIHTTPValidationDetails{
+) (APIEvaluationDetails, error) {
+	details := APIEvaluationDetails{
+		Final: APIFinalEvaluation{Mode: validation.Mode},
+		HTTP: APIHTTPValidationDetails{
 			Applied:       validation.Mode == externalapi.ValidationModeHTTPCode || validation.Mode == externalapi.ValidationModeBoth,
 			Mode:          validation.HTTP.Mode,
 			ExpectedCodes: cloneExpectedCodes(validation.HTTP.Codes),
 			ActualStatus:  httpStatus,
 		},
-		Expression: ExternalAPIExpressionValidationDetails{
+		Expression: APIExpressionValidationDetails{
 			Applied:    validation.Mode == externalapi.ValidationModeResponseBody || validation.Mode == externalapi.ValidationModeBoth,
 			Expression: validation.Body.Expression,
 		},
@@ -159,7 +160,7 @@ func evaluateExternalAPIResponseDetailed(
 	}
 
 	bodyOK := true
-	if details.Expression.Applied {
+	if details.Expression.Applied { //nolint:nestif // expression evaluation details
 		var err error
 		var resolvedExpression string
 		bodyOK, resolvedExpression, err = evaluateBodyValidation(
@@ -345,7 +346,7 @@ func collectExpressionReplacements(root ast.Node, env map[string]any) []expressi
 	return selected
 }
 
-func collectExpressionReplacementCandidates(
+func collectExpressionReplacementCandidates( //nolint:gocognit,cyclop,funlen // AST traversal
 	node ast.Node,
 	parent ast.Node,
 	env map[string]any,
@@ -492,7 +493,7 @@ func expressionPropertyValue(node ast.Node, env map[string]any) (any, bool) {
 	}
 }
 
-func expressionMemberValue(target any, property any) (any, bool) {
+func expressionMemberValue(target any, property any) (any, bool) { //nolint:cyclop // type switch
 	targetValue := reflect.ValueOf(target)
 	if !targetValue.IsValid() {
 		return nil, false
@@ -564,7 +565,10 @@ func expressionSliceIndex(property any) (int, bool) {
 	case int64:
 		return int(value), true
 	case uint:
-		return int(value), true
+		if value > math.MaxInt { //nolint:gosec // bounds check
+			return 0, false
+		}
+		return int(value), true //nolint:gosec // checked above
 	case uint8:
 		return int(value), true
 	case uint16:
@@ -572,7 +576,10 @@ func expressionSliceIndex(property any) (int, bool) {
 	case uint32:
 		return int(value), true
 	case uint64:
-		return int(value), true
+		if value > math.MaxInt { //nolint:gosec // bounds check
+			return 0, false
+		}
+		return int(value), true //nolint:gosec // checked above
 	default:
 		return 0, false
 	}
@@ -587,7 +594,7 @@ func isRenderableExpressionValue(value any) bool {
 	return valueType.Kind() != reflect.Func
 }
 
-func valueToExpressionNode(value any) ast.Node {
+func valueToExpressionNode(value any) ast.Node { //nolint:cyclop // type switch
 	switch typed := value.(type) {
 	case nil:
 		return &ast.NilNode{}
@@ -606,7 +613,7 @@ func valueToExpressionNode(value any) ast.Node {
 	case int64:
 		return &ast.IntegerNode{Value: int(typed)}
 	case uint:
-		return &ast.IntegerNode{Value: int(typed)}
+		return &ast.IntegerNode{Value: int(min(typed, math.MaxInt))} //nolint:gosec // clamped
 	case uint8:
 		return &ast.IntegerNode{Value: int(typed)}
 	case uint16:
@@ -614,7 +621,7 @@ func valueToExpressionNode(value any) ast.Node {
 	case uint32:
 		return &ast.IntegerNode{Value: int(typed)}
 	case uint64:
-		return &ast.IntegerNode{Value: int(typed)}
+		return &ast.IntegerNode{Value: int(min(typed, math.MaxInt))} //nolint:gosec // clamped
 	case float32:
 		return &ast.FloatNode{Value: float64(typed)}
 	case float64:

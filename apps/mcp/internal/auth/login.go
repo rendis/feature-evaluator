@@ -92,7 +92,7 @@ func RunLogin() error {
 		if errMsg := r.URL.Query().Get("error"); errMsg != "" {
 			desc := r.URL.Query().Get("error_description")
 			errCh <- fmt.Errorf("authorization error: %s — %s", errMsg, desc)
-			fmt.Fprintf(w, "<html><body><h2>Login failed</h2><p>%s: %s</p><p>You can close this tab.</p></body></html>", errMsg, desc)
+			_, _ = fmt.Fprintf(w, "<html><body><h2>Login failed</h2><p>%s: %s</p><p>You can close this tab.</p></body></html>", errMsg, desc)
 			return
 		}
 		code := r.URL.Query().Get("code")
@@ -102,7 +102,7 @@ func RunLogin() error {
 			return
 		}
 		codeCh <- code
-		fmt.Fprint(w, "<html><body><h2>Login successful!</h2><p>You can close this tab and return to the terminal.</p></body></html>")
+		_, _ = fmt.Fprint(w, "<html><body><h2>Login successful!</h2><p>You can close this tab and return to the terminal.</p></body></html>")
 	})
 
 	srv := &http.Server{Handler: mux}
@@ -172,7 +172,7 @@ func fetchOIDCDiscovery(issuer string) (*oidcDiscoveryResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("GET %s: %w", discoveryURL, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("OIDC discovery returned %d", resp.StatusCode)
 	}
@@ -237,7 +237,7 @@ func exchangeCode(tokenEndpoint, clientID, code, redirectURI, verifier string) (
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("token endpoint returned %d", resp.StatusCode)

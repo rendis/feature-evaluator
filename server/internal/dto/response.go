@@ -112,15 +112,15 @@ type RuleResponse struct {
 	Value               any                          `json:"value"`
 	RolloutPercentage   *int                         `json:"rolloutPercentage,omitempty"`
 	SourceBindings      SourceBindingsResponse       `json:"sourceBindings"`
-	ExternalApiBindings []ExternalApiBindingResponse `json:"externalApiBindings"`
+	ExternalAPIBindings []ExternalAPIBindingResponse `json:"externalAPIBindings"`
 	Metadata            map[string]any               `json:"metadata,omitempty"`
 	CreatedAt           string                       `json:"createdAt"`
 	UpdatedAt           string                       `json:"updatedAt"`
 }
 
-// ExternalApiBindingResponse is the response DTO for a rule's external API binding.
-type ExternalApiBindingResponse struct {
-	ExternalApiKey string                 `json:"externalApiKey"`
+// ExternalAPIBindingResponse is the response DTO for a rule's external API binding.
+type ExternalAPIBindingResponse struct {
+	ExternalAPIKey string                 `json:"externalApiKey"`
 	ParamMappings  []ParamMappingResponse `json:"paramMappings"`
 	FailMode       string                 `json:"failMode"`
 	CacheTTL       int                    `json:"cacheTTL"`
@@ -355,11 +355,11 @@ type ExternalAPITestResponse struct {
 
 // ExternalAPITestDetailsResponse documents the debug payload returned by a reusable external API test.
 type ExternalAPITestDetailsResponse struct {
-	Request         *ExternalAPITestRequestResponse        `json:"request,omitempty"`
-	ResponseText    string                                 `json:"responseText,omitempty"`
-	ResponseHeaders map[string]string                      `json:"responseHeaders,omitempty"`
-	ResponseBody    any                                    `json:"responseBody,omitempty"`
-	Evaluations     *extdebug.ExternalAPIEvaluationDetails `json:"evaluations,omitempty"`
+	Request         *ExternalAPITestRequestResponse `json:"request,omitempty"`
+	ResponseText    string                          `json:"responseText,omitempty"`
+	ResponseHeaders map[string]string               `json:"responseHeaders,omitempty"`
+	ResponseBody    any                             `json:"responseBody,omitempty"`
+	Evaluations     *extdebug.APIEvaluationDetails  `json:"evaluations,omitempty"`
 }
 
 // ExternalAPITestRequestResponse describes the rendered outbound request used during the test.

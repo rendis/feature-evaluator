@@ -18,7 +18,7 @@ func BuildEnv(
 	input ExpressionInputData,
 	authenticated bool,
 	segmentChecker SegmentChecker,
-	externalApiChecker ExternalApiChecker,
+	externalAPIChecker ExternalAPIChecker,
 ) map[string]any {
 	env := make(map[string]any, len(evalContext)+len(input.Sources)+9)
 
@@ -60,7 +60,7 @@ func BuildEnv(
 	}
 
 	// Add custom functions
-	for k, v := range BuiltinFunctions(segmentChecker, externalApiChecker) {
+	for k, v := range BuiltinFunctions(segmentChecker, externalAPIChecker) {
 		env[k] = v
 	}
 

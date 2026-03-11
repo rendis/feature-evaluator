@@ -54,7 +54,7 @@ func (c *Client) Healthy() error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("health check returned %d", resp.StatusCode)
 	}
@@ -97,7 +97,7 @@ func (c *Client) Delete(path string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode >= 400 {
 		return parseAPIError(resp)
 	}
@@ -118,7 +118,7 @@ func (c *Client) DeleteWithBody(path string, body any) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode >= 400 {
 		return parseAPIError(resp)
 	}
@@ -139,7 +139,7 @@ func (c *Client) request(method, path string, body any) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNoContent {
 		return map[string]any{"status": "ok"}, nil

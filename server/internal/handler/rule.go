@@ -23,8 +23,8 @@ import (
 type RuleHandler struct {
 	featureSvc     *feature.Service
 	segmentSvc     *segment.Service
-	externalApiSvc *externalapi.Service
-	extApiResolver evaluation.ExternalApiResolver
+	externalAPISvc *externalapi.Service
+	extAPIResolver evaluation.ExternalAPIResolver
 	engine         *engine.Engine
 	changelogSvc   *changelog.Service
 }
@@ -33,16 +33,16 @@ type RuleHandler struct {
 func NewRuleHandler(
 	featureSvc *feature.Service,
 	segmentSvc *segment.Service,
-	externalApiSvc *externalapi.Service,
-	extApiResolver evaluation.ExternalApiResolver,
+	externalAPISvc *externalapi.Service,
+	extAPIResolver evaluation.ExternalAPIResolver,
 	eng *engine.Engine,
 	changelogSvc *changelog.Service,
 ) *RuleHandler {
 	return &RuleHandler{
 		featureSvc:     featureSvc,
 		segmentSvc:     segmentSvc,
-		externalApiSvc: externalApiSvc,
-		extApiResolver: extApiResolver,
+		externalAPISvc: externalAPISvc,
+		extAPIResolver: extAPIResolver,
 		engine:         eng,
 		changelogSvc:   changelogSvc,
 	}
@@ -89,7 +89,7 @@ func (h *RuleHandler) Create(c *gin.Context) {
 		dto.RespondError(c, err)
 		return
 	}
-	externalApiBindings, err := h.toDomainExternalApiBindings(c, req.ExternalApiBindings)
+	externalAPIBindings, err := h.toDomainExternalAPIBindings(c, req.ExternalAPIBindings)
 	if err != nil {
 		dto.RespondError(c, err)
 		return
@@ -110,7 +110,7 @@ func (h *RuleHandler) Create(c *gin.Context) {
 		Value:               req.Value,
 		RolloutPercentage:   req.RolloutPercentage,
 		SourceBindings:      sourceBindings,
-		ExternalApiBindings: externalApiBindings,
+		ExternalAPIBindings: externalAPIBindings,
 		Metadata:            req.Metadata,
 	}
 
@@ -156,7 +156,7 @@ func (h *RuleHandler) Update(c *gin.Context) {
 		dto.RespondError(c, err)
 		return
 	}
-	externalApiBindings, err := h.toDomainExternalApiBindings(c, req.ExternalApiBindings)
+	externalAPIBindings, err := h.toDomainExternalAPIBindings(c, req.ExternalAPIBindings)
 	if err != nil {
 		dto.RespondError(c, err)
 		return
@@ -171,7 +171,7 @@ func (h *RuleHandler) Update(c *gin.Context) {
 		Value:               req.Value,
 		RolloutPercentage:   req.RolloutPercentage,
 		SourceBindings:      sourceBindings,
-		ExternalApiBindings: externalApiBindings,
+		ExternalAPIBindings: externalAPIBindings,
 		Metadata:            req.Metadata,
 	}
 
@@ -192,17 +192,17 @@ func (h *RuleHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToRuleResponse(rule))
 }
 
-func (h *RuleHandler) toDomainExternalApiBindings(c *gin.Context, bindings []dto.ExternalApiBindingRequest) ([]feature.ExternalApiBinding, error) {
+func (h *RuleHandler) toDomainExternalAPIBindings(c *gin.Context, bindings []dto.ExternalAPIBindingRequest) ([]feature.ExternalAPIBinding, error) {
 	if len(bindings) == 0 {
 		return nil, nil
 	}
-	result := make([]feature.ExternalApiBinding, 0, len(bindings))
+	result := make([]feature.ExternalAPIBinding, 0, len(bindings))
 	for _, b := range bindings {
-		if h.externalApiSvc != nil {
-			api, err := h.externalApiSvc.GetByKey(c.Request.Context(), b.ExternalApiKey)
+		if h.externalAPISvc != nil {
+			api, err := h.externalAPISvc.GetByKey(c.Request.Context(), b.ExternalAPIKey)
 			if err != nil {
 				return nil, apierror.NewBadRequest(
-					fmt.Sprintf("external API %q not found", b.ExternalApiKey),
+					fmt.Sprintf("external API %q not found", b.ExternalAPIKey),
 					"error.externalApiNotFound",
 				)
 			}
@@ -223,8 +223,8 @@ func (h *RuleHandler) toDomainExternalApiBindings(c *gin.Context, bindings []dto
 				LiteralValue: m.LiteralValue,
 			})
 		}
-		result = append(result, feature.ExternalApiBinding{
-			ExternalApiKey: b.ExternalApiKey,
+		result = append(result, feature.ExternalAPIBinding{
+			ExternalAPIKey: b.ExternalAPIKey,
 			ParamMappings:  mappings,
 			FailMode:       failMode,
 			CacheTTL:       b.CacheTTL,
@@ -335,8 +335,8 @@ func (h *RuleHandler) TestExpression(c *gin.Context) {
 
 	// Build a test environment with the namespaced context
 	noopSegmentChecker := func(string) bool { return false }
-	noopExternalApiChecker := func(string) bool { return false }
-	env := engine.BuildEnv(evalContext, engine.ExpressionInputData{}, authenticated, noopSegmentChecker, noopExternalApiChecker)
+	noopExternalAPIChecker := func(string) bool { return false }
+	env := engine.BuildEnv(evalContext, engine.ExpressionInputData{}, authenticated, noopSegmentChecker, noopExternalAPIChecker)
 
 	result, err := h.engine.CompileAndRun(req.Expression, env)
 	if err != nil {
@@ -374,7 +374,7 @@ func (h *RuleHandler) FeatureExpressionSchema(c *gin.Context) {
 }
 
 // FeatureTestExpression tests an expression using the feature-specific input contract.
-func (h *RuleHandler) FeatureTestExpression(c *gin.Context) {
+func (h *RuleHandler) FeatureTestExpression(c *gin.Context) { //nolint:funlen // multi-step expression test
 	featureKey := c.Param("key")
 	f, err := h.featureSvc.GetByKey(c.Request.Context(), featureKey)
 	if err != nil {
@@ -427,7 +427,7 @@ func (h *RuleHandler) FeatureTestExpression(c *gin.Context) {
 	}
 
 	noopSegmentChecker := func(string) bool { return false }
-	noopExtApiChecker := func(string) bool { return false }
+	noopExtAPIChecker := func(string) bool { return false }
 	env := engine.BuildEnv(
 		evalContext,
 		engine.ExpressionInputData{
@@ -438,15 +438,15 @@ func (h *RuleHandler) FeatureTestExpression(c *gin.Context) {
 		},
 		authState.Authenticated,
 		noopSegmentChecker,
-		noopExtApiChecker,
+		noopExtAPIChecker,
 	)
 
 	// Resolve external API bindings if present
-	if len(req.ExternalApiBindings) > 0 && h.extApiResolver != nil {
-		domainBindings, bindErr := h.toDomainExternalApiBindings(c, req.ExternalApiBindings)
+	if len(req.ExternalAPIBindings) > 0 && h.extAPIResolver != nil {
+		domainBindings, bindErr := h.toDomainExternalAPIBindings(c, req.ExternalAPIBindings)
 		if bindErr == nil {
-			extResults := h.extApiResolver.Resolve(c.Request.Context(), domainBindings, env)
-			env["externalApi"] = engine.ExternalApiChecker(func(apiKey string) bool {
+			extResults := h.extAPIResolver.Resolve(c.Request.Context(), domainBindings, env)
+			env["externalApi"] = engine.ExternalAPIChecker(func(apiKey string) bool {
 				return extResults[apiKey]
 			})
 		}

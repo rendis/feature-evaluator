@@ -76,7 +76,7 @@ func (r *ChangelogRepo) ListByEntity(ctx context.Context, entityType, entityKey 
 	return r.query(ctx, params, entityType, entityKey)
 }
 
-func (r *ChangelogRepo) query(ctx context.Context, params changelog.ListParams, forcedEntityType, forcedEntityKey string) (*changelog.ListResult, error) {
+func (r *ChangelogRepo) query(ctx context.Context, params changelog.ListParams, forcedEntityType, forcedEntityKey string) (*changelog.ListResult, error) { //nolint:funlen // builds complex query
 	where := []string{"workspace_key = $1"}
 	args := []any{wsKey(ctx)}
 	arg := 2

@@ -75,7 +75,7 @@ type CreateRuleRequest struct {
 	Value               any                         `json:"value" binding:"required"`
 	RolloutPercentage   *int                        `json:"rolloutPercentage"`
 	SourceBindings      SourceBindingsRequest       `json:"sourceBindings"`
-	ExternalApiBindings []ExternalApiBindingRequest `json:"externalApiBindings"`
+	ExternalAPIBindings []ExternalAPIBindingRequest `json:"externalAPIBindings"`
 	Metadata            map[string]any              `json:"metadata"`
 }
 
@@ -88,13 +88,13 @@ type UpdateRuleRequest struct {
 	Value               any                         `json:"value" binding:"required"`
 	RolloutPercentage   *int                        `json:"rolloutPercentage"`
 	SourceBindings      SourceBindingsRequest       `json:"sourceBindings"`
-	ExternalApiBindings []ExternalApiBindingRequest `json:"externalApiBindings"`
+	ExternalAPIBindings []ExternalAPIBindingRequest `json:"externalAPIBindings"`
 	Metadata            map[string]any              `json:"metadata"`
 }
 
-// ExternalApiBindingRequest binds a workspace-level ExternalApi to a rule with param mappings.
-type ExternalApiBindingRequest struct {
-	ExternalApiKey string                `json:"externalApiKey" binding:"required"`
+// ExternalAPIBindingRequest binds a workspace-level ExternalAPI to a rule with param mappings.
+type ExternalAPIBindingRequest struct {
+	ExternalAPIKey string                `json:"externalApiKey" binding:"required"`
 	ParamMappings  []ParamMappingRequest `json:"paramMappings"`
 	FailMode       string                `json:"failMode"`
 	CacheTTL       int                   `json:"cacheTTL"`
@@ -219,7 +219,7 @@ type SegmentSourceBindingRequest struct {
 type FeatureExpressionTestRequest struct {
 	Expression          string                      `json:"expression" binding:"required"`
 	SourceBindings      SourceBindingsRequest       `json:"sourceBindings"`
-	ExternalApiBindings []ExternalApiBindingRequest `json:"externalApiBindings"`
+	ExternalAPIBindings []ExternalAPIBindingRequest `json:"externalAPIBindings"`
 	Scenario            FeatureTestScenario         `json:"scenario" binding:"required"`
 }
 
@@ -307,4 +307,3 @@ type TestExternalAPIRequest struct {
 	ReplaceSecret       bool                             `json:"replaceSecret"`
 	ParamValues         map[string]any                   `json:"paramValues"`
 }
-

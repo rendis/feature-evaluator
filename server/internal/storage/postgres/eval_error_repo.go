@@ -58,7 +58,7 @@ func (r *EvalErrorRepo) Create(ctx context.Context, evalErr *audit.EvalError) er
 }
 
 // List returns paginated evaluation errors.
-func (r *EvalErrorRepo) List(ctx context.Context, params audit.ListParams) (*audit.ListResult, error) {
+func (r *EvalErrorRepo) List(ctx context.Context, params audit.ListParams) (*audit.ListResult, error) { //nolint:funlen // builds complex query
 	where := []string{"workspace_key = $1"}
 	args := []any{wsKey(ctx)}
 	arg := 2
