@@ -128,7 +128,7 @@ type Rule struct {
 	Value               any                  `json:"value"`
 	RolloutPercentage   *int                 `json:"rolloutPercentage,omitempty"`
 	SourceBindings      SourceBindings       `json:"sourceBindings,omitempty"`
-	ExternalAPIBindings []ExternalAPIBinding `json:"externalAPIBindings,omitempty"`
+	ExternalAPIBindings []ExternalAPIBinding `json:"externalApiBindings,omitempty"`
 	Metadata            map[string]any       `json:"metadata,omitempty"`
 	CreatedAt           time.Time            `json:"createdAt"`
 	UpdatedAt           time.Time            `json:"updatedAt"`

@@ -75,7 +75,7 @@ type CreateRuleRequest struct {
 	Value               any                         `json:"value" binding:"required"`
 	RolloutPercentage   *int                        `json:"rolloutPercentage"`
 	SourceBindings      SourceBindingsRequest       `json:"sourceBindings"`
-	ExternalAPIBindings []ExternalAPIBindingRequest `json:"externalAPIBindings"`
+	ExternalAPIBindings []ExternalAPIBindingRequest `json:"externalApiBindings"`
 	Metadata            map[string]any              `json:"metadata"`
 }
 
@@ -88,7 +88,7 @@ type UpdateRuleRequest struct {
 	Value               any                         `json:"value" binding:"required"`
 	RolloutPercentage   *int                        `json:"rolloutPercentage"`
 	SourceBindings      SourceBindingsRequest       `json:"sourceBindings"`
-	ExternalAPIBindings []ExternalAPIBindingRequest `json:"externalAPIBindings"`
+	ExternalAPIBindings []ExternalAPIBindingRequest `json:"externalApiBindings"`
 	Metadata            map[string]any              `json:"metadata"`
 }
 
@@ -219,7 +219,7 @@ type SegmentSourceBindingRequest struct {
 type FeatureExpressionTestRequest struct {
 	Expression          string                      `json:"expression" binding:"required"`
 	SourceBindings      SourceBindingsRequest       `json:"sourceBindings"`
-	ExternalAPIBindings []ExternalAPIBindingRequest `json:"externalAPIBindings"`
+	ExternalAPIBindings []ExternalAPIBindingRequest `json:"externalApiBindings"`
 	Scenario            FeatureTestScenario         `json:"scenario" binding:"required"`
 }
 
