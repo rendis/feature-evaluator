@@ -26,7 +26,23 @@ func NewOFREPHandler(evalSvc *evaluation.Service, collector *evalmetrics.Collect
 	return &OFREPHandler{evalSvc: evalSvc, collector: collector}
 }
 
-// EvaluateSingle handles POST /ofrep/v1/evaluate/flags/:key
+// EvaluateSingle godoc
+// @Summary Evaluate a single flag (OFREP)
+// @Description OpenFeature Remote Evaluation Protocol endpoint for evaluating a single flag. NOTE: This endpoint is served under /ofrep/v1, not under the /features BasePath.
+// @Tags ofrep
+// @Accept json
+// @Produce json
+// @Param key path string true "Feature flag key"
+// @Param request body dto.OFREPEvalRequest true "OFREP evaluation request with context"
+// @Param X-Environment header string false "Environment override"
+// @Success 200 {object} dto.OFREPEvalResponse
+// @Failure 400 {object} dto.OFREPErrorResponse
+// @Failure 401 {object} dto.OFREPErrorResponse
+// @Failure 404 {object} dto.OFREPErrorResponse
+// @Failure 500 {object} dto.OFREPErrorResponse
+// @Security BearerAuth
+// @Security ApiKeyAuth
+// @Router /ofrep/v1/evaluate/flags/{key} [post]
 func (h *OFREPHandler) EvaluateSingle(c *gin.Context) {
 	key := c.Param("key")
 	if key == "" {
@@ -86,7 +102,21 @@ func (h *OFREPHandler) EvaluateSingle(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToOFREPResponse(result))
 }
 
-// EvaluateBulk handles POST /ofrep/v1/evaluate/flags
+// EvaluateBulk godoc
+// @Summary Evaluate all flags in bulk (OFREP)
+// @Description OpenFeature Remote Evaluation Protocol endpoint for bulk flag evaluation. Returns all enabled flags with ETag support. NOTE: This endpoint is served under /ofrep/v1, not under the /features BasePath.
+// @Tags ofrep
+// @Accept json
+// @Produce json
+// @Param request body dto.OFREPBulkRequest true "OFREP bulk evaluation request with context"
+// @Param If-None-Match header string false "ETag for conditional request (returns 304 if unchanged)"
+// @Param X-Environment header string false "Environment override"
+// @Success 200 {object} dto.OFREPBulkResponse
+// @Failure 304 "Not Modified"
+// @Failure 400 {object} dto.OFREPBulkErrorResponse
+// @Security BearerAuth
+// @Security ApiKeyAuth
+// @Router /ofrep/v1/evaluate/flags [post]
 func (h *OFREPHandler) EvaluateBulk(c *gin.Context) {
 	var req dto.OFREPBulkRequest
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {

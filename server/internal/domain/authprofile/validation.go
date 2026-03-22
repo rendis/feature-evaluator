@@ -139,6 +139,14 @@ func validateCustomProfile(profile *Profile, secretPayload map[string]string, cr
 		)
 	}
 
+	requestHeaders, ok := normalizeRequestHeaders(profile.Config["requestHeaders"])
+	if !ok {
+		return apierror.NewBadRequest(
+			"custom auth profile requires config.requestHeaders to be an array of {key, value} pairs with unique keys",
+			"error.invalidAuthProfileConfig",
+		)
+	}
+
 	successRule, ok := normalizeSuccessRule(profile.Config["successRule"])
 	if !ok {
 		return apierror.NewBadRequest(
@@ -160,6 +168,7 @@ func validateCustomProfile(profile *Profile, secretPayload map[string]string, cr
 	profile.Config["timeout"] = normalizeTimeout(intConfig(profile.Config, "timeout"))
 	profile.Config["headers"] = headers
 	profile.Config["body"] = body
+	profile.Config["requestHeaders"] = requestHeaders
 	profile.Config["successRule"] = successRule
 	if outboundHeader != "" {
 		profile.Config["outboundAuthHeaderName"] = outboundHeader
@@ -280,6 +289,49 @@ func normalizeMappings(raw any) ([]map[string]any, bool) { //nolint:gocognit,cyc
 			return nil, false
 		}
 		result = append(result, mapping)
+	}
+	return result, true
+}
+
+const maxRequestHeaders = 20
+
+func normalizeRequestHeaders(raw any) ([]map[string]any, bool) {
+	if raw == nil {
+		return []map[string]any{}, true
+	}
+	var items []map[string]any
+	switch typed := raw.(type) {
+	case []any:
+		items = make([]map[string]any, 0, len(typed))
+		for _, item := range typed {
+			entry, ok := item.(map[string]any)
+			if !ok {
+				return nil, false
+			}
+			items = append(items, entry)
+		}
+	case []map[string]any:
+		items = typed
+	default:
+		return nil, false
+	}
+	if len(items) > maxRequestHeaders {
+		return nil, false
+	}
+	seen := make(map[string]bool, len(items))
+	result := make([]map[string]any, 0, len(items))
+	for _, entry := range items {
+		key := strings.TrimSpace(stringConfig(entry, "key"))
+		if key == "" {
+			return nil, false
+		}
+		lower := strings.ToLower(key)
+		if seen[lower] {
+			return nil, false
+		}
+		seen[lower] = true
+		value := strings.TrimSpace(stringConfig(entry, "value"))
+		result = append(result, map[string]any{"key": key, "value": value})
 	}
 	return result, true
 }

@@ -20,7 +20,15 @@ func NewMemberHandler(svc *member.Service) *MemberHandler {
 	return &MemberHandler{svc: svc}
 }
 
-// List returns all team members.
+// List godoc
+// @Summary      List members
+// @Description  Returns all team members in the current workspace
+// @Tags         members
+// @Produce      json
+// @Success      200  {object}  dto.DataResponse[[]dto.MemberResponse]
+// @Failure      500  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/members [get]
 func (h *MemberHandler) List(c *gin.Context) {
 	members, err := h.svc.List(c.Request.Context())
 	if err != nil {
@@ -37,7 +45,15 @@ func (h *MemberHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": resp})
 }
 
-// GetMe returns the current authenticated user's member info.
+// GetMe godoc
+// @Summary      Get current member
+// @Description  Returns the authenticated user's member information
+// @Tags         members
+// @Produce      json
+// @Success      200  {object}  dto.MemberResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/members/me [get]
 func (h *MemberHandler) GetMe(c *gin.Context) {
 	email := middleware.GetUserEmail(c)
 	m, err := h.svc.GetByEmail(c.Request.Context(), email)
@@ -49,7 +65,18 @@ func (h *MemberHandler) GetMe(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToMemberResponse(m))
 }
 
-// Create registers a new team member.
+// Create godoc
+// @Summary      Create member
+// @Description  Registers a new team member
+// @Tags         members
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.CreateMemberRequest  true  "Member creation payload"
+// @Success      201   {object}  dto.MemberResponse
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      409   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/members [post]
 func (h *MemberHandler) Create(c *gin.Context) {
 	var req dto.CreateMemberRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -73,7 +100,19 @@ func (h *MemberHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToMemberResponse(m))
 }
 
-// UpdateRole changes a member's role.
+// UpdateRole godoc
+// @Summary      Update member role
+// @Description  Changes a member's role
+// @Tags         members
+// @Accept       json
+// @Produce      json
+// @Param        id    path      string                true  "Member ID"
+// @Param        body  body      dto.UpdateRoleRequest  true  "Role update payload"
+// @Success      200   {object}  dto.MessageResponse
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      404   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/members/{id}/role [put]
 func (h *MemberHandler) UpdateRole(c *gin.Context) {
 	id := c.Param("id")
 	var req dto.UpdateRoleRequest
@@ -92,7 +131,16 @@ func (h *MemberHandler) UpdateRole(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "role updated"})
 }
 
-// Delete removes a team member.
+// Delete godoc
+// @Summary      Delete member
+// @Description  Removes a team member
+// @Tags         members
+// @Produce      json
+// @Param        id   path      string  true  "Member ID"
+// @Success      200  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/members/{id} [delete]
 func (h *MemberHandler) Delete(c *gin.Context) {
 	id := c.Param("id")
 	if err := h.svc.Delete(c.Request.Context(), id); err != nil {
@@ -104,7 +152,19 @@ func (h *MemberHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "member deleted"})
 }
 
-// TransferOwnership transfers the owner role to another member.
+// TransferOwnership godoc
+// @Summary      Transfer ownership
+// @Description  Transfers the owner role from one member to another
+// @Tags         members
+// @Accept       json
+// @Produce      json
+// @Param        id    path      string                          true  "Current owner member ID"
+// @Param        body  body      dto.TransferOwnershipRequest     true  "Transfer payload"
+// @Success      200   {object}  dto.MessageResponse
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      404   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/members/{id}/transfer-ownership [post]
 func (h *MemberHandler) TransferOwnership(c *gin.Context) {
 	fromID := c.Param("id")
 	var req dto.TransferOwnershipRequest

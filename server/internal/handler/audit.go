@@ -19,7 +19,22 @@ func NewAuditHandler(svc *audit.Service) *AuditHandler {
 	return &AuditHandler{svc: svc}
 }
 
-// ListErrors returns a paginated list of evaluation errors.
+// ListErrors godoc
+// @Summary List evaluation errors
+// @Description Returns a paginated list of evaluation errors, optionally filtered by feature, tenant, error type, and date range
+// @Tags audit
+// @Produce json
+// @Param featureKey query string false "Filter by feature key"
+// @Param tenantId query string false "Filter by tenant ID"
+// @Param errorType query string false "Filter by error type"
+// @Param from query string false "Start date (RFC3339)"
+// @Param to query string false "End date (RFC3339)"
+// @Param page query int false "Page number (default 1)"
+// @Param pageSize query int false "Page size (default 20, max 100)"
+// @Success 200 {object} dto.ListResponse[dto.AuditErrorResponse]
+// @Failure 500 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/audit/errors [get]
 func (h *AuditHandler) ListErrors(c *gin.Context) {
 	params := audit.ListParams{
 		FeatureKey: c.Query("featureKey"),

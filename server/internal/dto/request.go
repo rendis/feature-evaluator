@@ -228,6 +228,47 @@ type FeatureTestScenario struct {
 	RequestBody map[string]any    `json:"requestBody"`
 }
 
+// CreateAPIKeyRequest is the request body for creating an API key.
+type CreateAPIKeyRequest struct {
+	Name        string   `json:"name" binding:"required"`
+	Type        string   `json:"type" binding:"required"`
+	Permissions []string `json:"permissions"`
+	Description string   `json:"description"`
+	ExpiresAt   *string  `json:"expiresAt"`
+}
+
+// CreateTagRequest is the request body for creating a tag.
+type CreateTagRequest struct {
+	Name  string `json:"name" binding:"required"`
+	Color string `json:"color" binding:"required"`
+}
+
+// UpdateTagRequest is the request body for updating a tag.
+type UpdateTagRequest struct {
+	Name  string `json:"name" binding:"required"`
+	Color string `json:"color" binding:"required"`
+}
+
+// CreateScheduleRequest is the request body for creating a scheduled change.
+type CreateScheduleRequest struct {
+	ChangeType  string         `json:"changeType" binding:"required"`
+	Payload     map[string]any `json:"payload" binding:"required"`
+	ScheduledAt string         `json:"scheduledAt" binding:"required"`
+}
+
+// CreateWorkspaceRequest is the request body for creating a workspace.
+type CreateWorkspaceRequest struct {
+	Key         string `json:"key" binding:"required"`
+	Name        string `json:"name" binding:"required"`
+	Description string `json:"description"`
+}
+
+// UpdateWorkspaceRequest is the request body for updating a workspace.
+type UpdateWorkspaceRequest struct {
+	Name        string `json:"name" binding:"required"`
+	Description string `json:"description"`
+}
+
 // CreateAuthProfileRequest is the request body for creating an auth profile.
 type CreateAuthProfileRequest struct {
 	Key             string            `json:"key" binding:"required"`

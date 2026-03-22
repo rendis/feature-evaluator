@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Silent Renew</title>
+  </head>
+  <body>
+    <script>
+      // Minimal callback for oidc-client-ts silent token renewal (iframe).
+      // Passes the IdP response back to the parent window without loading the SPA.
+      parent.postMessage(location.href, location.origin);
+    </script>
+  </body>
+</html>

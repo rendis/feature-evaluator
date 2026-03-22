@@ -5,6 +5,8 @@ export const env = {
   oidcClientId: import.meta.env.VITE_OIDC_CLIENT_ID ?? '',
   oidcRedirectUri:
     import.meta.env.VITE_OIDC_REDIRECT_URI ?? `${window.location.origin}/auth/callback`,
+  oidcSilentRedirectUri:
+    import.meta.env.VITE_OIDC_SILENT_REDIRECT_URI ?? `${window.location.origin}/auth/silent-renew.html`,
   oidcPostLogoutRedirectUri:
     import.meta.env.VITE_OIDC_POST_LOGOUT_REDIRECT_URI ?? window.location.origin,
 } as const;

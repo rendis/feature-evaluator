@@ -20,7 +20,16 @@ func NewTagHandler(svc *tag.Service) *TagHandler {
 	return &TagHandler{svc: svc}
 }
 
-// List returns all tags, optionally filtered by search.
+// List godoc
+// @Summary List tags
+// @Description Returns all tags, optionally filtered by search
+// @Tags tags
+// @Produce json
+// @Param search query string false "Filter by name"
+// @Success 200 {object} dto.DataResponse[[]dto.TagDetailResponse]
+// @Failure 500 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/tags [get]
 func (h *TagHandler) List(c *gin.Context) {
 	search := c.Query("search")
 	tags, err := h.svc.List(c.Request.Context(), search)
@@ -38,7 +47,17 @@ func (h *TagHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": data})
 }
 
-// Create creates a new tag.
+// Create godoc
+// @Summary Create a tag
+// @Description Creates a new tag with the given name and color
+// @Tags tags
+// @Accept json
+// @Produce json
+// @Param request body object{name=string,color=string} true "Tag name and color"
+// @Success 201 {object} dto.TagDetailResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/tags [post]
 func (h *TagHandler) Create(c *gin.Context) {
 	var req struct {
 		Name  string `json:"name" binding:"required"`
@@ -59,7 +78,19 @@ func (h *TagHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToTagResponse(t))
 }
 
-// Update updates a tag's name and color.
+// Update godoc
+// @Summary Update a tag
+// @Description Updates a tag's name and color by key
+// @Tags tags
+// @Accept json
+// @Produce json
+// @Param key path string true "Tag key"
+// @Param request body object{name=string,color=string} true "Updated tag name and color"
+// @Success 200 {object} dto.TagDetailResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/tags/{key} [put]
 func (h *TagHandler) Update(c *gin.Context) {
 	key := c.Param("key")
 	var req struct {
@@ -81,7 +112,16 @@ func (h *TagHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToTagResponse(t))
 }
 
-// Delete removes a tag.
+// Delete godoc
+// @Summary Delete a tag
+// @Description Removes a tag by key
+// @Tags tags
+// @Produce json
+// @Param key path string true "Tag key"
+// @Success 200 {object} dto.MessageResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/tags/{key} [delete]
 func (h *TagHandler) Delete(c *gin.Context) {
 	key := c.Param("key")
 	if err := h.svc.Delete(c.Request.Context(), key); err != nil {

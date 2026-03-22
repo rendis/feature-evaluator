@@ -19,7 +19,23 @@ func NewChangelogHandler(svc *changelog.Service) *ChangelogHandler {
 	return &ChangelogHandler{svc: svc}
 }
 
-// List returns a paginated, filtered list of changelog entries.
+// List godoc
+// @Summary List changelog entries
+// @Description Returns a paginated, filtered list of changelog entries
+// @Tags changelog
+// @Produce json
+// @Param entityType query string false "Filter by entity type"
+// @Param entityKey query string false "Filter by entity key"
+// @Param actor query string false "Filter by actor"
+// @Param action query string false "Filter by action"
+// @Param from query string false "Start date (RFC3339)"
+// @Param to query string false "End date (RFC3339)"
+// @Param page query int false "Page number (default 1)"
+// @Param pageSize query int false "Page size (default 20)"
+// @Success 200 {object} dto.ListResponse[dto.ChangeEntryResponse]
+// @Failure 500 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/changelog [get]
 func (h *ChangelogHandler) List(c *gin.Context) {
 	params := changelog.ListParams{
 		EntityType: c.Query("entityType"),
@@ -45,7 +61,23 @@ func (h *ChangelogHandler) List(c *gin.Context) {
 	h.respondList(c, result)
 }
 
-// ListByEntity returns changelog entries for a specific entity.
+// ListByEntity godoc
+// @Summary List changelog entries for an entity
+// @Description Returns changelog entries for a specific entity type and key
+// @Tags changelog
+// @Produce json
+// @Param entityType path string true "Entity type"
+// @Param entityKey path string true "Entity key"
+// @Param actor query string false "Filter by actor"
+// @Param action query string false "Filter by action"
+// @Param from query string false "Start date (RFC3339)"
+// @Param to query string false "End date (RFC3339)"
+// @Param page query int false "Page number (default 1)"
+// @Param pageSize query int false "Page size (default 20)"
+// @Success 200 {object} dto.ListResponse[dto.ChangeEntryResponse]
+// @Failure 500 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/changelog/{entityType}/{entityKey} [get]
 func (h *ChangelogHandler) ListByEntity(c *gin.Context) {
 	entityType := c.Param("entityType")
 	entityKey := c.Param("entityKey")

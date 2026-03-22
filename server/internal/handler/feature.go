@@ -238,7 +238,25 @@ func toDomainInputContract(req dto.InputContractRequest) feature.InputContract {
 	}
 }
 
-// List returns a paginated list of features.
+// List godoc
+// @Summary List features
+// @Description Returns a paginated list of features with optional filters
+// @Tags features
+// @Produce json
+// @Param search query string false "Filter by name or key"
+// @Param sort query string false "Sort field"
+// @Param order query string false "Sort order" default(desc) Enums(asc, desc)
+// @Param view query string false "Response view mode" Enums(summary)
+// @Param page query int false "Page number" default(1)
+// @Param pageSize query int false "Items per page" default(20)
+// @Param enabled query boolean false "Filter by enabled status"
+// @Param valueType query string false "Filter by value type"
+// @Param tags query []string false "Filter by tag keys" collectionFormat(multi)
+// @Param environment query string false "Filter by environment"
+// @Success 200 {object} dto.ListResponse[dto.FeatureSummaryResponse]
+// @Failure 500 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/features [get]
 func (h *FeatureHandler) List(c *gin.Context) {
 	params := feature.ListParams{
 		Search:    c.Query("search"),
@@ -315,7 +333,16 @@ func (h *FeatureHandler) List(c *gin.Context) {
 	})
 }
 
-// Get returns a single feature with its rules.
+// Get godoc
+// @Summary Get feature detail
+// @Description Returns a single feature with its rules, tags, packs, and tier references
+// @Tags features
+// @Produce json
+// @Param key path string true "Feature key"
+// @Success 200 {object} dto.FeatureDetailResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/features/{key} [get]
 func (h *FeatureHandler) Get(c *gin.Context) {
 	key := c.Param("key")
 	f, err := h.svc.GetByKey(c.Request.Context(), key)
@@ -330,7 +357,18 @@ func (h *FeatureHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToFeatureDetailResponse(f, tagMap, tierRefs, packRefs))
 }
 
-// Create creates a new feature.
+// Create godoc
+// @Summary Create a feature
+// @Description Creates a new feature flag with the given configuration
+// @Tags features
+// @Accept json
+// @Produce json
+// @Param request body dto.CreateFeatureRequest true "Feature creation payload"
+// @Success 201 {object} dto.FeatureDetailResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 409 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/features [post]
 func (h *FeatureHandler) Create(c *gin.Context) {
 	var req dto.CreateFeatureRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -403,7 +441,19 @@ func (h *FeatureHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToFeatureDetailResponse(f, tagMap, tierRefs, packRefs))
 }
 
-// Update updates an existing feature.
+// Update godoc
+// @Summary Update a feature
+// @Description Updates an existing feature flag (partial update supported)
+// @Tags features
+// @Accept json
+// @Produce json
+// @Param key path string true "Feature key"
+// @Param request body dto.UpdateFeatureRequest true "Feature update payload"
+// @Success 200 {object} dto.FeatureDetailResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/features/{key} [put]
 func (h *FeatureHandler) Update(c *gin.Context) {
 	key := c.Param("key")
 	var req dto.UpdateFeatureRequest
@@ -477,7 +527,16 @@ func (h *FeatureHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToFeatureDetailResponse(existing, tagMap, tierRefs, packRefs))
 }
 
-// Delete removes a feature.
+// Delete godoc
+// @Summary Delete a feature
+// @Description Permanently removes a feature flag and all its rules
+// @Tags features
+// @Produce json
+// @Param key path string true "Feature key"
+// @Success 200 {object} dto.MessageResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/features/{key} [delete]
 func (h *FeatureHandler) Delete(c *gin.Context) {
 	key := c.Param("key")
 	if err := h.svc.Delete(c.Request.Context(), key); err != nil {
@@ -494,12 +553,31 @@ func (h *FeatureHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "feature deleted"})
 }
 
-// ListEnvironments returns the static list of valid environments.
+// ListEnvironments godoc
+// @Summary List environments
+// @Description Returns the static list of valid environments
+// @Tags features
+// @Produce json
+// @Success 200 {array} string
+// @Security BearerAuth
+// @Router /admin/environments [get]
 func (h *FeatureHandler) ListEnvironments(c *gin.Context) {
 	c.JSON(http.StatusOK, feature.AllEnvironments())
 }
 
-// Toggle enables or disables a feature.
+// Toggle godoc
+// @Summary Toggle a feature
+// @Description Enables or disables a feature flag
+// @Tags features
+// @Accept json
+// @Produce json
+// @Param key path string true "Feature key"
+// @Param request body dto.ToggleFeatureRequest true "Toggle payload with enabled flag"
+// @Success 200 {object} dto.ToggleMessageResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/features/{key}/toggle [patch]
 func (h *FeatureHandler) Toggle(c *gin.Context) {
 	key := c.Param("key")
 	var req dto.ToggleFeatureRequest

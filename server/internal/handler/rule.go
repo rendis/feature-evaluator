@@ -48,7 +48,16 @@ func NewRuleHandler(
 	}
 }
 
-// List returns all rules for a feature, sorted by priority.
+// List godoc
+// @Summary List rules for a feature
+// @Description Returns all rules for a feature, sorted by priority
+// @Tags rules
+// @Produce json
+// @Param key path string true "Feature key"
+// @Success 200 {object} dto.DataResponse[[]dto.RuleResponse]
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/features/{key}/rules [get]
 func (h *RuleHandler) List(c *gin.Context) {
 	key := c.Param("key")
 	f, err := h.featureSvc.GetByKey(c.Request.Context(), key)
@@ -65,7 +74,19 @@ func (h *RuleHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": rules})
 }
 
-// Create adds a new rule to a feature.
+// Create godoc
+// @Summary Create a rule
+// @Description Adds a new rule to a feature with expression, value, and optional rollout/bindings
+// @Tags rules
+// @Accept json
+// @Produce json
+// @Param key path string true "Feature key"
+// @Param request body dto.CreateRuleRequest true "Rule creation payload"
+// @Success 201 {object} dto.RuleResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/features/{key}/rules [post]
 func (h *RuleHandler) Create(c *gin.Context) {
 	key := c.Param("key")
 	var req dto.CreateRuleRequest
@@ -131,7 +152,20 @@ func (h *RuleHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToRuleResponse(rule))
 }
 
-// Update updates an existing rule within a feature.
+// Update godoc
+// @Summary Update a rule
+// @Description Updates an existing rule within a feature
+// @Tags rules
+// @Accept json
+// @Produce json
+// @Param key path string true "Feature key"
+// @Param ruleId path string true "Rule ID"
+// @Param request body dto.UpdateRuleRequest true "Rule update payload"
+// @Success 200 {object} dto.RuleResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/features/{key}/rules/{ruleId} [put]
 func (h *RuleHandler) Update(c *gin.Context) {
 	key := c.Param("key")
 	ruleID := c.Param("ruleId")
@@ -249,7 +283,17 @@ func validateParamMappings(api *externalapi.ExternalAPI, mappings []dto.ParamMap
 	return nil
 }
 
-// Delete removes a rule from a feature.
+// Delete godoc
+// @Summary Delete a rule
+// @Description Removes a rule from a feature
+// @Tags rules
+// @Produce json
+// @Param key path string true "Feature key"
+// @Param ruleId path string true "Rule ID"
+// @Success 200 {object} dto.MessageResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/features/{key}/rules/{ruleId} [delete]
 func (h *RuleHandler) Delete(c *gin.Context) {
 	key := c.Param("key")
 	ruleID := c.Param("ruleId")
@@ -269,7 +313,19 @@ func (h *RuleHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "rule deleted"})
 }
 
-// Reorder sets the order of rules within a feature.
+// Reorder godoc
+// @Summary Reorder rules
+// @Description Sets the priority order of rules within a feature
+// @Tags rules
+// @Accept json
+// @Produce json
+// @Param key path string true "Feature key"
+// @Param request body dto.ReorderRulesRequest true "Ordered list of rule IDs"
+// @Success 200 {object} dto.MessageResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/features/{key}/rules/reorder [put]
 func (h *RuleHandler) Reorder(c *gin.Context) {
 	key := c.Param("key")
 	var req dto.ReorderRulesRequest
@@ -293,7 +349,17 @@ func (h *RuleHandler) Reorder(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "rules reordered"})
 }
 
-// ValidateExpression validates an expression without evaluating it.
+// ValidateExpression godoc
+// @Summary Validate an expression
+// @Description Validates an expression string without evaluating it
+// @Tags expressions
+// @Accept json
+// @Produce json
+// @Param request body dto.ValidateExpressionRequest true "Expression to validate"
+// @Success 200 {object} dto.ValidateExpressionResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/expression/validate [post]
 func (h *RuleHandler) ValidateExpression(c *gin.Context) {
 	var req dto.ValidateExpressionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -314,7 +380,17 @@ func (h *RuleHandler) ValidateExpression(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ValidateExpressionResponse{Valid: true})
 }
 
-// TestExpression tests an expression against a provided context.
+// TestExpression godoc
+// @Summary Test an expression
+// @Description Tests an expression against a provided context and returns the evaluation result
+// @Tags expressions
+// @Accept json
+// @Produce json
+// @Param request body dto.TestExpressionRequest true "Expression and context to test"
+// @Success 200 {object} dto.TestExpressionResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/expression/test [post]
 func (h *RuleHandler) TestExpression(c *gin.Context) {
 	var req dto.TestExpressionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -356,7 +432,16 @@ func (h *RuleHandler) TestExpression(c *gin.Context) {
 	})
 }
 
-// FeatureExpressionSchema returns the expression inputs available for a feature.
+// FeatureExpressionSchema godoc
+// @Summary Get feature expression schema
+// @Description Returns the expression inputs available for a specific feature based on its input contract
+// @Tags expressions
+// @Produce json
+// @Param key path string true "Feature key"
+// @Success 200 {object} dto.FeatureExpressionSchemaResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/features/{key}/expression-schema [get]
 func (h *RuleHandler) FeatureExpressionSchema(c *gin.Context) {
 	featureKey := c.Param("key")
 	f, err := h.featureSvc.GetByKey(c.Request.Context(), featureKey)
@@ -373,7 +458,19 @@ func (h *RuleHandler) FeatureExpressionSchema(c *gin.Context) {
 	})
 }
 
-// FeatureTestExpression tests an expression using the feature-specific input contract.
+// FeatureTestExpression godoc
+// @Summary Test expression with feature context
+// @Description Tests an expression using the feature-specific input contract with a simulated scenario
+// @Tags expressions
+// @Accept json
+// @Produce json
+// @Param key path string true "Feature key"
+// @Param request body dto.FeatureExpressionTestRequest true "Expression, scenario, and bindings to test"
+// @Success 200 {object} dto.FeatureExpressionTestResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/features/{key}/expression/test [post]
 func (h *RuleHandler) FeatureTestExpression(c *gin.Context) { //nolint:funlen // multi-step expression test
 	featureKey := c.Param("key")
 	f, err := h.featureSvc.GetByKey(c.Request.Context(), featureKey)
@@ -475,7 +572,14 @@ func (h *RuleHandler) FeatureTestExpression(c *gin.Context) { //nolint:funlen //
 	})
 }
 
-// ExpressionSchema returns the available fields and functions for expressions.
+// ExpressionSchema godoc
+// @Summary Get expression schema
+// @Description Returns the available fields, functions, and operators for building expressions
+// @Tags expressions
+// @Produce json
+// @Success 200 {object} dto.ExpressionSchemaResponse
+// @Security BearerAuth
+// @Router /admin/expression/schema [get]
 func (h *RuleHandler) ExpressionSchema(c *gin.Context) {
 	schema := gin.H{
 		"fields": []gin.H{

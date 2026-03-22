@@ -1,10 +1,9 @@
 ---
 name: feature-evaluator
 description: >-
-  Manage feature flags, targeting rules, packs, segments, and experiments via
-  MCP tools. Evaluate features, validate expressions, manage workspaces.
-  Use for feature flag management, rule-based targeting, A/B experiments,
-  segment targeting, pack-based feature bundling, and expression testing.
+  Manage the Feature Evaluator API — feature flags, targeting rules, packs,
+  segments, experiments, and more. Each API endpoint is an MCP tool that
+  executes real API calls via mcp-openapi-proxy.
 allowed-tools:
   - mcp__feature-evaluator__*
 ---
@@ -13,132 +12,185 @@ allowed-tools:
 
 MCP integration for the Feature Evaluator — a feature flag system with rule-based evaluation, segment targeting, and pack-based feature bundling.
 
+## MCP Proxy
+
+This project uses [mcp-openapi-proxy](https://github.com/rendis/mcp-openapi-proxy) to auto-generate MCP tools from the OpenAPI spec. Each API endpoint becomes a callable tool that executes real HTTP requests.
+
+**Repository**: https://github.com/rendis/mcp-openapi-proxy
+**Install**: `go install github.com/rendis/mcp-openapi-proxy/cmd/mcp-openapi-proxy@latest`
+**Docs**: See [mcp-openapi-proxy README](https://github.com/rendis/mcp-openapi-proxy#readme) for full configuration, authentication, and troubleshooting.
+
 ## Setup
 
-### Dev Mode (AUTH_DISABLED=true on backend)
+### Claude Code
+
+The project includes a `.mcp.json` — Claude Code auto-detects it. No manual setup needed.
 
 ```bash
 make server       # Start API on port 8080
-make build-mcp    # Build MCP binary
+# MCP auto-configured via .mcp.json → mcp-openapi-proxy reads the Swagger spec
 ```
 
-`.mcp.json` at project root configures Claude Code to spawn the MCP server with `FE_AUTH_TOKEN=dev-token`.
+Verify: `claude mcp list` → should show `feature-evaluator` connected.
 
-### OIDC (production)
+### OpenAI Codex
+
+Edit `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.feature-evaluator]
+command = "mcp-openapi-proxy"
+args = []
+
+[mcp_servers.feature-evaluator.env]
+MCP_SPEC = "https://raw.githubusercontent.com/rendis/feature-evaluator/main/server/docs/swagger.yaml"
+MCP_BASE_URL = "<your-api-url>/features"
+MCP_TOOL_PREFIX = "fe"
+```
+
+### Gemini CLI
+
+Edit `~/.gemini/settings.json` (global) or `.gemini/settings.json` (project):
+
+```json
+{
+  "mcpServers": {
+    "feature-evaluator": {
+      "command": "mcp-openapi-proxy",
+      "args": [],
+      "env": {
+        "MCP_SPEC": "https://raw.githubusercontent.com/rendis/feature-evaluator/main/server/docs/swagger.yaml",
+        "MCP_BASE_URL": "<your-api-url>/features",
+        "MCP_TOOL_PREFIX": "fe"
+      }
+    }
+  }
+}
+```
+
+### Regenerate Swagger (after handler changes)
 
 ```bash
-make build-mcp                                    # Build MCP binary
-./apps/mcp/bin/feature-evaluator-mcp login        # Open browser → Keycloak login
-./apps/mcp/bin/feature-evaluator-mcp status       # Verify token is valid
-./apps/mcp/bin/feature-evaluator-mcp logout       # Clear stored tokens
+make swagger      # generates server/docs/swagger.yaml from handler annotations
 ```
 
-Remove `FE_AUTH_TOKEN` from `.mcp.json` env so the MCP server reads OIDC tokens from `~/.feature-evaluator/tokens.json` instead. Tokens auto-refresh via refresh token.
+### OIDC Authentication (production)
 
-For custom OIDC providers set `FE_OIDC_ISSUER` and `FE_OIDC_CLIENT_ID` env vars.
+```bash
+mcp-openapi-proxy login     # browser-based OIDC PKCE login
+mcp-openapi-proxy status    # check auth status
+mcp-openapi-proxy logout    # clear stored tokens
+```
+
+## Available MCP Tools
+
+Each API endpoint becomes a callable MCP tool. Tool naming pattern: `fe_{operation}`.
+
+### Key Tools
+
+| Tool | Purpose |
+|------|---------|
+| `fe_list_features` | List all features |
+| `fe_create_feature` | Create a feature |
+| `fe_get_feature` | Get feature by key |
+| `fe_update_feature` | Update a feature |
+| `fe_delete_feature` | Delete a feature |
+| `fe_toggle_feature` | Enable/disable a feature |
+| `fe_list_rules` | List rules for a feature |
+| `fe_create_rule` | Create a rule |
+| `fe_evaluate` | Evaluate a single feature |
+| `fe_bulk_evaluate` | Bulk evaluate features |
+| `fe_evaluate_all` | Evaluate all active features |
+| `fe_list_packs` | List packs |
+| `fe_list_segments` | List segments |
+| `fe_list_experiments` | List experiments |
+| `fe_validate_expression` | Validate expression syntax |
+| `fe_test_expression` | Test expression with context |
+| `fe_expression_schema` | Available expression fields/functions |
+| `fe_dashboard_stats` | Dashboard statistics |
+
+All tools follow the `fe_*` prefix convention. Run any `fe_list_*` tool to discover available resources.
 
 ## Quick Start Workflow
 
 ```
-1. fe_list_workspaces         → discover available workspaces
-2. fe_set_workspace           → switch workspace (validates it exists)
-3. fe_list_features           → browse existing features
-4. fe_create_feature          → create feature (key, name, valueType, defaultValue)
-5. fe_create_rule             → add targeting rule with expression
-6. fe_validate_expression     → check expression syntax before saving
-7. fe_evaluate                → test evaluation with sample context
-8. fe_dashboard_stats         → view workspace statistics
+1. fe_list_features                → discover existing features
+2. fe_get_feature { key: "..." }   → inspect a specific feature
+3. fe_list_rules { key: "..." }    → see targeting rules
+4. fe_evaluate { featureKey: "...", context: {...} }  → evaluate a feature
+5. fe_expression_schema            → see available expression fields/functions
+6. fe_validate_expression { expression: "..." }       → validate rule syntax
 ```
 
-## Tool Reference
+## API Groups
 
-### Workspace
+All routes under base path `/features`.
 
-| Tool | Purpose | Key Args |
-|------|---------|----------|
-| `fe_list_workspaces` | List all workspaces | — |
-| `fe_set_workspace` | Switch active workspace | `key` |
+### Health (no auth)
+- `GET /healthz`, `GET /readyz`
 
-### Features
+### Evaluation (Bearer OR X-Api-Key + rate limited)
+- `POST /eval` — evaluate single feature
+- `POST /eval/bulk` — evaluate multiple features
+- `POST /eval/active` — evaluate all active features
+- `POST /eval/conversions` — record experiment conversion
 
-| Tool | Purpose | Key Args |
-|------|---------|----------|
-| `fe_list_features` | List features (paginated) | `search?`, `value_type?`, `enabled?`, `tag?`, `environment?` |
-| `fe_get_feature` | Get feature with rules | `key` |
-| `fe_create_feature` | Create feature | `key`, `name`, `value_type`, `default_value`, `access_policy?`, `auth_profile_key?` |
-| `fe_update_feature` | Update feature | `key`, `name`, `access_policy?`, `auth_profile_key?` |
-| `fe_toggle_feature` | Enable/disable | `key`, `enabled` |
-| `fe_delete_feature` | Delete feature | `key` |
+### OFREP (OpenFeature Remote Evaluation Protocol)
+- `POST /ofrep/v1/evaluate/flags/:key` — single flag (separate base path)
+- `POST /ofrep/v1/evaluate/flags` — bulk flags
 
-### Rules
+### Features (Bearer JWT)
+- CRUD: `GET/POST/PUT/DELETE /admin/features`, `/admin/features/:key`
+- `PATCH /admin/features/:key/toggle` — enable/disable
+- `GET /admin/environments` — list environments
 
-| Tool | Purpose | Key Args |
-|------|---------|----------|
-| `fe_list_rules` | List rules for feature | `feature_key` |
-| `fe_create_rule` | Create targeting rule | `feature_key`, `name`, `expression`, `value` |
-| `fe_update_rule` | Update rule | `feature_key`, `rule_id`, `name`, `expression`, `value` |
-| `fe_delete_rule` | Delete rule | `feature_key`, `rule_id` |
-| `fe_reorder_rules` | Reorder rules | `feature_key`, `rule_ids` |
+### Rules (Bearer JWT)
+- CRUD: `GET/POST/PUT/DELETE /admin/features/:key/rules`
+- `PUT /admin/features/:key/rules/reorder`
+- `POST/GET /admin/features/:key/expression/test`, `/expression-schema`
 
-### Evaluation
+### Expression Tools (Bearer JWT)
+- `POST /admin/expression/validate` — validate syntax
+- `POST /admin/expression/test` — test with context
+- `GET /admin/expression/schema` — available fields/functions
 
-| Tool | Purpose | Key Args |
-|------|---------|----------|
-| `fe_evaluate` | Evaluate single feature | `feature_key`, `context?` |
-| `fe_bulk_evaluate` | Evaluate multiple features | `feature_keys`, `context?` |
+### Schedules (Bearer JWT)
+- `POST/GET /admin/features/:key/schedules`
+- `DELETE /admin/schedules/:id`
 
-### Packs
+### Packs (Bearer JWT)
+- CRUD: `GET/POST/PUT/DELETE /admin/packs`, `/admin/packs/:key`
+- `PATCH /admin/packs/:key/toggle`
+- `POST/DELETE /admin/packs/:key/activate` — activate/deactivate on target
+- `GET /admin/packs/:key/activations`, `/admin/packs/by-target`
 
-| Tool | Purpose | Key Args |
-|------|---------|----------|
-| `fe_list_packs` | List packs | `search?` |
-| `fe_get_pack` | Get pack detail | `key` |
-| `fe_create_pack` | Create pack | `key`, `name`, `feature_keys?`, `tier_key?`, `inherits_from?`, `trial_until?` |
-| `fe_update_pack` | Update pack | `key`, `name?`, `description?`, `feature_keys?`, `tier_key?`, `inherits_from?`, `trial_until?` |
-| `fe_toggle_pack` | Enable/disable | `key`, `enabled` |
-| `fe_activate_pack` | Activate on target | `key`, `target_type`, `target_id` |
-| `fe_deactivate_pack` | Deactivate from target | `key`, `target_type`, `target_id` |
+### Segments (Bearer JWT)
+- CRUD: `GET/POST/PUT/DELETE /admin/segments`, `/admin/segments/:key`
+- `GET /admin/segments/:key/schema`, `/admin/segments/:key/records`
+- `POST /admin/segments/:key/data/import`
 
-### Tiers
+### Experiments (Bearer JWT)
+- CRUD: `GET/POST/PUT /admin/experiments`, `/admin/experiments/:id`
+- Lifecycle: `POST /admin/experiments/:id/{start,pause,complete,declare-winner}`
+- `GET /admin/experiments/:id/results`
 
-Tiers are predefined (24 total across 6 categories: entry, growth, advanced, top, special, technical). Assign to packs via `tier_key`.
+### Tags, Members, API Keys, Auth Profiles, External APIs
+- CRUD at `/admin/tags`, `/admin/members`, `/admin/api-keys`, `/admin/auth-profiles`, `/admin/external-apis`
 
-| Tool | Purpose | Key Args |
-|------|---------|----------|
-| `fe_list_tiers` | List all predefined tiers | — |
+### Dashboard & Metrics (Bearer JWT)
+- `GET /admin/dashboard/{stats,activity,error-summary,operations}`
+- `GET /admin/dashboard/metrics/{overview,features,reasons,tenants,environments,cache,external}`
 
-### Segments
+### Audit & Changelog (Bearer JWT)
+- `GET /admin/audit/errors`
+- `GET /admin/changelog`, `/admin/changelog/:entityType/:entityKey`
 
-| Tool | Purpose | Key Args |
-|------|---------|----------|
-| `fe_list_segments` | List segments | `search?` |
-| `fe_get_segment` | Get segment detail | `key` |
-| `fe_create_segment` | Create segment | `key`, `name` |
+### Workspaces (Bearer JWT)
+- CRUD: `GET/POST/PUT/DELETE /admin/workspaces`, `/admin/workspaces/:key`
+- `POST /admin/workspaces/:key/{archive,restore}`
 
-### Expressions
-
-| Tool | Purpose | Key Args |
-|------|---------|----------|
-| `fe_validate_expression` | Validate syntax | `expression` |
-| `fe_test_expression` | Test with context | `expression`, `context` |
-
-### Experiments
-
-| Tool | Purpose | Key Args |
-|------|---------|----------|
-| `fe_list_experiments` | List experiments | `status?` |
-| `fe_get_experiment` | Get experiment | `id` |
-| `fe_create_experiment` | Create experiment | `feature_key`, `name` |
-| `fe_manage_experiment` | Lifecycle control | `id`, `action` (start/pause/complete) |
-
-### Dashboard & Audit
-
-| Tool | Purpose | Key Args |
-|------|---------|----------|
-| `fe_dashboard_stats` | Workspace statistics | — |
-| `fe_list_tags` | List tags | — |
-| `fe_audit_errors` | Evaluation errors | `feature?` |
-| `fe_changelog` | Change history | `entity?` |
+### Tiers (Bearer JWT, read-only)
+- `GET /admin/tiers`
 
 ## Expression Language (expr-lang)
 

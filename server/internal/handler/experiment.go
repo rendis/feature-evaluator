@@ -22,7 +22,18 @@ func NewExperimentHandler(svc *experiment.Service, changelogSvc *changelog.Servi
 	return &ExperimentHandler{svc: svc, changelogSvc: changelogSvc}
 }
 
-// Create creates a new experiment.
+// Create godoc
+// @Summary      Create experiment
+// @Description  Creates a new A/B experiment for a feature
+// @Tags         experiments
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.CreateExperimentRequest  true  "Experiment creation payload"
+// @Success      201   {object}  dto.ExperimentResponse
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      409   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/experiments [post]
 func (h *ExperimentHandler) Create(c *gin.Context) {
 	var req dto.CreateExperimentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -64,7 +75,15 @@ func (h *ExperimentHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToExperimentResponse(exp))
 }
 
-// List returns all experiments.
+// List godoc
+// @Summary      List experiments
+// @Description  Returns all experiments in the current workspace
+// @Tags         experiments
+// @Produce      json
+// @Success      200  {object}  dto.DataResponse[[]dto.ExperimentResponse]
+// @Failure      500  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/experiments [get]
 func (h *ExperimentHandler) List(c *gin.Context) {
 	experiments, err := h.svc.List(c.Request.Context())
 	if err != nil {
@@ -81,7 +100,16 @@ func (h *ExperimentHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": data})
 }
 
-// Get returns a single experiment.
+// Get godoc
+// @Summary      Get experiment
+// @Description  Returns a single experiment by ID
+// @Tags         experiments
+// @Produce      json
+// @Param        id   path      string  true  "Experiment ID"
+// @Success      200  {object}  dto.ExperimentResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/experiments/{id} [get]
 func (h *ExperimentHandler) Get(c *gin.Context) {
 	id := c.Param("id")
 	exp, err := h.svc.GetByID(c.Request.Context(), id)
@@ -92,7 +120,19 @@ func (h *ExperimentHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToExperimentResponse(exp))
 }
 
-// Update updates a draft experiment.
+// Update godoc
+// @Summary      Update experiment
+// @Description  Updates a draft experiment by ID
+// @Tags         experiments
+// @Accept       json
+// @Produce      json
+// @Param        id    path      string                       true  "Experiment ID"
+// @Param        body  body      dto.UpdateExperimentRequest   true  "Experiment update payload"
+// @Success      200   {object}  dto.ExperimentResponse
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      404   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/experiments/{id} [put]
 func (h *ExperimentHandler) Update(c *gin.Context) {
 	id := c.Param("id")
 	var req dto.UpdateExperimentRequest
@@ -141,7 +181,17 @@ func (h *ExperimentHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToExperimentResponse(updated))
 }
 
-// Start starts a draft/paused experiment.
+// Start godoc
+// @Summary      Start experiment
+// @Description  Starts a draft or paused experiment
+// @Tags         experiments
+// @Produce      json
+// @Param        id   path      string  true  "Experiment ID"
+// @Success      200  {object}  dto.MessageResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/experiments/{id}/start [post]
 func (h *ExperimentHandler) Start(c *gin.Context) {
 	id := c.Param("id")
 	if err := h.svc.Start(c.Request.Context(), id); err != nil {
@@ -162,7 +212,17 @@ func (h *ExperimentHandler) Start(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "experiment started"})
 }
 
-// Pause pauses a running experiment.
+// Pause godoc
+// @Summary      Pause experiment
+// @Description  Pauses a running experiment
+// @Tags         experiments
+// @Produce      json
+// @Param        id   path      string  true  "Experiment ID"
+// @Success      200  {object}  dto.MessageResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/experiments/{id}/pause [post]
 func (h *ExperimentHandler) Pause(c *gin.Context) {
 	id := c.Param("id")
 	if err := h.svc.Pause(c.Request.Context(), id); err != nil {
@@ -183,7 +243,17 @@ func (h *ExperimentHandler) Pause(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "experiment paused"})
 }
 
-// Complete completes a running/paused experiment.
+// Complete godoc
+// @Summary      Complete experiment
+// @Description  Completes a running or paused experiment
+// @Tags         experiments
+// @Produce      json
+// @Param        id   path      string  true  "Experiment ID"
+// @Success      200  {object}  dto.MessageResponse
+// @Failure      400  {object}  dto.ErrorResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/experiments/{id}/complete [post]
 func (h *ExperimentHandler) Complete(c *gin.Context) {
 	id := c.Param("id")
 	if err := h.svc.Complete(c.Request.Context(), id); err != nil {
@@ -204,7 +274,19 @@ func (h *ExperimentHandler) Complete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "experiment completed"})
 }
 
-// DeclareWinner declares a winning variant.
+// DeclareWinner godoc
+// @Summary      Declare winner
+// @Description  Declares a winning variant for a completed experiment
+// @Tags         experiments
+// @Accept       json
+// @Produce      json
+// @Param        id    path      string                     true  "Experiment ID"
+// @Param        body  body      dto.DeclareWinnerRequest    true  "Winner declaration payload"
+// @Success      200   {object}  dto.DeclareWinnerResponse
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      404   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/experiments/{id}/declare-winner [post]
 func (h *ExperimentHandler) DeclareWinner(c *gin.Context) {
 	id := c.Param("id")
 	var req dto.DeclareWinnerRequest
@@ -231,7 +313,16 @@ func (h *ExperimentHandler) DeclareWinner(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "winner declared", "variantKey": req.VariantKey})
 }
 
-// GetResults returns computed experiment results.
+// GetResults godoc
+// @Summary      Get experiment results
+// @Description  Returns computed results and statistics for an experiment
+// @Tags         experiments
+// @Produce      json
+// @Param        id   path      string  true  "Experiment ID"
+// @Success      200  {object}  experiment.Results
+// @Failure      404  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/experiments/{id}/results [get]
 func (h *ExperimentHandler) GetResults(c *gin.Context) {
 	id := c.Param("id")
 	results, err := h.svc.GetResults(c.Request.Context(), id)
@@ -243,7 +334,19 @@ func (h *ExperimentHandler) GetResults(c *gin.Context) {
 	c.JSON(http.StatusOK, results)
 }
 
-// RecordConversion records a conversion event (eval auth).
+// RecordConversion godoc
+// @Summary      Record conversion
+// @Description  Records a conversion event for an experiment metric
+// @Tags         experiments
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.RecordConversionRequest  true  "Conversion event payload"
+// @Success      201   {object}  dto.MessageResponse
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      404   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Security     ApiKeyAuth
+// @Router       /eval/conversions [post]
 func (h *ExperimentHandler) RecordConversion(c *gin.Context) {
 	var req dto.RecordConversionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

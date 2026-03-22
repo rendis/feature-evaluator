@@ -8,7 +8,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
 	"github.com/rendis/feature-evaluator/internal/config"
+	_ "github.com/rendis/feature-evaluator/docs" // swagger generated docs
 	"github.com/rendis/feature-evaluator/internal/domain/apikey"
 	"github.com/rendis/feature-evaluator/internal/domain/audit"
 	"github.com/rendis/feature-evaluator/internal/domain/authprofile"
@@ -184,6 +188,11 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 
 	// Routes under /features base path
 	base := router.Group("/features")
+
+	// Swagger UI (config-gated, no auth)
+	if cfg.Server.SwaggerUI {
+		base.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
 
 	// Health endpoints (no auth)
 	base.GET("/healthz", healthHandler.Liveness)

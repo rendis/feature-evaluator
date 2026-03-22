@@ -1,6 +1,13 @@
 package dto
 
-import extdebug "github.com/rendis/feature-evaluator/internal/external"
+import (
+	extdebug "github.com/rendis/feature-evaluator/internal/external"
+	"github.com/rendis/feature-evaluator/pkg/apierror"
+)
+
+// ErrorResponse is an alias for swagger documentation. Handlers return
+// apierror.ErrorResponse but swag resolves types from the file's imports.
+type ErrorResponse = apierror.ErrorResponse
 
 // PaginationResponse is the standard pagination metadata in list responses.
 type PaginationResponse struct {
@@ -403,4 +410,128 @@ type TierRef struct {
 	Key   string `json:"key"`
 	Name  string `json:"name"`
 	Color string `json:"color"`
+}
+
+// --- Swagger response wrappers ---
+// These types document the gin.H shapes returned by handlers.
+
+// DataResponse wraps a single data payload. Used for list endpoints that return {"data": [...]}.
+type DataResponse[T any] struct {
+	Data T `json:"data"`
+}
+
+// MessageResponse represents a simple message response.
+type MessageResponse struct {
+	Message string `json:"message"`
+}
+
+// ToggleMessageResponse represents a toggle response with message and state.
+type ToggleMessageResponse struct {
+	Message string `json:"message"`
+	Enabled bool   `json:"enabled"`
+}
+
+// APIKeyCreatedResponse is the response returned when creating or rotating an API key.
+type APIKeyCreatedResponse struct {
+	Key         string    `json:"key"`
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Prefix      string    `json:"prefix"`
+	Type        string    `json:"type"`
+	Description string    `json:"description"`
+	Permissions []string  `json:"permissions"`
+	CreatedBy   string    `json:"createdBy"`
+	CreatedAt   string    `json:"createdAt"`
+	ExpiresAt   *string   `json:"expiresAt,omitempty"`
+}
+
+// DashboardStatsResponse is the response for workspace dashboard stats.
+type DashboardStatsResponse struct {
+	TotalFeatures       int64 `json:"totalFeatures"`
+	ActiveFeatures      int64 `json:"activeFeatures"`
+	TotalSegments       int64 `json:"totalSegments"`
+	TotalSegmentMembers int64 `json:"totalSegmentMembers"`
+}
+
+// DashboardActivityItem represents a single activity entry.
+type DashboardActivityItem struct {
+	ID          string `json:"id"`
+	Type        string `json:"type"`
+	FeatureKey  string `json:"featureKey"`
+	Description string `json:"description"`
+	CreatedBy   string `json:"createdBy"`
+	CreatedAt   string `json:"createdAt"`
+}
+
+// DashboardErrorSummaryResponse is the response for error summary.
+type DashboardErrorSummaryResponse struct {
+	Total  int64          `json:"total"`
+	ByType map[string]int `json:"byType"`
+}
+
+// DashboardOperationsResponse is the response for operations health check.
+type DashboardOperationsResponse struct {
+	CheckedAt     string         `json:"checkedAt"`
+	OverallStatus string         `json:"overallStatus"`
+	Services      map[string]any `json:"services"`
+	Metrics       map[string]any `json:"metrics"`
+}
+
+// MetricsOverviewResponse is the response for metrics overview.
+type MetricsOverviewResponse struct {
+	Today map[string]any   `json:"today"`
+	Trend []map[string]any `json:"trend"`
+}
+
+// MetricsFeatureEntry represents a per-feature metric entry.
+type MetricsFeatureEntry struct {
+	FeatureKey string `json:"featureKey"`
+	Count      int64  `json:"count"`
+}
+
+// MetricsTenantEntry represents a per-tenant metric entry.
+type MetricsTenantEntry struct {
+	TenantID string `json:"tenantId"`
+	Count    int64  `json:"count"`
+}
+
+// MetricsCacheResponse is the response for cache metrics.
+type MetricsCacheResponse struct {
+	Hits   int64   `json:"hits"`
+	Misses int64   `json:"misses"`
+	Ratio  float64 `json:"ratio"`
+}
+
+// MetricsExternalResponse is the response for external API metrics.
+type MetricsExternalResponse struct {
+	P50Ms         float64 `json:"p50Ms"`
+	P95Ms         float64 `json:"p95Ms"`
+	CBOpenEvents  int64   `json:"cbOpenEvents"`
+	CBCloseEvents int64   `json:"cbCloseEvents"`
+}
+
+// ExpressionSchemaResponse is the response for the global expression schema endpoint.
+type ExpressionSchemaResponse struct {
+	Fields    any `json:"fields"`
+	Functions any `json:"functions"`
+	Operators any `json:"operators"`
+	Notes     any `json:"notes"`
+}
+
+// HealthResponse is the response for health check endpoints.
+type HealthResponse struct {
+	Status string         `json:"status"`
+	Checks map[string]any `json:"checks,omitempty"`
+}
+
+// DeclareWinnerResponse is the response after declaring an experiment winner.
+type DeclareWinnerResponse struct {
+	Message    string `json:"message"`
+	VariantKey string `json:"variantKey"`
+}
+
+// EnvironmentItem represents an environment entry.
+type EnvironmentItem struct {
+	Key   string `json:"key"`
+	Label string `json:"label"`
 }

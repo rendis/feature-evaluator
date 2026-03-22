@@ -231,6 +231,14 @@
       "outboundHeaderPlaceholder": "X-Service-Key",
       "outboundApiKey": "Extra API key (optional)"
     },
+    "requestHeaders": {
+      "title": "Static headers",
+      "description": "Fixed-value headers always sent to the validation endpoint, regardless of the incoming request.",
+      "add": "Add header",
+      "keyPlaceholder": "Header name",
+      "valuePlaceholder": "Value",
+      "removeAria": "Remove header"
+    },
     "mapping": {
       "title": "Request mapping",
       "description": "Use the toggles to define whether each endpoint travels through a header or the body.",

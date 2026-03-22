@@ -8,7 +8,6 @@
 # Go
 server/tmp/
 server/bin/
-apps/mcp/bin/
 
 # Node
 console/node_modules/

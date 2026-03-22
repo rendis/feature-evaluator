@@ -4,7 +4,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rendis/feature-evaluator/internal/dto"
 )
+
+// swagger type resolution
+var _ dto.HealthResponse
 
 // HealthHandler handles health check endpoints.
 type HealthHandler struct {
@@ -16,12 +20,25 @@ func NewHealthHandler(postgres postgresPinger, redis redisDependencyChecker) *He
 	return &HealthHandler{probe: newDependencyProbe(postgres, redis)}
 }
 
-// Liveness returns 200 if the server is running.
+// Liveness godoc
+// @Summary Liveness probe
+// @Description Returns 200 if the server process is running
+// @Tags health
+// @Produce json
+// @Success 200 {object} dto.HealthResponse
+// @Router /healthz [get]
 func (h *HealthHandler) Liveness(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-// Readiness checks PostgreSQL and Redis connectivity.
+// Readiness godoc
+// @Summary Readiness probe
+// @Description Checks PostgreSQL and Redis connectivity and returns component health status
+// @Tags health
+// @Produce json
+// @Success 200 {object} dto.HealthResponse
+// @Failure 503 {object} dto.HealthResponse
+// @Router /readyz [get]
 func (h *HealthHandler) Readiness(c *gin.Context) {
 	snapshot := h.probe.Check(c.Request.Context())
 	checks := gin.H{}

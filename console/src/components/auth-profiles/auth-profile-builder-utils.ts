@@ -6,6 +6,12 @@ import { KeyRound, ShieldCheck, Sparkles } from 'lucide-react';
 export type UseCase = AuthProfileType;
 export type MappingSourceType = 'request_header' | 'request_body';
 export type MappingTargetType = 'header' | 'body';
+
+export interface StaticHeader {
+  id: string;
+  key: string;
+  value: string;
+}
 export type SuccessRuleType = 'any_2xx' | 'status' | 'json_field' | 'response_header' | 'text_contains';
 
 export interface MappingRow {
@@ -48,6 +54,7 @@ export interface DraftState {
     timeout: string;
     outboundAuthHeaderName: string;
     outboundApiKey: string;
+    requestHeaders: StaticHeader[];
     headerMappings: MappingRow[];
     bodyMappings: MappingRow[];
     successRule: SuccessRuleDraft;
@@ -61,7 +68,8 @@ export interface DraftState {
 }
 
 export function serializeSnapshot(draft: DraftState) {
-  const stripIds = (rows: MappingRow[]) => rows.map(({ id: _, ...rest }) => rest);
+  const stripIds = <T extends { id: string }>(rows: T[]) =>
+    rows.map(({ id: _, ...rest }) => rest);
   return JSON.stringify({
     name: draft.name,
     active: draft.active,
@@ -73,6 +81,7 @@ export function serializeSnapshot(draft: DraftState) {
     custom: {
       ...draft.custom,
       outboundApiKey: draft.custom.outboundApiKey ? '***' : '',
+      requestHeaders: stripIds(draft.custom.requestHeaders),
       headerMappings: stripIds(draft.custom.headerMappings),
       bodyMappings: stripIds(draft.custom.bodyMappings),
     },
@@ -84,6 +93,7 @@ export function createDraft(profile?: AuthProfile | null): DraftState {
   const config = profile?.config ?? {};
   const headers = parseMappingRows((config.headers as unknown[]) ?? [], 'header');
   const body = parseMappingRows((config.body as unknown[]) ?? [], 'body');
+  const requestHeaders = parseStaticHeaders((config.requestHeaders as unknown[]) ?? []);
 
   return {
     name: profile?.name ?? '',
@@ -108,6 +118,7 @@ export function createDraft(profile?: AuthProfile | null): DraftState {
       timeout: config.timeout ? String(config.timeout) : '5000',
       outboundAuthHeaderName: (config.outboundAuthHeaderName as string) ?? '',
       outboundApiKey: '',
+      requestHeaders,
       headerMappings: headers,
       bodyMappings: body,
       successRule: parseSuccessRule(config.successRule as Record<string, unknown> | undefined),
@@ -180,6 +191,9 @@ export function buildPayload(draft: DraftState, key: string) {
       method: draft.custom.method,
       timeout: normalizePositiveInt(draft.custom.timeout, 5000),
       outboundAuthHeaderName: draft.custom.outboundAuthHeaderName.trim(),
+      requestHeaders: draft.custom.requestHeaders
+        .filter((h) => h.key.trim() !== '')
+        .map((h) => ({ key: h.key.trim(), value: h.value.trim() })),
       headers: draft.custom.headerMappings.filter(isMappingComplete).map(toMappingConfig),
       body: draft.custom.bodyMappings.filter(isMappingComplete).map(toMappingConfig),
       successRule: buildSuccessRulePayload(draft.custom.successRule),
@@ -242,6 +256,7 @@ export function summarizeDraft(draft: DraftState, t: TFunction<'settings'>) {
     case 'custom':
       return t('authProfiles.summary.custom', {
         url: draft.custom.url || t('authProfiles.summary.configuredUrl'),
+        staticHeaderCount: draft.custom.requestHeaders.filter((h) => h.key.trim() !== '').length,
         headerCount: draft.custom.headerMappings.filter(isMappingComplete).length,
         bodyCount: draft.custom.bodyMappings.filter(isMappingComplete).length,
       });
@@ -256,6 +271,10 @@ export function parseObjectJson<T>(value: string): Record<string, T> {
     throw new Error('authProfiles.validation.jsonObjectRequired');
   }
   return parsed as Record<string, T>;
+}
+
+export function createStaticHeader(): StaticHeader {
+  return { id: crypto.randomUUID(), key: '', value: '' };
 }
 
 export function createMappingRow(targetType: MappingTargetType): MappingRow {
@@ -466,6 +485,16 @@ function buildSuccessRulePayload(rule: SuccessRuleDraft) {
     default:
       return { type: 'any_2xx' };
   }
+}
+
+function parseStaticHeaders(raw: unknown[]): StaticHeader[] {
+  return raw.flatMap((item) => {
+    if (!item || typeof item !== 'object') return [];
+    const entry = item as Record<string, unknown>;
+    const key = String(entry.key ?? '').trim();
+    if (!key) return [];
+    return [{ id: crypto.randomUUID(), key, value: String(entry.value ?? '').trim() }];
+  });
 }
 
 function defaultTestHeaders(type: UseCase, config: Record<string, unknown>) {

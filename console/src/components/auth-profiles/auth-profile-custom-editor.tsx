@@ -2,8 +2,8 @@ import { ArrowRight, ChevronDown, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { DraftState, MappingRow, MappingSourceType, MappingTargetType } from './auth-profile-builder-utils';
-import { combineMappingRows, createMappingRow, splitMappingRows } from './auth-profile-builder-utils';
+import type { DraftState, MappingRow, MappingSourceType, MappingTargetType, StaticHeader } from './auth-profile-builder-utils';
+import { combineMappingRows, createMappingRow, createStaticHeader, splitMappingRows } from './auth-profile-builder-utils';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -117,6 +117,25 @@ export function CustomEditor({ draft, onChange }: CustomEditorProps) {
         </div>
       </div>
 
+      <StaticHeadersSection
+        headers={custom.requestHeaders}
+        onAdd={() =>
+          onChange((current) => ({
+            ...current,
+            custom: {
+              ...current.custom,
+              requestHeaders: [...current.custom.requestHeaders, createStaticHeader()],
+            },
+          }))
+        }
+        onChange={(rows) =>
+          onChange((current) => ({
+            ...current,
+            custom: { ...current.custom, requestHeaders: rows },
+          }))
+        }
+      />
+
       <MappingTable
         label={t('authProfiles.mapping.title')}
         rows={mappingRows}
@@ -140,6 +159,68 @@ export function CustomEditor({ draft, onChange }: CustomEditorProps) {
           }))
         }
       />
+    </div>
+  );
+}
+
+function StaticHeadersSection({
+  headers,
+  onAdd,
+  onChange,
+}: {
+  headers: StaticHeader[];
+  onAdd: () => void;
+  onChange: (rows: StaticHeader[]) => void;
+}) {
+  const { t } = useTranslation('settings');
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-semibold">{t('authProfiles.requestHeaders.title')}</p>
+          <p className="text-muted-foreground text-xs">
+            {t('authProfiles.requestHeaders.description')}
+          </p>
+        </div>
+        <Button type="button" variant="outline" size="sm" className="w-44 justify-center" onClick={onAdd}>
+          {t('authProfiles.requestHeaders.add')}
+        </Button>
+      </div>
+      {headers.map((header) => (
+        <div
+          key={header.id}
+          className="grid gap-3 rounded-2xl border border-border/70 bg-muted/15 p-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_40px] md:items-center"
+        >
+          <Input
+            value={header.key}
+            onChange={(event) =>
+              onChange(headers.map((h) => (h.id === header.id ? { ...h, key: event.target.value } : h)))
+            }
+            placeholder={t('authProfiles.requestHeaders.keyPlaceholder')}
+            className="font-mono text-sm"
+          />
+          <Input
+            value={header.value}
+            onChange={(event) =>
+              onChange(headers.map((h) => (h.id === header.id ? { ...h, value: event.target.value } : h)))
+            }
+            placeholder={t('authProfiles.requestHeaders.valuePlaceholder')}
+            className="text-sm"
+          />
+          <div className="flex items-center justify-end md:justify-center">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={t('authProfiles.requestHeaders.removeAria')}
+              onClick={() => onChange(headers.filter((h) => h.id !== header.id))}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

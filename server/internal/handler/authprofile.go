@@ -28,7 +28,15 @@ func NewAuthProfileHandler(
 	return &AuthProfileHandler{svc: svc, validator: validator, extCaller: extCaller}
 }
 
-// List returns all auth profiles in the current workspace.
+// List godoc
+// @Summary List auth profiles
+// @Description Returns all auth profiles in the current workspace
+// @Tags auth-profiles
+// @Produce json
+// @Success 200 {object} dto.DataResponse[[]dto.AuthProfileResponse]
+// @Failure 500 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/auth-profiles [get]
 func (h *AuthProfileHandler) List(c *gin.Context) {
 	profiles, err := h.svc.List(c.Request.Context())
 	if err != nil {
@@ -44,7 +52,16 @@ func (h *AuthProfileHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": data})
 }
 
-// Get returns a single auth profile.
+// Get godoc
+// @Summary Get an auth profile
+// @Description Returns a single auth profile by key
+// @Tags auth-profiles
+// @Produce json
+// @Param key path string true "Auth profile key"
+// @Success 200 {object} dto.AuthProfileResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/auth-profiles/{key} [get]
 func (h *AuthProfileHandler) Get(c *gin.Context) {
 	profile, err := h.svc.GetByKey(c.Request.Context(), c.Param("key"))
 	if err != nil {
@@ -54,7 +71,17 @@ func (h *AuthProfileHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToAuthProfileResponse(profile))
 }
 
-// Create creates a new auth profile.
+// Create godoc
+// @Summary Create an auth profile
+// @Description Creates a new auth profile for incoming request authentication
+// @Tags auth-profiles
+// @Accept json
+// @Produce json
+// @Param request body dto.CreateAuthProfileRequest true "Auth profile definition"
+// @Success 201 {object} dto.AuthProfileResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/auth-profiles [post]
 func (h *AuthProfileHandler) Create(c *gin.Context) {
 	var req dto.CreateAuthProfileRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -81,7 +108,19 @@ func (h *AuthProfileHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToAuthProfileResponse(profile))
 }
 
-// Update updates an existing auth profile.
+// Update godoc
+// @Summary Update an auth profile
+// @Description Updates an existing auth profile by key
+// @Tags auth-profiles
+// @Accept json
+// @Produce json
+// @Param key path string true "Auth profile key"
+// @Param request body dto.UpdateAuthProfileRequest true "Updated auth profile definition"
+// @Success 200 {object} dto.AuthProfileResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/auth-profiles/{key} [put]
 func (h *AuthProfileHandler) Update(c *gin.Context) {
 	currentKey := c.Param("key")
 	var req dto.UpdateAuthProfileRequest
@@ -114,7 +153,16 @@ func (h *AuthProfileHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToAuthProfileResponse(updated))
 }
 
-// Delete removes an auth profile.
+// Delete godoc
+// @Summary Delete an auth profile
+// @Description Removes an auth profile by key
+// @Tags auth-profiles
+// @Produce json
+// @Param key path string true "Auth profile key"
+// @Success 200 {object} dto.MessageResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/auth-profiles/{key} [delete]
 func (h *AuthProfileHandler) Delete(c *gin.Context) {
 	if err := h.svc.Delete(c.Request.Context(), c.Param("key")); err != nil {
 		slog.Error("deleting auth profile", "error", err, "requestId", middleware.GetRequestID(c))
@@ -124,7 +172,17 @@ func (h *AuthProfileHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "auth profile deleted"})
 }
 
-// Test validates a draft auth profile against a simulated eval request.
+// Test godoc
+// @Summary Test an auth profile
+// @Description Validates a draft auth profile against a simulated eval request
+// @Tags auth-profiles
+// @Accept json
+// @Produce json
+// @Param request body dto.TestAuthProfileRequest true "Draft auth profile and test request data"
+// @Success 200 {object} dto.AuthProfileTestResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/auth-profiles/test [post]
 func (h *AuthProfileHandler) Test(c *gin.Context) {
 	var req dto.TestAuthProfileRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

@@ -283,6 +283,10 @@ func (v *Validator) validateCustomDraft( //nolint:gocognit,cyclop,funlen // cust
 	fingerprintSeed := map[string]any{}
 	attempted := false
 
+	for _, rh := range requestHeaderRows(profile.Config["requestHeaders"]) {
+		headers.Set(rh.Key, rh.Value)
+	}
+
 	for _, mapping := range mappingsHeaders {
 		value, ok := resolveSourceValue(input, mapping)
 		if !ok {
@@ -423,6 +427,40 @@ func (v *Validator) doRequest(req *http.Request) (*doRequestResult, error) {
 		header:     resp.Header.Clone(),
 		body:       body,
 	}, nil
+}
+
+type requestHeader struct {
+	Key   string
+	Value string
+}
+
+func requestHeaderRows(raw any) []requestHeader {
+	var items []map[string]any
+	switch typed := raw.(type) {
+	case []any:
+		items = make([]map[string]any, 0, len(typed))
+		for _, item := range typed {
+			entry, ok := item.(map[string]any)
+			if !ok {
+				continue
+			}
+			items = append(items, entry)
+		}
+	case []map[string]any:
+		items = typed
+	default:
+		return nil
+	}
+	rows := make([]requestHeader, 0, len(items))
+	for _, entry := range items {
+		key := strings.TrimSpace(stringConfig(entry, "key"))
+		if key == "" {
+			continue
+		}
+		value := strings.TrimSpace(stringConfig(entry, "value"))
+		rows = append(rows, requestHeader{Key: key, Value: value})
+	}
+	return rows
 }
 
 type mappingRow struct {

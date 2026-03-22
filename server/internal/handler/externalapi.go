@@ -24,7 +24,15 @@ func NewExternalAPIHandler(svc *externalapi.Service, executor *external.Caller) 
 	return &ExternalAPIHandler{svc: svc, executor: executor}
 }
 
-// List returns all external APIs in the current workspace.
+// List godoc
+// @Summary List external APIs
+// @Description Returns all external API definitions in the current workspace
+// @Tags external-apis
+// @Produce json
+// @Success 200 {object} dto.DataResponse[[]dto.ExternalAPIResponse]
+// @Failure 500 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/external-apis [get]
 func (h *ExternalAPIHandler) List(c *gin.Context) {
 	apis, err := h.svc.List(c.Request.Context())
 	if err != nil {
@@ -40,7 +48,16 @@ func (h *ExternalAPIHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": data})
 }
 
-// Get returns one external API.
+// Get godoc
+// @Summary Get an external API
+// @Description Returns a single external API definition by key
+// @Tags external-apis
+// @Produce json
+// @Param key path string true "External API key"
+// @Success 200 {object} dto.ExternalAPIResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/external-apis/{key} [get]
 func (h *ExternalAPIHandler) Get(c *gin.Context) {
 	api, err := h.svc.GetByKey(c.Request.Context(), c.Param("key"))
 	if err != nil {
@@ -50,14 +67,29 @@ func (h *ExternalAPIHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToExternalAPIResponse(api))
 }
 
-// ExpressionProfile returns the shared semantic catalog used by the external
-// API response expression editor.
+// ExpressionProfile godoc
+// @Summary Get expression profile
+// @Description Returns the shared semantic catalog used by the external API response expression editor
+// @Tags external-apis
+// @Produce json
+// @Success 200 {object} dto.ExternalAPIExpressionProfileResponse
+// @Security BearerAuth
+// @Router /admin/external-apis/expression-profile [get]
 func (h *ExternalAPIHandler) ExpressionProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, buildExternalAPIExpressionProfile())
 }
 
-// ValidateExpression validates a draft external API response expression without
-// persisting any changes.
+// ValidateExpression godoc
+// @Summary Validate an expression
+// @Description Validates a draft external API response expression without persisting any changes
+// @Tags external-apis
+// @Accept json
+// @Produce json
+// @Param request body dto.ValidateExternalAPIExpressionRequest true "Expression to validate"
+// @Success 200 {object} dto.ValidateExpressionResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/external-apis/expression/validate [post]
 func (h *ExternalAPIHandler) ValidateExpression(c *gin.Context) {
 	var req dto.ValidateExternalAPIExpressionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -82,7 +114,17 @@ func (h *ExternalAPIHandler) ValidateExpression(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ValidateExpressionResponse{Valid: true})
 }
 
-// Create stores a new external API definition.
+// Create godoc
+// @Summary Create an external API
+// @Description Stores a new external API definition
+// @Tags external-apis
+// @Accept json
+// @Produce json
+// @Param request body dto.CreateExternalAPIRequest true "External API definition"
+// @Success 201 {object} dto.ExternalAPIResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/external-apis [post]
 func (h *ExternalAPIHandler) Create(c *gin.Context) {
 	var req dto.CreateExternalAPIRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -115,7 +157,19 @@ func (h *ExternalAPIHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToExternalAPIResponse(api))
 }
 
-// Update updates an existing external API definition.
+// Update godoc
+// @Summary Update an external API
+// @Description Updates an existing external API definition by key
+// @Tags external-apis
+// @Accept json
+// @Produce json
+// @Param key path string true "External API key"
+// @Param request body dto.UpdateExternalAPIRequest true "Updated external API definition"
+// @Success 200 {object} dto.ExternalAPIResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/external-apis/{key} [put]
 func (h *ExternalAPIHandler) Update(c *gin.Context) {
 	currentKey := c.Param("key")
 	var req dto.UpdateExternalAPIRequest
@@ -153,7 +207,16 @@ func (h *ExternalAPIHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToExternalAPIResponse(updated))
 }
 
-// Delete removes an external API definition.
+// Delete godoc
+// @Summary Delete an external API
+// @Description Removes an external API definition by key
+// @Tags external-apis
+// @Produce json
+// @Param key path string true "External API key"
+// @Success 200 {object} dto.MessageResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/external-apis/{key} [delete]
 func (h *ExternalAPIHandler) Delete(c *gin.Context) {
 	if err := h.svc.Delete(c.Request.Context(), c.Param("key")); err != nil {
 		slog.Error("deleting external api", "error", err, "requestId", middleware.GetRequestID(c))
@@ -163,7 +226,17 @@ func (h *ExternalAPIHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "external api deleted"})
 }
 
-// Test executes an external API draft with sample param values.
+// Test godoc
+// @Summary Test an external API
+// @Description Executes an external API draft with sample parameter values and returns the result
+// @Tags external-apis
+// @Accept json
+// @Produce json
+// @Param request body dto.TestExternalAPIRequest true "Draft external API and test parameter values"
+// @Success 200 {object} dto.ExternalAPITestResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/external-apis/test [post]
 func (h *ExternalAPIHandler) Test(c *gin.Context) {
 	var req dto.TestExternalAPIRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

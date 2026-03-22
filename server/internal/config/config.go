@@ -24,6 +24,7 @@ type Config struct {
 type ServerConfig struct {
 	Port            int
 	ShutdownTimeout time.Duration
+	SwaggerUI       bool
 }
 
 // PostgresConfig holds PostgreSQL connection settings.
@@ -95,6 +96,7 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("RATE_LIMIT_ADMIN", 60)
 	v.SetDefault("LOG_LEVEL", "info")
 	v.SetDefault("LOG_FORMAT", "text")
+	v.SetDefault("SERVER_SWAGGER_UI", false)
 }
 
 func parseDurationOrDefault(v *viper.Viper, key string, fallback time.Duration) time.Duration {
@@ -135,6 +137,7 @@ func Load() (*Config, error) {
 		Server: ServerConfig{
 			Port:            v.GetInt("SERVER_PORT"),
 			ShutdownTimeout: parseShutdownTimeout(v),
+			SwaggerUI:       v.GetBool("SERVER_SWAGGER_UI"),
 		},
 		Postgres: PostgresConfig{
 			DatabaseURL:       v.GetString("DATABASE_URL"),

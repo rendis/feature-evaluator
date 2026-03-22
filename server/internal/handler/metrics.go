@@ -7,7 +7,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	evalmetrics "github.com/rendis/feature-evaluator/internal/domain/metrics"
+	"github.com/rendis/feature-evaluator/internal/dto"
 )
+
+// swagger type resolution
+var _ dto.MetricsOverviewResponse
 
 // MetricsHandler handles metrics dashboard endpoints.
 type MetricsHandler struct {
@@ -39,7 +43,15 @@ func dateRange(days int) []string {
 	return dates
 }
 
-// Overview returns today's totals and a 7-day trend.
+// Overview godoc
+// @Summary Metrics overview
+// @Description Returns today's evaluation totals and a multi-day trend
+// @Tags metrics
+// @Produce json
+// @Param days query int false "Number of days for the trend (1-30, default 7)"
+// @Success 200 {object} dto.MetricsOverviewResponse
+// @Security BearerAuth
+// @Router /admin/dashboard/metrics/overview [get]
 func (h *MetricsHandler) Overview(c *gin.Context) {
 	ctx := c.Request.Context()
 	days := parseDays(c)
@@ -83,7 +95,16 @@ func (h *MetricsHandler) Overview(c *gin.Context) {
 	})
 }
 
-// Features returns top features by evaluation count.
+// Features godoc
+// @Summary Top features by evaluations
+// @Description Returns the top features ranked by evaluation count over the date range
+// @Tags metrics
+// @Produce json
+// @Param days query int false "Number of days (1-30, default 7)"
+// @Param limit query int false "Max results to return (default 10)"
+// @Success 200 {array} dto.MetricsFeatureEntry
+// @Security BearerAuth
+// @Router /admin/dashboard/metrics/features [get]
 func (h *MetricsHandler) Features(c *gin.Context) {
 	ctx := c.Request.Context()
 	days := parseDays(c)
@@ -114,7 +135,15 @@ func (h *MetricsHandler) Features(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// Reasons returns reason breakdown aggregated over the date range.
+// Reasons godoc
+// @Summary Evaluation reason breakdown
+// @Description Returns evaluation reason counts aggregated over the date range
+// @Tags metrics
+// @Produce json
+// @Param days query int false "Number of days (1-30, default 7)"
+// @Success 200 {object} map[string]int64
+// @Security BearerAuth
+// @Router /admin/dashboard/metrics/reasons [get]
 func (h *MetricsHandler) Reasons(c *gin.Context) {
 	ctx := c.Request.Context()
 	days := parseDays(c)
@@ -130,7 +159,16 @@ func (h *MetricsHandler) Reasons(c *gin.Context) {
 	c.JSON(http.StatusOK, agg)
 }
 
-// Tenants returns top tenants by evaluation count.
+// Tenants godoc
+// @Summary Top tenants by evaluations
+// @Description Returns the top tenants ranked by evaluation count over the date range
+// @Tags metrics
+// @Produce json
+// @Param days query int false "Number of days (1-30, default 7)"
+// @Param limit query int false "Max results to return (default 10)"
+// @Success 200 {array} dto.MetricsTenantEntry
+// @Security BearerAuth
+// @Router /admin/dashboard/metrics/tenants [get]
 func (h *MetricsHandler) Tenants(c *gin.Context) {
 	ctx := c.Request.Context()
 	days := parseDays(c)
@@ -160,7 +198,15 @@ func (h *MetricsHandler) Tenants(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// Environments returns environment breakdown.
+// Environments godoc
+// @Summary Environment breakdown
+// @Description Returns evaluation counts broken down by environment over the date range
+// @Tags metrics
+// @Produce json
+// @Param days query int false "Number of days (1-30, default 7)"
+// @Success 200 {object} map[string]int64
+// @Security BearerAuth
+// @Router /admin/dashboard/metrics/environments [get]
 func (h *MetricsHandler) Environments(c *gin.Context) {
 	ctx := c.Request.Context()
 	days := parseDays(c)
@@ -176,7 +222,15 @@ func (h *MetricsHandler) Environments(c *gin.Context) {
 	c.JSON(http.StatusOK, agg)
 }
 
-// Cache returns cache hit/miss stats.
+// Cache godoc
+// @Summary Cache statistics
+// @Description Returns cache hit/miss counts and hit ratio over the date range
+// @Tags metrics
+// @Produce json
+// @Param days query int false "Number of days (1-30, default 7)"
+// @Success 200 {object} dto.MetricsCacheResponse
+// @Security BearerAuth
+// @Router /admin/dashboard/metrics/cache [get]
 func (h *MetricsHandler) Cache(c *gin.Context) {
 	ctx := c.Request.Context()
 	days := parseDays(c)
@@ -200,7 +254,15 @@ func (h *MetricsHandler) Cache(c *gin.Context) {
 	})
 }
 
-// External returns external call latency percentiles and circuit breaker stats.
+// External godoc
+// @Summary External call statistics
+// @Description Returns external call latency percentiles and circuit breaker event counts over the date range
+// @Tags metrics
+// @Produce json
+// @Param days query int false "Number of days (1-30, default 7)"
+// @Success 200 {object} dto.MetricsExternalResponse
+// @Security BearerAuth
+// @Router /admin/dashboard/metrics/external [get]
 func (h *MetricsHandler) External(c *gin.Context) {
 	ctx := c.Request.Context()
 	days := parseDays(c)

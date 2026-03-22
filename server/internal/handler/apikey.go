@@ -21,7 +21,17 @@ func NewAPIKeyHandler(svc *apikey.Service) *APIKeyHandler {
 	return &APIKeyHandler{svc: svc}
 }
 
-// Create generates a new API key and returns the plaintext (shown once).
+// Create godoc
+// @Summary Create an API key
+// @Description Generates a new API key and returns the plaintext secret (shown only once)
+// @Tags api-keys
+// @Accept json
+// @Produce json
+// @Param request body object{name=string,type=string,permissions=[]string,description=string,expiresAt=string} true "API key details"
+// @Success 201 {object} dto.APIKeyCreatedResponse
+// @Failure 400 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/api-keys [post]
 func (h *APIKeyHandler) Create(c *gin.Context) {
 	var req struct {
 		Name        string   `json:"name" binding:"required"`
@@ -76,8 +86,16 @@ func (h *APIKeyHandler) Create(c *gin.Context) {
 	})
 }
 
-// Rotate replaces the secret of an existing API key.
-// The old key is immediately invalid. Returns the new plaintext (shown once).
+// Rotate godoc
+// @Summary Rotate an API key
+// @Description Replaces the secret of an existing API key; the old key is immediately invalid. Returns the new plaintext (shown only once)
+// @Tags api-keys
+// @Produce json
+// @Param id path string true "API key ID"
+// @Success 200 {object} dto.APIKeyCreatedResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/api-keys/{id}/rotate [put]
 func (h *APIKeyHandler) Rotate(c *gin.Context) {
 	id := c.Param("id")
 
@@ -101,7 +119,15 @@ func (h *APIKeyHandler) Rotate(c *gin.Context) {
 	})
 }
 
-// List returns all API keys (without hashes).
+// List godoc
+// @Summary List API keys
+// @Description Returns all API keys (without secret hashes)
+// @Tags api-keys
+// @Produce json
+// @Success 200 {object} dto.DataResponse[[]apikey.APIKey]
+// @Failure 500 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/api-keys [get]
 func (h *APIKeyHandler) List(c *gin.Context) {
 	keys, err := h.svc.List(c.Request.Context())
 	if err != nil {
@@ -112,7 +138,16 @@ func (h *APIKeyHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": keys})
 }
 
-// Revoke marks an API key as revoked.
+// Revoke godoc
+// @Summary Revoke an API key
+// @Description Marks an API key as revoked so it can no longer be used
+// @Tags api-keys
+// @Produce json
+// @Param id path string true "API key ID"
+// @Success 200 {object} dto.MessageResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/api-keys/{id} [delete]
 func (h *APIKeyHandler) Revoke(c *gin.Context) {
 	id := c.Param("id")
 	if err := h.svc.Revoke(c.Request.Context(), id); err != nil {

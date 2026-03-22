@@ -14,6 +14,26 @@ import (
 	redisclient "github.com/rendis/feature-evaluator/internal/storage/redis"
 )
 
+// @title Feature Evaluator API
+// @version 1.0
+// @description Feature flag system with rule-based evaluation, segment targeting, pack-based feature bundling, and A/B experiments.
+// @BasePath /features
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name X-Api-Key
+// @description API key for evaluation or admin access
+
+// @securityDefinitions.apikey WorkspaceHeader
+// @in header
+// @name X-Workspace
+// @description Workspace key for multi-tenant isolation
+
 func main() {
 	ctx := context.Background()
 

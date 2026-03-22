@@ -6,6 +6,7 @@ export const oidcConfig: UserManagerSettings = {
   authority: env.oidcAuthority,
   client_id: env.oidcClientId,
   redirect_uri: env.oidcRedirectUri,
+  silent_redirect_uri: env.oidcSilentRedirectUri,
   post_logout_redirect_uri: env.oidcPostLogoutRedirectUri,
   response_type: 'code',
   scope: 'openid profile email',

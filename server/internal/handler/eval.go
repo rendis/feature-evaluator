@@ -8,8 +8,12 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/rendis/feature-evaluator/internal/domain/evaluation"
 	evalmetrics "github.com/rendis/feature-evaluator/internal/domain/metrics"
+	"github.com/rendis/feature-evaluator/internal/dto"
 	"github.com/rendis/feature-evaluator/internal/server/middleware"
 )
+
+// swagger type resolution
+var _ dto.ErrorResponse
 
 // EvalHandler handles feature evaluation endpoints.
 type EvalHandler struct {
@@ -22,7 +26,23 @@ func NewEvalHandler(svc *evaluation.Service, collector *evalmetrics.Collector) *
 	return &EvalHandler{svc: svc, collector: collector}
 }
 
-// Evaluate evaluates a single feature.
+// Evaluate godoc
+// @Summary Evaluate a single feature
+// @Description Evaluates a feature flag for the given context and returns the result value
+// @Tags evaluation
+// @Accept json
+// @Produce json
+// @Param request body evaluation.Request true "Evaluation request with feature key and context"
+// @Param X-Environment header string false "Environment override (takes precedence over body)"
+// @Param X-Tenant-Id header string false "Tenant ID fallback (used if not in context)"
+// @Param X-Campus-Id header string false "Campus ID fallback (used if not in context)"
+// @Param X-Program-Id header string false "Program ID fallback (used if not in context)"
+// @Success 200 {object} evaluation.Result
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 401 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Security ApiKeyAuth
+// @Router /eval [post]
 func (h *EvalHandler) Evaluate(c *gin.Context) {
 	var req evaluation.Request
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
@@ -69,7 +89,22 @@ func (h *EvalHandler) Evaluate(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// BulkEvaluate evaluates multiple features. Always returns 200.
+// BulkEvaluate godoc
+// @Summary Evaluate multiple features
+// @Description Evaluates multiple feature flags in a single request and returns all results
+// @Tags evaluation
+// @Accept json
+// @Produce json
+// @Param request body evaluation.BulkRequest true "Bulk evaluation request with feature list and shared context"
+// @Param X-Environment header string false "Environment override (takes precedence over body)"
+// @Param X-Tenant-Id header string false "Tenant ID fallback (used if not in context)"
+// @Param X-Campus-Id header string false "Campus ID fallback (used if not in context)"
+// @Param X-Program-Id header string false "Program ID fallback (used if not in context)"
+// @Success 200 {object} evaluation.BulkResult
+// @Failure 400 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Security ApiKeyAuth
+// @Router /eval/bulk [post]
 func (h *EvalHandler) BulkEvaluate(c *gin.Context) {
 	var req evaluation.BulkRequest
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {
@@ -127,7 +162,22 @@ func (h *EvalHandler) BulkEvaluate(c *gin.Context) {
 	c.JSON(http.StatusOK, result)
 }
 
-// EvaluateAll evaluates all enabled features and returns only active ones.
+// EvaluateAll godoc
+// @Summary Evaluate all enabled features
+// @Description Evaluates all enabled feature flags and returns only the active ones
+// @Tags evaluation
+// @Accept json
+// @Produce json
+// @Param request body evaluation.AllRequest true "Context for evaluating all features"
+// @Param X-Environment header string false "Environment override (takes precedence over body)"
+// @Param X-Tenant-Id header string false "Tenant ID fallback (used if not in context)"
+// @Param X-Campus-Id header string false "Campus ID fallback (used if not in context)"
+// @Param X-Program-Id header string false "Program ID fallback (used if not in context)"
+// @Success 200 {object} evaluation.AllResult
+// @Failure 400 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Security ApiKeyAuth
+// @Router /eval/active [post]
 func (h *EvalHandler) EvaluateAll(c *gin.Context) {
 	var req evaluation.AllRequest
 	if err := c.ShouldBindBodyWith(&req, binding.JSON); err != nil {

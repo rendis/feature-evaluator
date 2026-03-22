@@ -24,7 +24,18 @@ func NewSegmentHandler(svc *segment.Service, changelogSvc *changelog.Service) *S
 	return &SegmentHandler{svc: svc, changelogSvc: changelogSvc}
 }
 
-// List returns a paginated list of segments.
+// List godoc
+// @Summary      List segments
+// @Description  Returns a paginated list of segments
+// @Tags         segments
+// @Produce      json
+// @Param        search    query     string  false  "Search filter"
+// @Param        page      query     int     false  "Page number"   default(1)
+// @Param        pageSize  query     int     false  "Page size"     default(20)
+// @Success      200       {object}  dto.ListResponse[dto.SegmentResponse]
+// @Failure      500       {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/segments [get]
 func (h *SegmentHandler) List(c *gin.Context) {
 	params := segment.ListParams{
 		Search: c.Query("search"),
@@ -59,7 +70,16 @@ func (h *SegmentHandler) List(c *gin.Context) {
 	})
 }
 
-// Get returns a single segment.
+// Get godoc
+// @Summary      Get segment
+// @Description  Returns a single segment by key
+// @Tags         segments
+// @Produce      json
+// @Param        key  path      string  true  "Segment key"
+// @Success      200  {object}  dto.SegmentResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/segments/{key} [get]
 func (h *SegmentHandler) Get(c *gin.Context) {
 	key := c.Param("key")
 	seg, err := h.svc.GetByKey(c.Request.Context(), key)
@@ -71,7 +91,18 @@ func (h *SegmentHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToSegmentResponse(seg))
 }
 
-// Create creates a new segment.
+// Create godoc
+// @Summary      Create segment
+// @Description  Creates a new segment
+// @Tags         segments
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.CreateSegmentRequest  true  "Segment creation payload"
+// @Success      201   {object}  dto.SegmentResponse
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      409   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/segments [post]
 func (h *SegmentHandler) Create(c *gin.Context) {
 	var req dto.CreateSegmentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -103,7 +134,19 @@ func (h *SegmentHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToSegmentResponse(seg))
 }
 
-// Update updates an existing segment.
+// Update godoc
+// @Summary      Update segment
+// @Description  Updates an existing segment by key
+// @Tags         segments
+// @Accept       json
+// @Produce      json
+// @Param        key   path      string                    true  "Segment key"
+// @Param        body  body      dto.UpdateSegmentRequest   true  "Segment update payload"
+// @Success      200   {object}  dto.SegmentResponse
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      404   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/segments/{key} [put]
 func (h *SegmentHandler) Update(c *gin.Context) {
 	key := c.Param("key")
 	var req dto.UpdateSegmentRequest
@@ -135,7 +178,16 @@ func (h *SegmentHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToSegmentResponse(updated))
 }
 
-// Delete removes a segment and its records.
+// Delete godoc
+// @Summary      Delete segment
+// @Description  Deletes a segment and all its records
+// @Tags         segments
+// @Produce      json
+// @Param        key  path      string  true  "Segment key"
+// @Success      200  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/segments/{key} [delete]
 func (h *SegmentHandler) Delete(c *gin.Context) {
 	key := c.Param("key")
 	if err := h.svc.Delete(c.Request.Context(), key); err != nil {
@@ -152,7 +204,16 @@ func (h *SegmentHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "segment deleted"})
 }
 
-// GetSchema returns the stored schema metadata for a segment.
+// GetSchema godoc
+// @Summary      Get segment schema
+// @Description  Returns the stored schema metadata for a segment
+// @Tags         segments
+// @Produce      json
+// @Param        key  path      string  true  "Segment key"
+// @Success      200  {object}  dto.SegmentSchemaResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/segments/{key}/schema [get]
 func (h *SegmentHandler) GetSchema(c *gin.Context) {
 	key := c.Param("key")
 	seg, err := h.svc.GetByKey(c.Request.Context(), key)
@@ -164,7 +225,19 @@ func (h *SegmentHandler) GetSchema(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToSegmentSchemaResponse(seg))
 }
 
-// ListRecords returns a paginated list of segment records.
+// ListRecords godoc
+// @Summary      List segment records
+// @Description  Returns a paginated list of records for a segment
+// @Tags         segments
+// @Produce      json
+// @Param        key       path      string  true   "Segment key"
+// @Param        q         query     string  false  "Search query"
+// @Param        page      query     int     false  "Page number"  default(1)
+// @Param        pageSize  query     int     false  "Page size"    default(20)
+// @Success      200       {object}  dto.ListResponse[dto.SegmentRecordResponse]
+// @Failure      404       {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/segments/{key}/records [get]
 func (h *SegmentHandler) ListRecords(c *gin.Context) {
 	key := c.Param("key")
 	params := segment.RecordListParams{
@@ -203,7 +276,19 @@ func (h *SegmentHandler) ListRecords(c *gin.Context) {
 	})
 }
 
-// ImportData imports a full dataset version into a segment.
+// ImportData godoc
+// @Summary      Import segment data
+// @Description  Imports a full dataset version into a segment (replace mode)
+// @Tags         segments
+// @Accept       json
+// @Produce      json
+// @Param        key   path      string                       true  "Segment key"
+// @Param        body  body      dto.ImportSegmentDataRequest  true  "Import payload"
+// @Success      200   {object}  dto.ImportResultResponse
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      404   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/segments/{key}/data/import [post]
 func (h *SegmentHandler) ImportData(c *gin.Context) {
 	key := c.Param("key")
 	var req dto.ImportSegmentDataRequest

@@ -3,12 +3,9 @@ SHELL := /bin/bash
 PROJECT_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 SERVER_DIR := $(PROJECT_DIR)/server
 CONSOLE_DIR := $(PROJECT_DIR)/console
-MCP_DIR := $(PROJECT_DIR)/apps/mcp
-
 .PHONY: dev server console lint test quality format \
         lint-go lint-console test-go test-console typecheck \
-        redis redis-stop \
-        build-mcp mcp-login mcp-status mcp-logout
+        redis redis-stop swagger
 
 ## Development
 
@@ -85,20 +82,10 @@ format: ## Format all code
 	goimports -w $(SERVER_DIR)
 	pnpm -C $(CONSOLE_DIR) run format
 
-## MCP
+## Swagger
 
-build-mcp: ## Build MCP server binary
-	@mkdir -p "$(MCP_DIR)/bin"
-	@pushd "$(MCP_DIR)" > /dev/null && go build -o "bin/feature-evaluator-mcp" ./cmd/server && popd > /dev/null
-
-mcp-login: build-mcp ## Run MCP OIDC login
-	$(MCP_DIR)/bin/feature-evaluator-mcp login
-
-mcp-status: build-mcp ## Check MCP auth status
-	$(MCP_DIR)/bin/feature-evaluator-mcp status
-
-mcp-logout: build-mcp ## Clear MCP stored tokens
-	$(MCP_DIR)/bin/feature-evaluator-mcp logout
+swagger: ## Regenerate OpenAPI spec from handler annotations
+	swag init -d $(SERVER_DIR) -g cmd/server/main.go -o $(SERVER_DIR)/docs --parseDependency --parseInternal
 
 ## Help
 

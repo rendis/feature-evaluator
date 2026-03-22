@@ -48,7 +48,15 @@ func (h *PackHandler) resolveFeatureCount(c *gin.Context, packKey string) int {
 	return len(resolvedKeys)
 }
 
-// List returns all packs.
+// List godoc
+// @Summary      List packs
+// @Description  Returns all feature packs in the current workspace
+// @Tags         packs
+// @Produce      json
+// @Success      200  {object}  dto.DataResponse[[]dto.PackResponse]
+// @Failure      500  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/packs [get]
 func (h *PackHandler) List(c *gin.Context) {
 	packs, err := h.svc.List(c.Request.Context())
 	if err != nil {
@@ -67,7 +75,16 @@ func (h *PackHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": data})
 }
 
-// Get returns a single pack.
+// Get godoc
+// @Summary      Get pack
+// @Description  Returns a single pack by key
+// @Tags         packs
+// @Produce      json
+// @Param        key  path      string  true  "Pack key"
+// @Success      200  {object}  dto.PackResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/packs/{key} [get]
 func (h *PackHandler) Get(c *gin.Context) {
 	key := c.Param("key")
 	p, err := h.svc.GetByKey(c.Request.Context(), key)
@@ -81,7 +98,18 @@ func (h *PackHandler) Get(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToPackResponse(p, tierRef, resolvedCount))
 }
 
-// Create creates a new pack.
+// Create godoc
+// @Summary      Create pack
+// @Description  Creates a new feature pack
+// @Tags         packs
+// @Accept       json
+// @Produce      json
+// @Param        body  body      dto.CreatePackRequest  true  "Pack creation payload"
+// @Success      201   {object}  dto.PackResponse
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      409   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/packs [post]
 func (h *PackHandler) Create(c *gin.Context) {
 	var req dto.CreatePackRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -136,7 +164,19 @@ func (h *PackHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToPackResponse(p, tierRef, resolvedCount))
 }
 
-// Update updates an existing pack.
+// Update godoc
+// @Summary      Update pack
+// @Description  Updates an existing pack by key
+// @Tags         packs
+// @Accept       json
+// @Produce      json
+// @Param        key   path      string                 true  "Pack key"
+// @Param        body  body      dto.UpdatePackRequest   true  "Pack update payload"
+// @Success      200   {object}  dto.PackResponse
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      404   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/packs/{key} [put]
 func (h *PackHandler) Update(c *gin.Context) {
 	key := c.Param("key")
 	var req dto.UpdatePackRequest
@@ -194,7 +234,16 @@ func (h *PackHandler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, dto.ToPackResponse(existing, tierRef, resolvedCount))
 }
 
-// Delete removes a pack.
+// Delete godoc
+// @Summary      Delete pack
+// @Description  Deletes a pack by key
+// @Tags         packs
+// @Produce      json
+// @Param        key  path      string  true  "Pack key"
+// @Success      200  {object}  dto.MessageResponse
+// @Failure      404  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/packs/{key} [delete]
 func (h *PackHandler) Delete(c *gin.Context) {
 	key := c.Param("key")
 	if err := h.svc.Delete(c.Request.Context(), key); err != nil {
@@ -212,7 +261,19 @@ func (h *PackHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "pack deleted"})
 }
 
-// Toggle enables or disables a pack.
+// Toggle godoc
+// @Summary      Toggle pack
+// @Description  Enables or disables a pack by key
+// @Tags         packs
+// @Accept       json
+// @Produce      json
+// @Param        key   path      string                    true  "Pack key"
+// @Param        body  body      dto.ToggleFeatureRequest   true  "Toggle payload"
+// @Success      200   {object}  dto.ToggleMessageResponse
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      404   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/packs/{key}/toggle [patch]
 func (h *PackHandler) Toggle(c *gin.Context) {
 	key := c.Param("key")
 	var req dto.ToggleFeatureRequest
@@ -238,7 +299,19 @@ func (h *PackHandler) Toggle(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "pack toggled", "enabled": req.Enabled})
 }
 
-// Activate creates a pack activation for a target.
+// Activate godoc
+// @Summary      Activate pack
+// @Description  Creates a pack activation for a target (tenant, campus, or program)
+// @Tags         packs
+// @Accept       json
+// @Produce      json
+// @Param        key   path      string                    true  "Pack key"
+// @Param        body  body      dto.ActivatePackRequest    true  "Activation payload"
+// @Success      201   {object}  dto.ActivationResponse
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      404   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/packs/{key}/activate [post]
 func (h *PackHandler) Activate(c *gin.Context) {
 	key := c.Param("key")
 	var req dto.ActivatePackRequest
@@ -271,7 +344,19 @@ func (h *PackHandler) Activate(c *gin.Context) {
 	c.JSON(http.StatusCreated, dto.ToActivationResponse(a))
 }
 
-// Deactivate removes a pack activation for a target.
+// Deactivate godoc
+// @Summary      Deactivate pack
+// @Description  Removes a pack activation for a target
+// @Tags         packs
+// @Accept       json
+// @Produce      json
+// @Param        key   path      string                      true  "Pack key"
+// @Param        body  body      dto.DeactivatePackRequest    true  "Deactivation payload"
+// @Success      200   {object}  dto.MessageResponse
+// @Failure      400   {object}  dto.ErrorResponse
+// @Failure      404   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/packs/{key}/activate [delete]
 func (h *PackHandler) Deactivate(c *gin.Context) {
 	key := c.Param("key")
 	var req dto.DeactivatePackRequest
@@ -289,7 +374,16 @@ func (h *PackHandler) Deactivate(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "pack deactivated"})
 }
 
-// ListActivations returns all activations for a pack.
+// ListActivations godoc
+// @Summary      List pack activations
+// @Description  Returns all activations for a pack by key
+// @Tags         packs
+// @Produce      json
+// @Param        key  path      string  true  "Pack key"
+// @Success      200  {object}  dto.DataResponse[[]dto.ActivationResponse]
+// @Failure      404  {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/packs/{key}/activations [get]
 func (h *PackHandler) ListActivations(c *gin.Context) {
 	key := c.Param("key")
 	activations, err := h.svc.ListActivations(c.Request.Context(), key)
@@ -307,7 +401,17 @@ func (h *PackHandler) ListActivations(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": data})
 }
 
-// ByTarget returns all activations for a given target.
+// ByTarget godoc
+// @Summary      Get activations by target
+// @Description  Returns all pack activations for a given target type and ID
+// @Tags         packs
+// @Produce      json
+// @Param        type  query     string  true  "Target type (tenant, campus, program)"
+// @Param        id    query     string  true  "Target ID"
+// @Success      200   {object}  dto.DataResponse[[]dto.ActivationResponse]
+// @Failure      400   {object}  dto.ErrorResponse
+// @Security     BearerAuth
+// @Router       /admin/packs/by-target [get]
 func (h *PackHandler) ByTarget(c *gin.Context) {
 	targetType := c.Query("type")
 	targetID := c.Query("id")

@@ -2,6 +2,7 @@ import { createFileRoute, Navigate } from '@tanstack/react-router';
 import { LogIn } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { FullScreenSpinner } from '@/components/shared/full-screen-spinner';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -14,11 +15,7 @@ function LoginPage() {
   const { isAuthenticated, isLoading, login } = useAuth();
 
   if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
-      </div>
-    );
+    return <FullScreenSpinner />;
   }
 
   if (isAuthenticated) {

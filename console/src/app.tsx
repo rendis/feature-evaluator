@@ -3,6 +3,7 @@ import { RouterProvider, createRouter } from '@tanstack/react-router';
 import { Suspense } from 'react';
 
 import { AuthProvider } from '@/auth/auth-provider';
+import { FullScreenSpinner } from '@/components/shared/full-screen-spinner';
 import { GlobalLoadingProvider } from '@/components/shared/global-loading-provider';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -24,13 +25,7 @@ export function App() {
       <AuthProvider>
         <GlobalLoadingProvider>
           <TooltipProvider>
-            <Suspense
-              fallback={
-                <div className="flex h-screen items-center justify-center">
-                  <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
-                </div>
-              }
-            >
+            <Suspense fallback={<FullScreenSpinner />}>
               <RouterProvider router={router} />
             </Suspense>
             <Toaster />

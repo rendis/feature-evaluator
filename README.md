@@ -270,8 +270,7 @@ feature-evaluator/
 │       ├── auth/                  # OIDC + RBAC guards
 │       ├── queries/ mutations/    # TanStack Query hooks
 │       └── stores/                # Zustand (workspace, sidebar)
-├── apps/mcp/                      # Claude Code MCP integration (~35 tools)
-├── docs/                          # Architecture, API reference, configuration, deployment
+├── docs/                          # Architecture, API reference, MCP setup, deployment
 └── Makefile                       # All dev commands
 ```
 
@@ -288,7 +287,7 @@ feature-evaluator/
 | `make test`      | Go (with `-race`) + React (Vitest)                              |
 | `make typecheck` | TypeScript type checking                                        |
 | `make fmt`       | gofmt + goimports + Prettier                                    |
-| `make build-mcp` | Build MCP server binary                                         |
+| `make swagger`   | Regenerate OpenAPI spec from handler annotations                |
 
 ## API Routes
 
@@ -333,17 +332,13 @@ feature-evaluator/
 | [Deployment](docs/deployment.md)       | Docker, production checklist, health checks |
 | [UI Flows](docs/UI-FLOW.md)            | Admin console screen-by-screen walkthrough  |
 
-## MCP Server
+## MCP Integration
 
-The `apps/mcp/` module exposes ~35 MCP tools for managing features, rules, segments, packs, and experiments from Claude Code.
+Uses `mcp-openapi-proxy` — auto-generates MCP tools from the Swagger spec. Each API endpoint becomes a callable MCP tool.
 
-```bash
-make build-mcp       # Build the MCP binary
-make mcp-login       # OIDC browser login (production)
-make mcp-status      # Check auth status
-```
+Install: `go install github.com/rendis/mcp-openapi-proxy/cmd/mcp-openapi-proxy@latest`
 
-Dev mode uses `FE_AUTH_TOKEN=dev-token`. See [`.mcp.json`](.mcp.json) for configuration.
+See [`docs/mcp_setup.md`](docs/mcp_setup.md) for full setup (Claude Code, Codex, Gemini CLI) and [`skills/feature-evaluator/SKILL.md`](skills/feature-evaluator/SKILL.md) for tool reference.
 
 ## Deployment
 

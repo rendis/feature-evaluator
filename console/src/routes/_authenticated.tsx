@@ -3,6 +3,7 @@ import { Navigate, Outlet, createFileRoute } from '@tanstack/react-router';
 import { useEffect } from 'react';
 
 import { AppShell } from '@/components/layout/app-shell';
+import { FullScreenSpinner } from '@/components/shared/full-screen-spinner';
 import { WorkspaceOnboarding } from '@/components/workspaces/workspace-onboarding';
 import { useAuth } from '@/hooks/use-auth';
 import { workspaceQueries } from '@/queries/workspace-queries';
@@ -36,23 +37,15 @@ function AuthenticatedLayout() {
   }, [activeWorkspaces, currentWorkspace, isLoading, setWorkspace, workspaceKey]);
 
   if (authLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
-      </div>
-    );
+    return <FullScreenSpinner />;
   }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
 
-  if (isLoading || (activeWorkspaces.length > 0 && (isMemberLoading || !currentWorkspace))) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
-      </div>
-    );
+  if (isLoading || (activeWorkspaces.length > 0 && ((!member && isMemberLoading) || !currentWorkspace))) {
+    return <FullScreenSpinner />;
   }
 
   if (activeWorkspaces.length === 0) {

@@ -9,7 +9,11 @@ import (
 	"github.com/rendis/feature-evaluator/internal/domain/audit"
 	"github.com/rendis/feature-evaluator/internal/domain/feature"
 	"github.com/rendis/feature-evaluator/internal/domain/segment"
+	"github.com/rendis/feature-evaluator/internal/dto"
 )
+
+// swagger type resolution
+var _ dto.DashboardStatsResponse
 
 type dashboardMetricsReader interface {
 	DailyCount(ctx context.Context, day string) int64
@@ -48,7 +52,15 @@ func NewDashboardHandler(
 	}
 }
 
-// Stats returns aggregate counts for the dashboard.
+// Stats godoc
+// @Summary Dashboard stats
+// @Description Returns aggregate counts of features, active features, segments, and segment members
+// @Tags dashboard
+// @Produce json
+// @Success 200 {object} dto.DashboardStatsResponse
+// @Failure 500 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/dashboard/stats [get]
 func (h *DashboardHandler) Stats(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -81,7 +93,14 @@ func (h *DashboardHandler) Stats(c *gin.Context) {
 	})
 }
 
-// Activity returns recent feature changes for the dashboard.
+// Activity godoc
+// @Summary Dashboard activity
+// @Description Returns the 10 most recently updated features for the activity feed
+// @Tags dashboard
+// @Produce json
+// @Success 200 {array} dto.DashboardActivityItem
+// @Security BearerAuth
+// @Router /admin/dashboard/activity [get]
 func (h *DashboardHandler) Activity(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -111,7 +130,14 @@ func (h *DashboardHandler) Activity(c *gin.Context) {
 	c.JSON(http.StatusOK, activities)
 }
 
-// ErrorSummary returns aggregated error info for the dashboard.
+// ErrorSummary godoc
+// @Summary Dashboard error summary
+// @Description Returns aggregated evaluation error counts for the dashboard
+// @Tags dashboard
+// @Produce json
+// @Success 200 {object} dto.DashboardErrorSummaryResponse
+// @Security BearerAuth
+// @Router /admin/dashboard/error-summary [get]
 func (h *DashboardHandler) ErrorSummary(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -130,7 +156,14 @@ func (h *DashboardHandler) ErrorSummary(c *gin.Context) {
 	})
 }
 
-// Operations returns the current system status and runtime snapshot for the dashboard.
+// Operations godoc
+// @Summary Dashboard operations
+// @Description Returns the current system status, dependency health, and runtime metrics snapshot
+// @Tags dashboard
+// @Produce json
+// @Success 200 {object} dto.DashboardOperationsResponse
+// @Security BearerAuth
+// @Router /admin/dashboard/operations [get]
 func (h *DashboardHandler) Operations(c *gin.Context) {
 	ctx := c.Request.Context()
 	snapshot := h.probe.Check(ctx)

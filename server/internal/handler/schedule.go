@@ -20,7 +20,19 @@ func NewScheduleHandler(svc *schedule.Service) *ScheduleHandler {
 	return &ScheduleHandler{svc: svc}
 }
 
-// Create creates a new scheduled change for a feature.
+// Create godoc
+// @Summary Create a scheduled change
+// @Description Creates a new scheduled change for a feature to be applied at a future time
+// @Tags schedules
+// @Accept json
+// @Produce json
+// @Param key path string true "Feature key"
+// @Param request body dto.CreateScheduleRequest true "Scheduled change payload"
+// @Success 201 {object} schedule.ScheduledChange
+// @Failure 400 {object} dto.ErrorResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/features/{key}/schedules [post]
 func (h *ScheduleHandler) Create(c *gin.Context) {
 	featureKey := c.Param("key")
 
@@ -50,7 +62,16 @@ func (h *ScheduleHandler) Create(c *gin.Context) {
 	c.JSON(http.StatusCreated, sc)
 }
 
-// List returns all scheduled changes for a feature.
+// List godoc
+// @Summary List scheduled changes
+// @Description Returns all scheduled changes for a feature
+// @Tags schedules
+// @Produce json
+// @Param key path string true "Feature key"
+// @Success 200 {object} dto.DataResponse[[]schedule.ScheduledChange]
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/features/{key}/schedules [get]
 func (h *ScheduleHandler) List(c *gin.Context) {
 	featureKey := c.Param("key")
 
@@ -63,7 +84,16 @@ func (h *ScheduleHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": changes})
 }
 
-// Cancel cancels a pending scheduled change.
+// Cancel godoc
+// @Summary Cancel a scheduled change
+// @Description Cancels a pending scheduled change by its ID
+// @Tags schedules
+// @Produce json
+// @Param id path string true "Schedule ID"
+// @Success 200 {object} dto.MessageResponse
+// @Failure 404 {object} dto.ErrorResponse
+// @Security BearerAuth
+// @Router /admin/schedules/{id} [delete]
 func (h *ScheduleHandler) Cancel(c *gin.Context) {
 	id := c.Param("id")
 

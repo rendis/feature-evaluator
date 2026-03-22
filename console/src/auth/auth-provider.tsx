@@ -35,8 +35,11 @@ function useOidcSession() {
     setUserManager(mgr);
 
     const onLoaded = (nextUser: User) => {
-      setUser(nextUser);
       setTokenProvider(() => nextUser.access_token);
+      setUser((prev) => {
+        if (prev?.profile?.sub === nextUser.profile?.sub) return prev;
+        return nextUser;
+      });
     };
     const onUnloaded = () => {
       setUser(null);
