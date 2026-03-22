@@ -34,7 +34,7 @@ Examples:
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `MCP_SPEC` | URL or path to the OpenAPI spec | `https://raw.githubusercontent.com/rendis/feature-evaluator/main/server/docs/swagger.yaml` |
+| `MCP_SPEC` | URL or path to the OpenAPI spec | `https://raw.githubusercontent.com/rendis/feature-evaluator/main/server/docs/openapi.yaml` |
 | `MCP_BASE_URL` | Base URL for API calls | `http://localhost:8080/features` |
 | `MCP_AUTH_TOKEN` | Static auth token (dev mode) | `dev-token` |
 | `MCP_TOOL_PREFIX` | Prefix for tool names | `fe` |
@@ -85,7 +85,7 @@ command = "mcp-openapi-proxy"
 args = []
 
 [mcp_servers.feature-evaluator.env]
-MCP_SPEC = "https://raw.githubusercontent.com/rendis/feature-evaluator/main/server/docs/swagger.yaml"
+MCP_SPEC = "https://raw.githubusercontent.com/rendis/feature-evaluator/main/server/docs/openapi.yaml"
 MCP_BASE_URL = "http://localhost:8080/features"
 MCP_AUTH_TOKEN = "dev-token"
 MCP_TOOL_PREFIX = "fe"
@@ -104,7 +104,7 @@ Edit `~/.gemini/settings.json` (global) or `.gemini/settings.json` (project):
       "command": "mcp-openapi-proxy",
       "args": [],
       "env": {
-        "MCP_SPEC": "https://raw.githubusercontent.com/rendis/feature-evaluator/main/server/docs/swagger.yaml",
+        "MCP_SPEC": "https://raw.githubusercontent.com/rendis/feature-evaluator/main/server/docs/openapi.yaml",
         "MCP_BASE_URL": "http://localhost:8080/features",
         "MCP_AUTH_TOKEN": "dev-token",
         "MCP_TOOL_PREFIX": "fe"
@@ -176,7 +176,7 @@ Set `MCP_OIDC_ISSUER` and `MCP_OIDC_CLIENT_ID` in your env or `.mcp.json` for OI
 2. If using a local path, verify the file exists:
 
    ```bash
-   ls -la server/docs/swagger.yaml
+   ls -la server/docs/openapi.yaml
    ```
 
 3. Regenerate if missing:

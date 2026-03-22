@@ -4,7 +4,7 @@
       "command": "mcp-openapi-proxy",
       "args": [],
       "env": {
-        "MCP_SPEC": "https://raw.githubusercontent.com/rendis/feature-evaluator/main/server/docs/swagger.yaml",
+        "MCP_SPEC": "https://raw.githubusercontent.com/rendis/feature-evaluator/main/server/docs/openapi.yaml",
         "MCP_BASE_URL": "<your-api-url>/features",
         "MCP_TOOL_PREFIX": "fe"
       }

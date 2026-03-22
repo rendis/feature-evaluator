@@ -86,6 +86,7 @@ format: ## Format all code
 
 swagger: ## Regenerate OpenAPI spec from handler annotations
 	swag init -d $(SERVER_DIR) -g cmd/server/main.go -o $(SERVER_DIR)/docs --parseDependency --parseInternal
+	npx swagger2openapi $(SERVER_DIR)/docs/swagger.yaml -o $(SERVER_DIR)/docs/openapi.yaml --yaml
 
 ## Help
 
