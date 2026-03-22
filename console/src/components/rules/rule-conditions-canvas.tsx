@@ -375,7 +375,7 @@ export function RuleConditionsCanvas({
             <div className="mb-2 text-sm font-semibold text-warning">Modo avanzado</div>
             <textarea
               value={advancedExpression}
-              readOnly
+              onChange={(event) => setAdvancedExpression(event.target.value)}
               rows={10}
               className="mt-4 flex min-h-[220px] w-full rounded-2xl border border-warning/25 bg-background px-4 py-3 font-mono text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
