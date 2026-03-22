@@ -136,6 +136,8 @@ interface SegmentOption {
   recordKeyPath?: string;
 }
 
+const EMPTY_EXTERNAL_API_BINDINGS: ExternalApiBinding[] = [];
+
 const CONNECTOR_LABELS: Record<BuilderConnector, string> = {
   and: 'AND',
   or: 'OR',
@@ -207,7 +209,7 @@ export function RuleConditionsCanvas({
   const guidedResult = useMemo(() => serializeConditionTree(builderRoot), [builderRoot]);
   const currentExpression = mode === 'guided' ? guidedResult.expression : advancedExpression;
   const currentSourceBindings = mode === 'guided' ? guidedResult.sourceBindings : manualSourceBindings;
-  const currentExternalApiBindings = mode === 'guided' ? guidedResult.externalApiBindings : [];
+  const currentExternalApiBindings = mode === 'guided' ? guidedResult.externalApiBindings : EMPTY_EXTERNAL_API_BINDINGS;
   const currentMetadata = useMemo(
     () => (mode === 'guided' ? withBuilderMetadata(metadataSeed, builderRoot) : metadataSeed),
     [builderRoot, metadataSeed, mode],
