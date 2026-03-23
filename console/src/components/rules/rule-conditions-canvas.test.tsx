@@ -5,12 +5,45 @@ import { emptyGroup, withBuilderMetadata } from './conditions-builder-types';
 
 import { render, screen } from '@/test/test-utils';
 
+const queryState = vi.hoisted(() => ({
+  useQuery: vi.fn((options?: { queryKey?: unknown[] }) => {
+    const firstKey = options?.queryKey?.[0];
+    if (firstKey === 'external-apis') {
+      return {
+        data: [
+          {
+            id: 'api-1',
+            key: 'payment-validator',
+            name: 'Payment Validator',
+            active: true,
+            request: { method: 'POST', urlTemplate: 'https://example.com', headers: [] },
+            params: [{ name: 'userId', type: 'string', required: true, locations: ['body'] }],
+            responseValidation: {
+              mode: 'httpCode',
+              http: { mode: 'any_2xx' },
+              body: { expression: '' },
+            },
+            hasSecrets: false,
+            version: 1,
+            createdAt: '',
+            updatedAt: '',
+            createdBy: '',
+            updatedBy: '',
+          },
+        ],
+      };
+    }
+
+    return { data: undefined };
+  }),
+}));
+
 vi.mock('@tanstack/react-query', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@tanstack/react-query')>();
 
   return {
     ...actual,
-    useQuery: vi.fn(() => ({ data: undefined })),
+    useQuery: queryState.useQuery,
     useMutation: vi.fn(() => ({
       mutateAsync: vi.fn(),
       isPending: false,
@@ -67,5 +100,67 @@ describe('RuleConditionsCanvas', () => {
     await user.click(await screen.findByRole('button', { name: 'Guardar en avanzado' }));
 
     expect(screen.getByRole('button', { name: 'Volver al builder' })).toBeInTheDocument();
+  });
+
+  it('rehydrates saved external api params when editing a rule', async () => {
+    render(
+      <RuleConditionsCanvas
+        feature={{
+          ...feature,
+          inputContract: {
+            headers: [
+              {
+                headerName: 'X-User-Id',
+                expressionKey: 'userId',
+                label: 'User ID',
+                type: 'string',
+                required: false,
+              },
+            ],
+          },
+        }}
+        initialExpression={'externalApi("payment-validator")'}
+        initialMetadata={withBuilderMetadata(
+          {},
+          {
+            id: 'root',
+            kind: 'group',
+            connector: 'and',
+            items: [
+              {
+                id: 'external-api-condition',
+                kind: 'condition',
+                conditionKind: 'externalApi',
+                externalApiKey: 'payment-validator',
+                externalApiName: '',
+                paramMappings: [],
+                negate: false,
+              },
+            ],
+          },
+        )}
+        initialSourceBindings={{ segments: [] }}
+        initialExternalApiBindings={[
+          {
+            externalApiKey: 'payment-validator',
+            paramMappings: [
+              {
+                paramName: 'userId',
+                mode: 'input',
+                inputPath: 'headers.userId',
+              },
+            ],
+            failMode: 'open',
+            cacheTTL: 0,
+          },
+        ]}
+        onChange={vi.fn()}
+      />,
+    );
+
+    expect(await screen.findByText('Parametros')).toBeInTheDocument();
+    expect(screen.getAllByText(/userId/).length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: /Payment Validator/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /User ID/ })).toBeInTheDocument();
   });
 });

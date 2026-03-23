@@ -12,7 +12,7 @@ import {
   Trash2,
   Waypoints,
 } from 'lucide-react';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState, type ReactNode } from 'react';
 
 import {
   emptyGroup,
@@ -29,6 +29,7 @@ import {
   withBuilderMetadata,
   withoutBuilderMetadata,
 } from './conditions-builder-types';
+import { hydrateExternalApiConditions } from './rule-conditions-hydration';
 import { getVisibleErrorMessage } from '@/lib/display-error';
 
 import type {
@@ -147,6 +148,7 @@ export function RuleConditionsCanvas({
   initialExpression,
   initialMetadata,
   initialSourceBindings,
+  initialExternalApiBindings = EMPTY_EXTERNAL_API_BINDINGS,
   onChange,
 }: RuleConditionsCanvasProps) {
   const inputContract = useMemo<InputContract>(
@@ -157,13 +159,24 @@ export function RuleConditionsCanvas({
     }),
     [feature.inputContract],
   );
+  const initialFallbackInputFields = useMemo(
+    () => toCatalogFieldOptions(buildFallbackFeatureSchema(inputContract)),
+    [inputContract],
+  );
+  const [initialExternalApiBindingsSeed] = useState<ExternalApiBinding[]>(
+    () => initialExternalApiBindings,
+  );
   const [metadataSeed] = useState(() => withoutBuilderMetadata(initialMetadata));
   const [initialBuilderRoot] = useState<BuilderGroup | null>(() =>
     extractBuilderRoot(initialMetadata),
   );
   const [initialExpressionValue] = useState(initialExpression);
-  const [builderRoot, setBuilderRoot] = useState<BuilderGroup>(
-    () => initialBuilderRoot ?? emptyGroup(),
+  const [builderRoot, setBuilderRoot] = useState<BuilderGroup>(() =>
+    hydrateExternalApiConditions(initialBuilderRoot ?? emptyGroup(), {
+      externalApiBindings: initialExternalApiBindingsSeed,
+      externalApis: [],
+      inputFields: initialFallbackInputFields,
+    }),
   );
   const [mode, setMode] = useState<'guided' | 'advanced'>(() => {
     if (initialBuilderRoot) {
@@ -218,6 +231,20 @@ export function RuleConditionsCanvas({
     () => (mode === 'guided' ? withBuilderMetadata(metadataSeed, builderRoot) : metadataSeed),
     [builderRoot, metadataSeed, mode],
   );
+
+  useLayoutEffect(() => {
+    if (mode !== 'guided') {
+      return;
+    }
+
+    setBuilderRoot((current) =>
+      hydrateExternalApiConditions(current, {
+        externalApiBindings: initialExternalApiBindingsSeed,
+        externalApis,
+        inputFields,
+      }),
+    );
+  }, [externalApis, initialExternalApiBindingsSeed, inputFields, mode]);
 
   useEffect(() => {
     onChange({

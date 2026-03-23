@@ -34,6 +34,7 @@ export function StepExpression({ draft, feature, onChange }: StepExpressionProps
         initialExpression={draft.expression}
         initialMetadata={draft.metadata}
         initialSourceBindings={draft.sourceBindings}
+        initialExternalApiBindings={draft.externalApiBindings}
         onChange={handleConditionsChange}
       />
     </div>
