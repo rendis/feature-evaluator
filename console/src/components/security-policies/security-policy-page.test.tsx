@@ -111,8 +111,8 @@ vi.mock('@/components/shared/confirm-dialog', () => ({
 
 vi.mock('sonner', () => ({
   toast: {
-    success: (message: string) => state.toastSuccess(message),
-    error: (message: string) => state.toastError(message),
+    success: (...args: unknown[]) => state.toastSuccess(...args),
+    error: (...args: unknown[]) => state.toastError(...args),
   },
 }));
 
