@@ -110,6 +110,11 @@ func (h *RuleHandler) Create(c *gin.Context) {
 		dto.RespondError(c, err)
 		return
 	}
+	metadata, err := canonicalizeRuleMetadata(req.Metadata, req.Expression, sourceBindings)
+	if err != nil {
+		dto.RespondError(c, err)
+		return
+	}
 	externalAPIBindings, err := h.toDomainExternalAPIBindings(c, req.ExternalAPIBindings)
 	if err != nil {
 		dto.RespondError(c, err)
@@ -132,7 +137,7 @@ func (h *RuleHandler) Create(c *gin.Context) {
 		RolloutPercentage:   req.RolloutPercentage,
 		SourceBindings:      sourceBindings,
 		ExternalAPIBindings: externalAPIBindings,
-		Metadata:            req.Metadata,
+		Metadata:            metadata,
 	}
 
 	if err := h.featureSvc.AddRule(c.Request.Context(), key, rule); err != nil {
@@ -190,6 +195,11 @@ func (h *RuleHandler) Update(c *gin.Context) {
 		dto.RespondError(c, err)
 		return
 	}
+	metadata, err := canonicalizeRuleMetadata(req.Metadata, req.Expression, sourceBindings)
+	if err != nil {
+		dto.RespondError(c, err)
+		return
+	}
 	externalAPIBindings, err := h.toDomainExternalAPIBindings(c, req.ExternalAPIBindings)
 	if err != nil {
 		dto.RespondError(c, err)
@@ -206,7 +216,7 @@ func (h *RuleHandler) Update(c *gin.Context) {
 		RolloutPercentage:   req.RolloutPercentage,
 		SourceBindings:      sourceBindings,
 		ExternalAPIBindings: externalAPIBindings,
-		Metadata:            req.Metadata,
+		Metadata:            metadata,
 	}
 
 	if err := h.featureSvc.UpdateRule(c.Request.Context(), key, rule); err != nil {

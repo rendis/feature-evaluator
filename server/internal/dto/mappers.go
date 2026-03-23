@@ -13,6 +13,7 @@ import (
 	"github.com/rendis/feature-evaluator/internal/domain/segment"
 	"github.com/rendis/feature-evaluator/internal/domain/tag"
 	"github.com/rendis/feature-evaluator/internal/domain/tier"
+	"github.com/rendis/feature-evaluator/internal/engine"
 )
 
 func formatTime(t time.Time) string {
@@ -178,6 +179,16 @@ func ToFeatureDetailResponse(f *feature.Feature, tagMap map[string]tag.Tag, tier
 
 // ToRuleResponse maps a domain rule to its response DTO.
 func ToRuleResponse(r *feature.Rule) RuleResponse {
+	metadata := make(map[string]any, len(r.Metadata)+1)
+	for k, v := range r.Metadata {
+		metadata[k] = v
+	}
+	if metadata[engine.ConditionsBuilderMetadataKey] == nil && r.Expression != "" {
+		if tree := engine.ParseToBuilderTree(r.Expression, r.SourceBindings); tree != nil {
+			metadata[engine.ConditionsBuilderMetadataKey] = tree
+		}
+	}
+
 	return RuleResponse{
 		ID:                  r.ID,
 		Name:                r.Name,
@@ -188,7 +199,7 @@ func ToRuleResponse(r *feature.Rule) RuleResponse {
 		RolloutPercentage:   r.RolloutPercentage,
 		SourceBindings:      toSourceBindingsResponse(r.SourceBindings),
 		ExternalAPIBindings: toExternalAPIBindingsResponse(r.ExternalAPIBindings),
-		Metadata:            r.Metadata,
+		Metadata:            metadata,
 		CreatedAt:           formatTime(r.CreatedAt),
 		UpdatedAt:           formatTime(r.UpdatedAt),
 	}

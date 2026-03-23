@@ -23,7 +23,6 @@ import {
   extractBuilderRoot,
   getOperatorOptions,
   isBuilderGroup,
-
   isGroupComplete,
   normalizeStaticCondition,
   serializeConditionTree,
@@ -204,12 +203,17 @@ export function RuleConditionsCanvas({
       })),
     [segmentListData],
   );
-  const externalApis = useMemo<ExternalApi[]>(() => externalApiListData ?? [], [externalApiListData]);
+  const externalApis = useMemo<ExternalApi[]>(
+    () => externalApiListData ?? [],
+    [externalApiListData],
+  );
 
   const guidedResult = useMemo(() => serializeConditionTree(builderRoot), [builderRoot]);
   const currentExpression = mode === 'guided' ? guidedResult.expression : advancedExpression;
-  const currentSourceBindings = mode === 'guided' ? guidedResult.sourceBindings : manualSourceBindings;
-  const currentExternalApiBindings = mode === 'guided' ? guidedResult.externalApiBindings : EMPTY_EXTERNAL_API_BINDINGS;
+  const currentSourceBindings =
+    mode === 'guided' ? guidedResult.sourceBindings : manualSourceBindings;
+  const currentExternalApiBindings =
+    mode === 'guided' ? guidedResult.externalApiBindings : EMPTY_EXTERNAL_API_BINDINGS;
   const currentMetadata = useMemo(
     () => (mode === 'guided' ? withBuilderMetadata(metadataSeed, builderRoot) : metadataSeed),
     [builderRoot, metadataSeed, mode],
@@ -222,7 +226,13 @@ export function RuleConditionsCanvas({
       sourceBindings: currentSourceBindings,
       externalApiBindings: currentExternalApiBindings,
     });
-  }, [currentExpression, currentMetadata, currentSourceBindings, currentExternalApiBindings, onChange]);
+  }, [
+    currentExpression,
+    currentMetadata,
+    currentSourceBindings,
+    currentExternalApiBindings,
+    onChange,
+  ]);
 
   const canReturnToGuided = initialBuilderRoot != null || !initialExpressionValue.trim();
 
@@ -610,10 +620,30 @@ function ConditionGroupEditor({
 function ConditionTypePicker({ onSelect }: { onSelect: (kind: BuilderConditionKind) => void }) {
   const [open, setOpen] = useState(false);
 
-  const options: { kind: BuilderConditionKind; label: string; description: string; icon: typeof Plus }[] = [
-    { kind: 'static', label: 'Estatica', description: 'Compara un dato del request con un valor fijo', icon: Layers },
-    { kind: 'externalApi', label: 'API externa', description: 'Consulta una API configurada en el workspace', icon: Globe },
-    { kind: 'segment', label: 'Segmento', description: 'Compara campos de un registro del segmento', icon: Database },
+  const options: {
+    kind: BuilderConditionKind;
+    label: string;
+    description: string;
+    icon: typeof Plus;
+  }[] = [
+    {
+      kind: 'static',
+      label: 'Estatica',
+      description: 'Compara un dato del request con un valor fijo',
+      icon: Layers,
+    },
+    {
+      kind: 'externalApi',
+      label: 'API externa',
+      description: 'Consulta una API configurada en el workspace',
+      icon: Globe,
+    },
+    {
+      kind: 'segment',
+      label: 'Segmento',
+      description: 'Compara campos de un registro del segmento',
+      icon: Database,
+    },
   ];
 
   return (
@@ -856,7 +886,8 @@ function ExternalApiConditionCard({
                 <span className="min-w-[120px] text-sm font-medium">
                   {mapping.paramName}
                   <span className="ml-1 text-xs text-muted-foreground">
-                    ({mapping.paramType}{mapping.required ? ', req' : ''})
+                    ({mapping.paramType}
+                    {mapping.required ? ', req' : ''})
                   </span>
                 </span>
                 <Select
@@ -989,7 +1020,8 @@ function SegmentConditionCard({
           />
           {condition.lookupInputRef ? (
             <span className="text-muted-foreground text-xs">
-              via <span className="font-mono text-foreground/80">{condition.lookupInputRef.path}</span>
+              via{' '}
+              <span className="font-mono text-foreground/80">{condition.lookupInputRef.path}</span>
             </span>
           ) : condition.segmentKey ? (
             <SearchPicker
@@ -1164,10 +1196,25 @@ function SegmentFieldOpRow({
 // Condition Card Wrapper (styled by kind)
 // ---------------------------------------------------------------------------
 
-const KIND_STYLES: Record<BuilderConditionKind, { border: string; badge: string; badgeLabel: string }> = {
-  static: { border: 'border-border/60', badge: 'bg-muted text-muted-foreground', badgeLabel: 'Estatica' },
-  externalApi: { border: 'border-blue-500/30', badge: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300', badgeLabel: 'API externa' },
-  segment: { border: 'border-emerald-500/30', badge: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300', badgeLabel: 'Segmento' },
+const KIND_STYLES: Record<
+  BuilderConditionKind,
+  { border: string; badge: string; badgeLabel: string }
+> = {
+  static: {
+    border: 'border-border/60',
+    badge: 'bg-muted text-muted-foreground',
+    badgeLabel: 'Estatica',
+  },
+  externalApi: {
+    border: 'border-blue-500/30',
+    badge: 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+    badgeLabel: 'API externa',
+  },
+  segment: {
+    border: 'border-emerald-500/30',
+    badge: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
+    badgeLabel: 'Segmento',
+  },
 };
 
 function ConditionCardWrapper({
@@ -1340,9 +1387,7 @@ function SimulationResultCard({
       <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
         <Waypoints className="h-4 w-4 text-muted-foreground" />
         Resultado
-        {isPending ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-        ) : null}
+        {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" /> : null}
       </div>
 
       {result ? (
@@ -1667,8 +1712,18 @@ function buildFallbackFeatureSchema(inputContract: InputContract): FeatureExpres
     requestBody: flattenInputContractSchema(inputContract.requestBodySchema, ''),
     derived: [
       { path: 'derived.authenticated', label: 'Autenticado', type: 'boolean', group: 'derived' },
-      { path: 'derived.bearerTokenPresent', label: 'Bearer presente', type: 'boolean', group: 'derived' },
-      { path: 'derived.apiKeyPresent', label: 'API key presente', type: 'boolean', group: 'derived' },
+      {
+        path: 'derived.bearerTokenPresent',
+        label: 'Bearer presente',
+        type: 'boolean',
+        group: 'derived',
+      },
+      {
+        path: 'derived.apiKeyPresent',
+        label: 'API key presente',
+        type: 'boolean',
+        group: 'derived',
+      },
       { path: 'derived.userId', label: 'User ID', type: 'string', group: 'derived' },
       { path: 'derived.email', label: 'Email', type: 'string', group: 'derived' },
     ],
