@@ -157,8 +157,8 @@ func TestExternalAPIHandlerTestIncludesEvaluationDetails(t *testing.T) { //nolin
 
 	gin.SetMode(gin.TestMode)
 
-	svc := domainexternalapi.NewService(externalAPIRepositoryStub{}, externalAPISecretCipherStub{})
-	executor := external.NewCaller(nil, nil)
+	svc := domainexternalapi.NewService(externalAPIRepositoryStub{}, externalAPISecretCipherStub{}, nil)
+	executor := external.NewCaller(nil, nil, nil)
 	executor.SetHTTPClient(&http.Client{
 		Transport: roundTripFunc(func(req *http.Request) (*http.Response, error) {
 			return &http.Response{

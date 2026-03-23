@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   Package,
   Settings,
+  Shield,
   ShieldCheck,
   ToggleLeft,
   Users,
@@ -19,7 +20,9 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import type { ReactNode } from 'react';
+import type { Permission } from '@/auth/roles';
 
+import { usePermissions } from '@/hooks/use-permissions';
 import { WorkspaceSelector } from '@/components/layout/workspace-selector';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -33,6 +36,7 @@ interface NavItem {
   labelKey: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  permission?: Permission;
 }
 
 const navItems: NavItem[] = [
@@ -46,6 +50,12 @@ const navItems: NavItem[] = [
 ];
 
 const configItems: NavItem[] = [
+  {
+    labelKey: 'nav.security',
+    href: '/settings/security',
+    icon: Shield,
+    permission: 'security.manage',
+  },
   { labelKey: 'nav.externalApis', href: '/settings/external-apis', icon: DatabaseZap },
   { labelKey: 'nav.authProfiles', href: '/settings/auth-profiles', icon: ShieldCheck },
   { labelKey: 'nav.members', href: '/settings/members', icon: Settings },
@@ -146,11 +156,14 @@ function SidebarContent({
   t: (key: string) => string;
   toggleCollapsed: () => void;
 }) {
+  const { can } = usePermissions();
   const isCollapsed = collapsed && !isMobile;
   const isActive = (href: string) => {
     if (href === '/') return currentPath === '/';
     return currentPath.startsWith(href);
   };
+  const visibleNavItems = navItems.filter((item) => !item.permission || can(item.permission));
+  const visibleConfigItems = configItems.filter((item) => !item.permission || can(item.permission));
 
   return (
     <div className="flex h-full flex-col">
@@ -179,7 +192,7 @@ function SidebarContent({
           collapsed={isCollapsed}
           isActive={isActive}
           isMobile={isMobile}
-          items={navItems}
+          items={visibleNavItems}
           onClose={onClose}
           t={t}
         />
@@ -193,7 +206,7 @@ function SidebarContent({
           collapsed={isCollapsed}
           isActive={isActive}
           isMobile={isMobile}
-          items={configItems}
+          items={visibleConfigItems}
           onClose={onClose}
           t={t}
         />

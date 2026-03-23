@@ -44,6 +44,51 @@ func TestValidateRejectsSecretPrefixedExpressionVariables(t *testing.T) {
 	}
 }
 
+func TestValidateWithAllowedHostsAllowsConfiguredHost(t *testing.T) {
+	api := validExternalAPIForValidation()
+	api.Request.URLTemplate = "https://api.example.com/check"
+
+	if err := ValidateWithAllowedHosts(api, []string{"api.example.com"}); err != nil {
+		t.Fatalf("ValidateWithAllowedHosts() error = %v, want nil", err)
+	}
+}
+
+func TestValidateWithAllowedHostsRejectsHostOutsideAllowlist(t *testing.T) {
+	api := validExternalAPIForValidation()
+	api.Request.URLTemplate = "https://api.example.net/check"
+
+	err := ValidateWithAllowedHosts(api, []string{"api.example.com"})
+	if err == nil {
+		t.Fatal("ValidateWithAllowedHosts() error = nil, want non-nil")
+	}
+	if got := err.Error(); !strings.Contains(got, `external api host "api.example.net" is not allowed`) {
+		t.Fatalf("ValidateWithAllowedHosts() error = %q, want host not allowed", got)
+	}
+}
+
+func TestValidateWithAllowedHostsRejectsDomainPlaceholders(t *testing.T) {
+	api := validExternalAPIForValidation()
+	api.Request.URLTemplate = "https://{{tenant_host}}/check"
+	api.Params = []Param{
+		{
+			Name:      "tenant_host",
+			Type:      ParamTypeString,
+			Required:  true,
+			Locations: []Location{LocationURL},
+			URLKind:   ptr(URLKindDomain),
+		},
+	}
+	api.Request.BodyTemplate = nil
+
+	err := ValidateWithAllowedHosts(api, []string{"api.example.com"})
+	if err == nil {
+		t.Fatal("ValidateWithAllowedHosts() error = nil, want non-nil")
+	}
+	if got := err.Error(); !strings.Contains(got, "external api host must be static") {
+		t.Fatalf("ValidateWithAllowedHosts() error = %q, want static host error", got)
+	}
+}
+
 func validExternalAPIForValidation() *ExternalAPI {
 	return &ExternalAPI{
 		Name: "Eligibility API",
@@ -70,4 +115,8 @@ func validExternalAPIForValidation() *ExternalAPI {
 			},
 		},
 	}
+}
+
+func ptr[T any](value T) *T {
+	return &value
 }

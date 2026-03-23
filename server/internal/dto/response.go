@@ -535,3 +535,18 @@ type EnvironmentItem struct {
 	Key   string `json:"key"`
 	Label string `json:"label"`
 }
+
+// SecurityPolicyListResponse returns managed, inherited, and effective values for one list.
+type SecurityPolicyListResponse struct {
+	Managed   []string `json:"managed"`
+	Inherited []string `json:"inherited"`
+	Effective []string `json:"effective"`
+}
+
+// SecurityPolicyResponse is the response DTO for the global security policy.
+type SecurityPolicyResponse struct {
+	CORSOrigins           SecurityPolicyListResponse `json:"corsOrigins"`
+	ExternalAPIAllowHosts SecurityPolicyListResponse `json:"externalApiAllowHosts"`
+	UpdatedAt             *string                    `json:"updatedAt,omitempty"`
+	UpdatedBy             string                     `json:"updatedBy,omitempty"`
+}

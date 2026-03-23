@@ -8,6 +8,7 @@ type Permission =
   | 'members.read'
   | 'members.manage'
   | 'settings.manage'
+  | 'security.manage'
   | 'audit.read'
   | 'experiments.read'
   | 'experiments.write'
@@ -23,6 +24,7 @@ const rolePermissions: Record<MemberRole, Permission[]> = {
     'members.read',
     'members.manage',
     'settings.manage',
+    'security.manage',
     'audit.read',
     'experiments.read',
     'experiments.write',

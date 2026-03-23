@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/rendis/feature-evaluator/internal/domain/externalapi"
+	"github.com/rendis/feature-evaluator/internal/domain/securitypolicy"
 )
 
 func TestApplyRenderedRequestHeadersInjectsDefaultUserAgent(t *testing.T) {
@@ -47,7 +48,7 @@ func TestApplyRenderedRequestHeadersPreservesExplicitUserAgent(t *testing.T) {
 }
 
 func TestTestExternalAPIIncludesEvaluationDetails(t *testing.T) {
-	caller := NewCaller(nil, nil)
+	caller := NewCaller(nil, nil, nil)
 	caller.httpClient.Transport = roundTripFunc(func(req *http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: http.StatusOK,
@@ -102,6 +103,36 @@ func TestTestExternalAPIIncludesEvaluationDetails(t *testing.T) {
 	}
 	if details.Evaluations.Expression.Error != nil {
 		t.Fatalf("details.Evaluations.Expression.Error = %v, want nil", *details.Evaluations.Expression.Error)
+	}
+}
+
+func TestTestExternalAPIRejectsRenderedHostOutsideAllowlist(t *testing.T) {
+	caller := NewCaller(nil, nil, securitypolicy.NewStaticReader(securitypolicy.Snapshot{
+		ExternalAPIAllowHosts: securitypolicy.ListSnapshot{
+			Effective: []string{"example.com"},
+		},
+	}))
+
+	_, _, err := caller.TestExternalAPI(
+		context.Background(),
+		&externalapi.ExternalAPI{
+			Request: externalapi.RequestConfig{
+				Method:      http.MethodGet,
+				URLTemplate: "https://blocked.example.net/check",
+			},
+			ResponseValidation: externalapi.ResponseValidation{
+				Mode: externalapi.ValidationModeHTTPCode,
+				HTTP: externalapi.HTTPValidation{Mode: externalapi.HTTPValidationModeAny2xx},
+			},
+		},
+		nil,
+		nil,
+	)
+	if err == nil {
+		t.Fatal("TestExternalAPI() error = nil, want non-nil")
+	}
+	if !strings.Contains(err.Error(), `external api host "blocked.example.net" is not allowed`) {
+		t.Fatalf("TestExternalAPI() error = %q, want host not allowed", err)
 	}
 }
 

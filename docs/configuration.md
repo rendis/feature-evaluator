@@ -78,9 +78,27 @@ Production deployments should set both values.
 
 | Variable | Description | Default |
 | --- | --- | --- |
-| `CORS_ALLOW_ORIGINS` | comma-separated allowed origins | `http://localhost:5173` |
+| `CORS_ALLOW_ORIGINS` | comma-separated inherited origins | `http://localhost:5173` |
 
-The value is split on commas and trimmed.
+Each value must be a full origin (`scheme://host[:port]`) without path, query, or fragment. Requests with an `Origin` header that is not on the effective list are rejected with `403`.
+
+### External API host allowlist
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| `EXTERNAL_API_ALLOW_HOSTS` | optional comma-separated inherited outbound hostnames | empty |
+
+When configured, reusable external APIs can only target these hostnames. Values must be hostnames only, without scheme or port. Dynamic host placeholders in `urlTemplate` are rejected while the allowlist is active.
+
+### Security policy management
+
+The effective runtime policy is the union of:
+
+- inherited entries from `CORS_ALLOW_ORIGINS`
+- inherited entries from `EXTERNAL_API_ALLOW_HOSTS`
+- app-managed entries stored in PostgreSQL and editable from the console at `/settings/security`
+
+Inherited env entries remain active and read-only in the UI. The console only replaces the app-managed portion of the policy.
 
 ### Rate Limiting
 
@@ -145,6 +163,7 @@ AUTH_DISABLED=true
 DEV_USER_EMAIL=admin@local.dev
 DEV_USER_ROLE=owner
 CORS_ALLOW_ORIGINS=http://localhost:5173,http://localhost:5174
+EXTERNAL_API_ALLOW_HOSTS=api.example.com,eligibility.example.net
 LOG_LEVEL=debug
 LOG_FORMAT=text
 ```

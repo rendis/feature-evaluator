@@ -4,7 +4,7 @@ import { AppSidebar } from './app-sidebar';
 
 import type { AnchorHTMLAttributes, ReactNode } from 'react';
 
-import { render } from '@/test/test-utils';
+import { render, screen } from '@/test/test-utils';
 
 vi.mock('@tanstack/react-router', () => ({
   Link: ({
@@ -32,6 +32,17 @@ vi.mock('@/components/layout/workspace-selector', () => ({
   ),
 }));
 
+const permissionState = vi.hoisted(() => ({
+  canManageSecurity: true,
+}));
+
+vi.mock('@/hooks/use-permissions', () => ({
+  usePermissions: () => ({
+    can: (permission: string) =>
+      permission !== 'security.manage' || permissionState.canManageSecurity,
+  }),
+}));
+
 vi.mock('@/stores/sidebar-store', () => ({
   useSidebarStore: () => ({
     open: false,
@@ -42,6 +53,10 @@ vi.mock('@/stores/sidebar-store', () => ({
 }));
 
 describe('AppSidebar', () => {
+  beforeEach(() => {
+    permissionState.canManageSecurity = true;
+  });
+
   it('renders packs in the primary navigation segment', () => {
     const { container } = render(<AppSidebar />);
     const navSections = container.querySelectorAll('nav');
@@ -53,5 +68,13 @@ describe('AppSidebar', () => {
 
     expect(packsLink).toHaveAttribute('href', '/settings/packs');
     expect(within(settingsNav).queryByRole('link', { name: 'nav.packs' })).not.toBeInTheDocument();
+  });
+
+  it('hides the security navigation item when the user lacks permission', () => {
+    permissionState.canManageSecurity = false;
+
+    render(<AppSidebar />);
+
+    expect(screen.queryByRole('link', { name: 'nav.security' })).not.toBeInTheDocument();
   });
 });

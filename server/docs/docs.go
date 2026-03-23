@@ -3905,6 +3905,86 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/system/security-policy": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns inherited, managed, and effective security policy values",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "security-policy"
+                ],
+                "summary": "Get global security policy",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Replaces the app-managed global security policy lists",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "security-policy"
+                ],
+                "summary": "Update global security policy",
+                "parameters": [
+                    {
+                        "description": "Security policy payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.UpdateSecurityPolicyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/tags": {
             "get": {
                 "security": [
@@ -7477,6 +7557,46 @@ const docTemplate = `{
                 "value": {}
             }
         },
+        "github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyListResponse": {
+            "type": "object",
+            "properties": {
+                "effective": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "inherited": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "managed": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyResponse": {
+            "type": "object",
+            "properties": {
+                "corsOrigins": {
+                    "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyListResponse"
+                },
+                "externalApiAllowHosts": {
+                    "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyListResponse"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "updatedBy": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_rendis_feature-evaluator_internal_dto.SegmentRecordResponse": {
             "type": "object",
             "properties": {
@@ -8100,6 +8220,23 @@ const docTemplate = `{
                     "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.SourceBindingsRequest"
                 },
                 "value": {}
+            }
+        },
+        "github_com_rendis_feature-evaluator_internal_dto.UpdateSecurityPolicyRequest": {
+            "type": "object",
+            "properties": {
+                "corsOrigins": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "externalApiAllowHosts": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
             }
         },
         "github_com_rendis_feature-evaluator_internal_dto.UpdateSegmentRequest": {

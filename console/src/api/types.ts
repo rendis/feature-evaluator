@@ -35,6 +35,24 @@ export type ExternalApiHTTPValidationMode = 'any_2xx' | 'status_codes';
 
 export type MemberRole = 'owner' | 'admin' | 'editor' | 'viewer';
 
+export interface SecurityPolicyList {
+  managed: string[];
+  inherited: string[];
+  effective: string[];
+}
+
+export interface SecurityPolicy {
+  corsOrigins: SecurityPolicyList;
+  externalApiAllowHosts: SecurityPolicyList;
+  updatedAt?: string;
+  updatedBy: string;
+}
+
+export interface UpdateSecurityPolicyRequest {
+  corsOrigins: string[];
+  externalApiAllowHosts: string[];
+}
+
 export interface Member {
   id: string;
   email: string;

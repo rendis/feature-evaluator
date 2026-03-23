@@ -1745,6 +1745,32 @@ definitions:
         type: string
       value: {}
     type: object
+  github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyListResponse:
+    properties:
+      effective:
+        items:
+          type: string
+        type: array
+      inherited:
+        items:
+          type: string
+        type: array
+      managed:
+        items:
+          type: string
+        type: array
+    type: object
+  github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyResponse:
+    properties:
+      corsOrigins:
+        $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyListResponse'
+      externalApiAllowHosts:
+        $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyListResponse'
+      updatedAt:
+        type: string
+      updatedBy:
+        type: string
+    type: object
   github_com_rendis_feature-evaluator_internal_dto.SegmentRecordResponse:
     properties:
       attributes:
@@ -2162,6 +2188,17 @@ definitions:
     - expression
     - name
     - value
+    type: object
+  github_com_rendis_feature-evaluator_internal_dto.UpdateSecurityPolicyRequest:
+    properties:
+      corsOrigins:
+        items:
+          type: string
+        type: array
+      externalApiAllowHosts:
+        items:
+          type: string
+        type: array
     type: object
   github_com_rendis_feature-evaluator_internal_dto.UpdateSegmentRequest:
     properties:
@@ -4751,6 +4788,56 @@ paths:
       summary: Get segment schema
       tags:
       - segments
+  /admin/system/security-policy:
+    get:
+      description: Returns inherited, managed, and effective security policy values
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get global security policy
+      tags:
+      - security-policy
+    put:
+      consumes:
+      - application/json
+      description: Replaces the app-managed global security policy lists
+      parameters:
+      - description: Security policy payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.UpdateSecurityPolicyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update global security policy
+      tags:
+      - security-policy
   /admin/tags:
     get:
       description: Returns all tags, optionally filtered by search

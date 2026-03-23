@@ -1,0 +1,48 @@
+{
+  "title": "Políticas globales de seguridad",
+  "description": "Administra los origins permitidos por CORS y los hosts permitidos para llamadas salientes.",
+  "actions": {
+    "save": "Guardar cambios"
+  },
+  "managed": {
+    "title": "Entradas administradas desde la aplicación",
+    "empty": "No hay entradas administradas desde la aplicación.",
+    "removeValue": "Quitar {{value}}"
+  },
+  "inherited": {
+    "title": "Entradas heredadas del servidor",
+    "description": "Estas entradas provienen de variables de entorno y solo pueden cambiarse en el despliegue del servidor.",
+    "empty": "No hay entradas heredadas del servidor."
+  },
+  "effective": {
+    "title": "Vista efectiva",
+    "empty": "No hay entradas efectivas."
+  },
+  "cors": {
+    "title": "Origins permitidos para CORS",
+    "description": "Usa origins exactos del navegador en formato scheme://host[:port].",
+    "add": "Agregar origin",
+    "placeholder": "https://console.example.com"
+  },
+  "hosts": {
+    "title": "Hosts permitidos para external APIs",
+    "description": "Usa solo hostnames exactos, sin scheme ni puerto.",
+    "add": "Agregar host",
+    "placeholder": "api.example.com"
+  },
+  "notes": {
+    "title": "Cómo se aplica",
+    "description": "El valor efectivo es la unión entre lo heredado por configuración del servidor y lo administrado desde la aplicación.",
+    "updatedBy": "Última actualización: {{updatedAt}} por {{updatedBy}}",
+    "system": "sistema"
+  },
+  "warning": {
+    "title": "Podrías perder acceso desde este navegador",
+    "description": "El origin actual {{origin}} dejará de estar permitido por CORS después de guardar.",
+    "confirm": "Guardar de todos modos"
+  },
+  "messages": {
+    "saved": "Política de seguridad actualizada",
+    "saveError": "No se pudo actualizar la política de seguridad"
+  }
+}

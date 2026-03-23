@@ -12,6 +12,7 @@ const (
 	PermMembersRead       Permission = "members.read"
 	PermMembersManage     Permission = "members.manage"
 	PermSettingsManage    Permission = "settings.manage"
+	PermSecurityManage    Permission = "security.manage"
 	PermPacksRead         Permission = "packs.read"
 	PermPacksWrite        Permission = "packs.write"
 	PermExperimentsRead   Permission = "experiments.read"
@@ -29,7 +30,7 @@ var rolePermissions = map[Role][]Permission{
 		PermPacksRead, PermPacksWrite,
 		PermExperimentsRead, PermExperimentsWrite,
 		PermMembersRead, PermMembersManage,
-		PermSettingsManage, PermAuditRead,
+		PermSettingsManage, PermSecurityManage, PermAuditRead,
 		PermWorkspaceDelete, PermOwnershipTransfer,
 	},
 	RoleAdmin: {
@@ -89,6 +90,7 @@ var AllowedAPIKeyPermissions = map[Permission]bool{
 // ForbiddenAPIKeyPrefixes lists permission prefixes that are never allowed on API keys.
 var ForbiddenAPIKeyPrefixes = []string{
 	"members.",
+	"security.",
 	"settings.",
 	"workspace.",
 	"ownership.",

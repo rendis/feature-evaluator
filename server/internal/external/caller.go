@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/rendis/feature-evaluator/internal/domain/externalapi"
+	"github.com/rendis/feature-evaluator/internal/domain/securitypolicy"
 	"github.com/rendis/feature-evaluator/internal/secrets"
 	redisclient "github.com/rendis/feature-evaluator/internal/storage/redis"
 )
@@ -65,15 +66,21 @@ type Caller struct {
 	redis        *redisclient.Client
 	secretCipher *secrets.Cipher
 	onLatency    LatencyFunc
+	policyReader securitypolicy.Reader
 }
 
 // NewCaller creates a new external validation caller.
-func NewCaller(redis *redisclient.Client, secretCipher *secrets.Cipher) *Caller {
+func NewCaller(
+	redis *redisclient.Client,
+	secretCipher *secrets.Cipher,
+	policyReader securitypolicy.Reader,
+) *Caller {
 	return &Caller{
 		httpClient:   &http.Client{Timeout: 30 * time.Second},
 		cbManager:    NewCircuitBreakerManager(),
 		redis:        redis,
 		secretCipher: secretCipher,
+		policyReader: policyReader,
 	}
 }
 
@@ -214,6 +221,9 @@ func (c *Caller) executeRenderedRequest(
 	timeout time.Duration,
 	prepare func(*http.Request) error,
 ) (*httpCallResult, error) {
+	if err := externalapi.ValidateRenderedURLHost(rendered.URL, c.allowedHosts()); err != nil {
+		return nil, err
+	}
 	if err := isPrivateURL(rendered.URL); err != nil {
 		return nil, fmt.Errorf("SSRF protection: %w", err)
 	}
@@ -258,6 +268,14 @@ func (c *Caller) executeRenderedRequest(
 		RequestHeaders: previewHeaderStrings(req.Header),
 		RequestBody:    requestBodyPreview(bodyBytes),
 	}, nil
+}
+
+func (c *Caller) allowedHosts() []string {
+	if c == nil || c.policyReader == nil {
+		return nil
+	}
+
+	return c.policyReader.Snapshot().ExternalAPIAllowHosts.Effective
 }
 
 func applyRenderedRequestHeaders(req *http.Request, renderedHeaders map[string]string, hasBody bool) {

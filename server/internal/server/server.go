@@ -11,8 +11,8 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	"github.com/rendis/feature-evaluator/internal/config"
 	_ "github.com/rendis/feature-evaluator/docs" // swagger generated docs
+	"github.com/rendis/feature-evaluator/internal/config"
 	"github.com/rendis/feature-evaluator/internal/domain/apikey"
 	"github.com/rendis/feature-evaluator/internal/domain/audit"
 	"github.com/rendis/feature-evaluator/internal/domain/authprofile"
@@ -25,6 +25,7 @@ import (
 	evalmetrics "github.com/rendis/feature-evaluator/internal/domain/metrics"
 	"github.com/rendis/feature-evaluator/internal/domain/pack"
 	"github.com/rendis/feature-evaluator/internal/domain/schedule"
+	"github.com/rendis/feature-evaluator/internal/domain/securitypolicy"
 	"github.com/rendis/feature-evaluator/internal/domain/segment"
 	"github.com/rendis/feature-evaluator/internal/domain/tag"
 	"github.com/rendis/feature-evaluator/internal/domain/tier"
@@ -47,6 +48,7 @@ type Server struct {
 	redis            *redisclient.Client
 	metricsCollector *evalmetrics.Collector
 	scheduleWorker   *schedule.Worker
+	securityPolicy   *securitypolicy.Service
 }
 
 // New creates a new Server with all routes configured.
@@ -59,13 +61,24 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 
 	router := gin.New()
 
+	securityPolicyRepo := postgres.NewSecurityPolicyRepo(postgresDB)
+	securityPolicySvc := securitypolicy.NewService(securityPolicyRepo, securitypolicy.ManagedPolicy{
+		CORSOrigins:           cfg.CORS.AllowOrigins,
+		ExternalAPIAllowHosts: cfg.External.AllowHosts,
+	})
+	if err := securityPolicySvc.Load(context.Background()); err != nil {
+		slog.Error("loading security policy", "error", err)
+		panic(fmt.Sprintf("loading security policy: %v", err))
+	}
+	securityPolicySvc.Start(5 * time.Second)
+
 	// Global middleware
 	router.Use(
 		middleware.Recovery(),
 		middleware.RequestID(),
 		middleware.BodySizeLimit(1<<20), // 1MB global default
 		middleware.Logging(),
-		middleware.CORS(cfg.CORS.AllowOrigins),
+		middleware.CORS(securityPolicySvc),
 		middleware.TenantExtractor(),
 		middleware.WorkspaceResolver(),
 	)
@@ -110,7 +123,7 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 	auditSvc := audit.NewService(evalErrorRepo)
 	apiKeySvc := apikey.NewService(apiKeyRepo)
 	authProfileSvc := authprofile.NewService(authProfileRepo, secretCipher)
-	externalAPISvc := externalapi.NewService(externalAPIRepo, secretCipher)
+	externalAPISvc := externalapi.NewService(externalAPIRepo, secretCipher, securityPolicySvc)
 	tagSvc := tag.NewService(tagRepo)
 	packCache := redisclient.NewPackCache(redis)
 	packSvc := pack.NewService(packRepo, packActivationRepo, featureRepo, packCache)
@@ -127,7 +140,7 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 	evalSvc.SetAuthValidator(authValidator)
 
 	// External caller (created early so resolver can reference it)
-	extCaller := external.NewCaller(redis, secretCipher)
+	extCaller := external.NewCaller(redis, secretCipher, securityPolicySvc)
 	extAPIResolver := external.NewAPIResolver(externalAPISvc, extCaller)
 	evalSvc.SetExternalAPIResolver(extAPIResolver)
 
@@ -183,6 +196,7 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 	apiKeyHandler := handler.NewAPIKeyHandler(apiKeySvc)
 	metricsHandler := handler.NewMetricsHandler(metricsCollector)
 	workspaceHandler := handler.NewWorkspaceHandler(workspaceSvc, memberSvc)
+	securityPolicyHandler := handler.NewSecurityPolicyHandler(securityPolicySvc)
 	scheduleHandler := handler.NewScheduleHandler(scheduleSvc)
 	experimentHandler := handler.NewExperimentHandler(experimentSvc, changelogSvc)
 
@@ -313,6 +327,11 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 	externalAPIsWrite.POST("/test", externalAPIHandler.Test)
 	externalAPIsWrite.PUT("/:key", externalAPIHandler.Update)
 	externalAPIsWrite.DELETE("/:key", externalAPIHandler.Delete)
+
+	systemGroup := admin.Group("/system")
+	systemGroup.Use(middleware.RequirePermission(member.PermSecurityManage))
+	systemGroup.GET("/security-policy", securityPolicyHandler.Get)
+	systemGroup.PUT("/security-policy", securityPolicyHandler.Update)
 
 	// Packs
 	packsRead := admin.Group("/packs")
@@ -448,6 +467,7 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 		redis:            redis,
 		metricsCollector: metricsCollector,
 		scheduleWorker:   scheduleWorker,
+		securityPolicy:   securityPolicySvc,
 		httpServer: &http.Server{
 			Addr:              fmt.Sprintf(":%d", cfg.Server.Port),
 			Handler:           router,
@@ -476,6 +496,9 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	if s.metricsCollector != nil {
 		slog.Info("stopping metrics collector")
 		s.metricsCollector.Stop()
+	}
+	if s.securityPolicy != nil {
+		s.securityPolicy.Stop()
 	}
 	return s.httpServer.Shutdown(ctx)
 }
