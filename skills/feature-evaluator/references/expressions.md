@@ -3,7 +3,9 @@
 ## Table of Contents
 
 - [Eval API](#eval-api)
+- [Request Inputs and Header Exposure](#request-inputs-and-header-exposure)
 - [Expression Environment](#expression-environment)
+- [Precedence and Fallback Rules](#precedence-and-fallback-rules)
 - [Derived Fields](#derived-fields)
 - [Builtin Functions](#builtin-functions)
 - [Security Constraints](#security-constraints)
@@ -39,7 +41,8 @@ Three endpoints, all under `/features`:
     "tenant": { "id": "tenant-456" },
     "campus": { "id": "campus-789" },
     "program": { "id": "program-000" },
-    "custom": { "country": "US", "accountAge": 180 }
+    "custom": { "country": "US", "accountAge": 180 },
+    "billing": { "plan": "pro" }
   },
   "environment": "production"
 }
@@ -80,6 +83,54 @@ Any additional keys also become top-level variables.
 
 ---
 
+## Request Inputs and Header Exposure
+
+The evaluator builds expression inputs from the request body, selected request headers, derived auth data, and resolved segment sources.
+
+### What expressions can see
+
+- `context.*` namespaces become top-level variables.
+- `requestBody.*` contains request body fields.
+- `derived.*` contains auth and identity fields derived from `Authorization`, `X-Api-Key`, and `context.user`.
+- `headers.*` only contains headers declared in the feature `InputContract`.
+
+### Header exposure rules
+
+- The raw HTTP request may contain many headers, but expressions do not receive all of them automatically.
+- Header ingestion is case-insensitive.
+- Expression access uses the configured `expressionKey`, not the raw header name.
+- A header only appears in `headers.*` if the feature declares it in `InputContract.Headers`.
+- System headers such as `Authorization` or `X-Tenant-ID` may affect backend behavior even when they are not exposed to expressions.
+- If a feature explicitly maps one of those headers in `InputContract`, it may also appear under `headers.<expressionKey>`.
+
+### Example
+
+If a feature declares:
+
+```json
+{
+  "inputContract": {
+    "headers": [
+      {
+        "headerName": "X-Region",
+        "expressionKey": "region",
+        "type": "string"
+      }
+    ]
+  }
+}
+```
+
+Then the rule can use:
+
+```txt
+headers.region == "us-east-1"
+```
+
+Sending `X-Region` without that `InputContract` mapping does not make it available in `headers.*`.
+
+---
+
 ## Expression Environment
 
 All variables available to rule expressions:
@@ -98,6 +149,35 @@ All variables available to rule expressions:
 | `<segmentKey>.*` | map  | Segment source binding         | Resolved segment record attributes        |
 
 `user` namespace always exists (empty map if not provided).
+
+`environment` is intentionally not documented as an expression variable. Environment targeting is handled by the feature's `environments` list before rule evaluation.
+
+---
+
+## Precedence and Fallback Rules
+
+These rules explain how request data is normalized before rule evaluation.
+
+| Input | Effective behavior |
+| ----- | ------------------ |
+| `X-Environment` + body `environment` | `X-Environment` wins |
+| `X-Tenant-ID` | Populates `context.tenant.id` only if `context.tenant` is absent |
+| `X-Campus-ID` | Populates `context.campus.id` only if `context.campus` is absent |
+| `X-Program-ID` | Populates `context.program.id` only if `context.program` is absent |
+| `Authorization` | Feeds bearer-token derived fields and auth handling |
+| `X-Api-Key` | Feeds API-key derived fields and auth handling |
+| `X-Workspace` | Scopes the request to a workspace; not part of the expression environment unless a feature explicitly exposes a header value through `InputContract` |
+
+### Environment behavior
+
+- `environment` is evaluated before rules.
+- If a feature declares `environments` and the effective environment is not in that list, evaluation stops with `environment_mismatch`.
+- Do not model environment targeting with expressions like `environment == "production"`. Use the feature's environment configuration instead.
+
+### Context fallback behavior
+
+- `context.user`, `context.tenant`, `context.campus`, `context.program`, `context.custom`, and any extra namespace are all valid.
+- Header fallback for tenant/campus/program only fills missing namespaces; it does not overwrite a namespace already present in the body.
 
 ---
 
@@ -261,11 +341,27 @@ tenant.id == "acme" && user.role == "admin" && inSegment("early-access")
 contains(user.email, "+beta@") && authenticated
 ```
 
+### Custom Namespaces
+
+```
+custom.country == "CL"
+billing.plan == "pro"
+```
+
 ### Header & Request Body
 
 ```
 headers.region == "us-east-1"
 requestBody.action == "purchase" && requestBody.amount > 100
+```
+
+This only works if the feature maps `X-Region` or another header into `headers.region` through `InputContract`.
+
+### Derived Auth Signals
+
+```
+derived.email == "alice@empresa.com"
+derived.apiKeyPresent
 ```
 
 ### External API Validation
@@ -274,6 +370,15 @@ requestBody.action == "purchase" && requestBody.amount > 100
 externalApi("fraud-check")
 externalApi("kyc-verified") && user.purchaseAmount > 1000
 ```
+
+### Environment Note
+
+```txt
+# Not the intended pattern:
+environment == "production"
+```
+
+Environment selection is handled by feature configuration and request normalization, not by an expression variable.
 
 ---
 

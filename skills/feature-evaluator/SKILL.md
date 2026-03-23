@@ -206,19 +206,47 @@ Rules use `expr-lang/expr`. Full reference: [references/expressions.md](referenc
     "tenant": { "id": "t-1" },
     "campus": { "id": "c-1" },
     "program": { "id": "p-1" },
-    "custom": { "country": "US" }
+    "custom": { "country": "US" },
+    "billing": { "plan": "pro" }
   },
   "environment": "production"
 }
 ```
 
-Each `context` key becomes a top-level variable in expressions (`user.*`, `tenant.*`, etc.).
+### Evaluation Inputs
+
+- `environment` can be sent in the eval request body.
+- `X-Environment` overrides body `environment` on eval endpoints.
+- `environment` is used as a feature-level eligibility gate before rule evaluation. It is not documented as an expression variable.
+- Each `context` namespace becomes a top-level variable in expressions (`user.*`, `tenant.*`, `custom.*`, `billing.*`, etc.).
+- `custom` is valid and already supported.
+- Any additional namespace under `context` is also exposed as a top-level variable.
+
+See [references/expressions.md](references/expressions.md) for the full precedence and evaluation behavior.
+
+### System Headers vs Expression Headers
+
+System headers affect request handling, auth, workspace resolution, or context fallbacks. They are not exposed to `headers.*` automatically just because they were sent.
+
+| Header | Backend role | Context fallback | Derived/auth input | Workspace/input scope | Auto in expressions? |
+|--------|--------------|------------------|--------------------|-----------------------|----------------------|
+| `Authorization` | Bearer auth for eval/admin | No | Yes | No | No |
+| `X-Api-Key` | API key auth for eval/admin | No | Yes | No | No |
+| `X-Environment` | Overrides body `environment` | No | No | No | No |
+| `X-Tenant-ID` | Tenant extraction middleware | `context.tenant.id` only if `context.tenant` is absent | No | No | No |
+| `X-Campus-ID` | Campus extraction middleware | `context.campus.id` only if `context.campus` is absent | No | No | No |
+| `X-Program-ID` | Program extraction middleware | `context.program.id` only if `context.program` is absent | No | No | No |
+| `X-Workspace` | Workspace resolution | No | No | Yes | No |
+| `X-Request-ID` | Request correlation | No | No | No | No |
+
+`headers.*` only contains headers explicitly declared in the feature `InputContract`. If a feature maps a header like `X-Region` to expression key `region`, the rule can read `headers.region`.
 
 ### Expression Variables
 
 | Variable | Source |
 |----------|--------|
-| `user.*`, `tenant.*`, `campus.*`, `program.*` | `context` in request body |
+| `user.*`, `tenant.*`, `campus.*`, `program.*`, `custom.*` | `context` in request body |
+| any additional `context.<namespace>.*` | additional custom namespaces in request body |
 | `headers.*` | HTTP headers (via feature InputContract) |
 | `requestBody.*` | Request body fields |
 | `authenticated` | True if auth profile validation passed |
@@ -254,8 +282,16 @@ endsWith(derived.email, "@empresa.com")
 # Email targeting (from context body)
 user.email == "admin@empresa.com"
 
+# Custom namespaces from context
+custom.country == "CL"
+billing.plan == "pro"
+
+# Header declared in feature InputContract
+headers.region == "us-east-1"
+
 # Auth + role
 authenticated && user.role == "admin"
+derived.apiKeyPresent
 
 # Segments
 inSegment("beta-users")
