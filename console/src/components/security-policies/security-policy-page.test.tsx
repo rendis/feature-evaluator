@@ -5,25 +5,43 @@ import { SecurityPolicyPage, SecurityPolicyRoutePage } from './security-policy-p
 
 import { render, screen } from '@/test/test-utils';
 
+interface MockSecurityPolicy {
+  corsOrigins: {
+    managed: string[] | null;
+    inherited: string[] | null;
+    effective: string[] | null;
+  };
+  updatedAt?: string;
+  updatedBy: string;
+}
+
 function currentOrigin() {
   return window.location.origin;
 }
 
-const state = vi.hoisted(() => ({
-  canManageSecurity: true,
-  policy: {
-    corsOrigins: {
-      managed: ['http://localhost'],
-      inherited: ['https://inherited.example.com'],
-      effective: ['https://inherited.example.com', 'http://localhost'],
+const state = vi.hoisted(
+  (): {
+    canManageSecurity: boolean;
+    policy: MockSecurityPolicy;
+    mutate: ReturnType<typeof vi.fn>;
+    toastSuccess: ReturnType<typeof vi.fn>;
+    toastError: ReturnType<typeof vi.fn>;
+  } => ({
+    canManageSecurity: true,
+    policy: {
+      corsOrigins: {
+        managed: ['http://localhost'],
+        inherited: ['https://inherited.example.com'],
+        effective: ['https://inherited.example.com', 'http://localhost'],
+      },
+      updatedAt: '2026-03-23T12:00:00Z',
+      updatedBy: 'owner@example.com',
     },
-    updatedAt: '2026-03-23T12:00:00Z',
-    updatedBy: 'owner@example.com',
-  },
-  mutate: vi.fn(),
-  toastSuccess: vi.fn(),
-  toastError: vi.fn(),
-}));
+    mutate: vi.fn(),
+    toastSuccess: vi.fn(),
+    toastError: vi.fn(),
+  }),
+);
 
 vi.mock('@tanstack/react-query', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@tanstack/react-query')>();
