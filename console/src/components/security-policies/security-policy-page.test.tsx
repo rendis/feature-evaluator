@@ -194,4 +194,27 @@ describe('SecurityPolicyRoutePage', () => {
 
     expect(state.toastError).toHaveBeenCalledWith('messages.saveError');
   });
+
+  it('handles null lists from the API without crashing', () => {
+    state.policy = {
+      corsOrigins: {
+        managed: null as unknown as string[],
+        inherited: null as unknown as string[],
+        effective: null as unknown as string[],
+      },
+      externalApiAllowHosts: {
+        managed: null as unknown as string[],
+        inherited: null as unknown as string[],
+        effective: null as unknown as string[],
+      },
+      updatedAt: undefined,
+      updatedBy: '',
+    };
+
+    render(<SecurityPolicyPage />, {
+      providerProps: { namespaces: ['security-policies', 'common'] },
+    });
+
+    expect(screen.getAllByText('managed.empty')[0]).toBeInTheDocument();
+  });
 });

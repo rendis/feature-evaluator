@@ -139,6 +139,47 @@ func TestSecurityPolicyHandlerUpdateRejectsInvalidOrigin(t *testing.T) {
 	}
 }
 
+func TestSecurityPolicyHandlerGetSerializesEmptyListsAsArrays(t *testing.T) {
+	t.Parallel()
+
+	gin.SetMode(gin.TestMode)
+
+	svc := securitypolicy.NewService(&securityPolicyRepositoryStub{}, securitypolicy.ManagedPolicy{})
+	if err := svc.Load(t.Context()); err != nil {
+		t.Fatalf("Load() error = %v, want nil", err)
+	}
+
+	router := gin.New()
+	router.GET("/security-policy", NewSecurityPolicyHandler(svc).Get)
+
+	req := httptest.NewRequest(http.MethodGet, "/security-policy", nil)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusOK)
+	}
+
+	var payload map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("json.Unmarshal() error = %v", err)
+	}
+
+	corsOrigins, ok := payload["corsOrigins"].(map[string]any)
+	if !ok {
+		t.Fatalf("corsOrigins = %#v, want object", payload["corsOrigins"])
+	}
+	if managed, ok := corsOrigins["managed"].([]any); !ok || len(managed) != 0 {
+		t.Fatalf("corsOrigins.managed = %#v, want empty array", corsOrigins["managed"])
+	}
+	if inherited, ok := corsOrigins["inherited"].([]any); !ok || len(inherited) != 0 {
+		t.Fatalf("corsOrigins.inherited = %#v, want empty array", corsOrigins["inherited"])
+	}
+	if effective, ok := corsOrigins["effective"].([]any); !ok || len(effective) != 0 {
+		t.Fatalf("corsOrigins.effective = %#v, want empty array", corsOrigins["effective"])
+	}
+}
+
 type securityPolicyRepositoryStub struct {
 	managed *securitypolicy.ManagedPolicy
 }

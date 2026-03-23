@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 
 import type { SecurityPolicy, UpdateSecurityPolicyRequest } from '@/api/types';
 
+import { normalizeSecurityPolicy } from '@/api/security-policies';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { PageHeader } from '@/components/shared/page-header';
 import { Badge } from '@/components/ui/badge';
@@ -39,6 +40,10 @@ function sanitizeValues(values: string[]) {
 function sameValues(left: string[], right: string[]) {
   if (left.length !== right.length) return false;
   return left.every((value, index) => value === right[index]);
+}
+
+function asArray(values: string[] | null | undefined) {
+  return Array.isArray(values) ? values : [];
 }
 
 export function shouldWarnForCurrentOriginRemoval(params: {
@@ -252,13 +257,15 @@ function SecurityPolicySection({
 }
 
 function buildInitialState(policy: SecurityPolicy) {
+  const normalizedPolicy = normalizeSecurityPolicy(policy);
+
   return {
     corsOrigins: {
-      values: [...policy.corsOrigins.managed],
+      values: [...asArray(normalizedPolicy.corsOrigins.managed)],
       input: '',
     },
     externalApiAllowHosts: {
-      values: [...policy.externalApiAllowHosts.managed],
+      values: [...asArray(normalizedPolicy.externalApiAllowHosts.managed)],
       input: '',
     },
   };
@@ -276,7 +283,8 @@ export function SecurityPolicyRoutePage() {
 
 export function SecurityPolicyPage() {
   const { t } = useTranslation('security-policies');
-  const { data: policy } = useSuspenseQuery(securityPolicyQueries.detail());
+  const { data } = useSuspenseQuery(securityPolicyQueries.detail());
+  const policy = normalizeSecurityPolicy(data);
   const updateSecurityPolicy = useUpdateSecurityPolicy();
   const [corsOrigins, setCorsOrigins] = useState<PolicySectionState>(
     () => buildInitialState(policy).corsOrigins,
@@ -304,8 +312,8 @@ export function SecurityPolicyPage() {
   const currentOrigin = window.location.origin;
   const warnForCurrentOrigin = shouldWarnForCurrentOriginRemoval({
     currentOrigin,
-    currentEffective: policy.corsOrigins.effective,
-    inherited: policy.corsOrigins.inherited,
+    currentEffective: asArray(policy.corsOrigins.effective),
+    inherited: asArray(policy.corsOrigins.inherited),
     nextManaged: payload.corsOrigins,
   });
   const isDirty =
@@ -394,10 +402,13 @@ export function SecurityPolicyPage() {
         emptyManagedLabel={t('managed.empty')}
         inheritedTitle={t('inherited.title')}
         inheritedDescription={t('inherited.description')}
-        inherited={policy.corsOrigins.inherited}
+        inherited={asArray(policy.corsOrigins.inherited)}
         emptyInheritedLabel={t('inherited.empty')}
         effectiveTitle={t('effective.title')}
-        effective={sanitizeValues([...policy.corsOrigins.inherited, ...payload.corsOrigins])}
+        effective={sanitizeValues([
+          ...asArray(policy.corsOrigins.inherited),
+          ...payload.corsOrigins,
+        ])}
         emptyEffectiveLabel={t('effective.empty')}
         onAdd={() => handleAdd(corsOrigins, setCorsOrigins)}
         onChangeInput={(value) => setCorsOrigins((current) => ({ ...current, input: value }))}
@@ -416,11 +427,11 @@ export function SecurityPolicyPage() {
         emptyManagedLabel={t('managed.empty')}
         inheritedTitle={t('inherited.title')}
         inheritedDescription={t('inherited.description')}
-        inherited={policy.externalApiAllowHosts.inherited}
+        inherited={asArray(policy.externalApiAllowHosts.inherited)}
         emptyInheritedLabel={t('inherited.empty')}
         effectiveTitle={t('effective.title')}
         effective={sanitizeValues([
-          ...policy.externalApiAllowHosts.inherited,
+          ...asArray(policy.externalApiAllowHosts.inherited),
           ...payload.externalApiAllowHosts,
         ])}
         emptyEffectiveLabel={t('effective.empty')}

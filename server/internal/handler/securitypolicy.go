@@ -68,14 +68,14 @@ func (h *SecurityPolicyHandler) Update(c *gin.Context) {
 func toSecurityPolicyResponse(snapshot securitypolicy.Snapshot) dto.SecurityPolicyResponse {
 	response := dto.SecurityPolicyResponse{
 		CORSOrigins: dto.SecurityPolicyListResponse{
-			Managed:   snapshot.CORSOrigins.Managed,
-			Inherited: snapshot.CORSOrigins.Inherited,
-			Effective: snapshot.CORSOrigins.Effective,
+			Managed:   nonNilStrings(snapshot.CORSOrigins.Managed),
+			Inherited: nonNilStrings(snapshot.CORSOrigins.Inherited),
+			Effective: nonNilStrings(snapshot.CORSOrigins.Effective),
 		},
 		ExternalAPIAllowHosts: dto.SecurityPolicyListResponse{
-			Managed:   snapshot.ExternalAPIAllowHosts.Managed,
-			Inherited: snapshot.ExternalAPIAllowHosts.Inherited,
-			Effective: snapshot.ExternalAPIAllowHosts.Effective,
+			Managed:   nonNilStrings(snapshot.ExternalAPIAllowHosts.Managed),
+			Inherited: nonNilStrings(snapshot.ExternalAPIAllowHosts.Inherited),
+			Effective: nonNilStrings(snapshot.ExternalAPIAllowHosts.Effective),
 		},
 		UpdatedBy: snapshot.UpdatedBy,
 	}
@@ -85,4 +85,12 @@ func toSecurityPolicyResponse(snapshot securitypolicy.Snapshot) dto.SecurityPoli
 	}
 
 	return response
+}
+
+func nonNilStrings(values []string) []string {
+	if values == nil {
+		return []string{}
+	}
+
+	return values
 }
