@@ -7,21 +7,19 @@ import (
 	"time"
 
 	"github.com/rendis/feature-evaluator/internal/domain/resourcekey"
-	"github.com/rendis/feature-evaluator/internal/domain/securitypolicy"
 	"github.com/rendis/feature-evaluator/internal/domain/workspace"
 	"github.com/rendis/feature-evaluator/pkg/apierror"
 )
 
 // Service handles reusable external API business logic.
 type Service struct {
-	repo         Repository
-	cipher       SecretCipher
-	policyReader securitypolicy.Reader
+	repo   Repository
+	cipher SecretCipher
 }
 
 // NewService creates a new external API service.
-func NewService(repo Repository, cipher SecretCipher, policyReader securitypolicy.Reader) *Service {
-	return &Service{repo: repo, cipher: cipher, policyReader: policyReader}
+func NewService(repo Repository, cipher SecretCipher) *Service {
+	return &Service{repo: repo, cipher: cipher}
 }
 
 // Create validates and stores a new reusable external API.
@@ -30,7 +28,7 @@ func (s *Service) Create(ctx context.Context, api *ExternalAPI, secretPayload ma
 	if !resourcekey.IsValid(api.Key) {
 		return apierror.NewBadRequest("invalid external api key format", "error.invalidExternalAPIKey")
 	}
-	if err := ValidateWithAllowedHosts(api, s.allowedHosts()); err != nil {
+	if err := Validate(api); err != nil {
 		return err
 	}
 
@@ -84,7 +82,7 @@ func (s *Service) Update(
 	if !resourcekey.IsValid(api.Key) {
 		return apierror.NewBadRequest("invalid external api key format", "error.invalidExternalAPIKey")
 	}
-	if err := ValidateWithAllowedHosts(api, s.allowedHosts()); err != nil {
+	if err := Validate(api); err != nil {
 		return err
 	}
 
@@ -162,18 +160,10 @@ func (s *Service) ResolveDraftSecrets(
 			return nil, apierror.NewBadRequest("invalid external api key format", "error.invalidExternalAPIKey")
 		}
 	}
-	if err := ValidateWithAllowedHosts(api, s.allowedHosts()); err != nil {
+	if err := Validate(api); err != nil {
 		return nil, err
 	}
 	return s.resolveDraftSecrets(ctx, currentKey, api, secretPayload, replaceSecret)
-}
-
-func (s *Service) allowedHosts() []string {
-	if s == nil || s.policyReader == nil {
-		return nil
-	}
-
-	return s.policyReader.Snapshot().ExternalAPIAllowHosts.Effective
 }
 
 func (s *Service) resolveDraftSecrets(

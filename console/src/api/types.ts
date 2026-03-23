@@ -43,14 +43,12 @@ export interface SecurityPolicyList {
 
 export interface SecurityPolicy {
   corsOrigins: SecurityPolicyList;
-  externalApiAllowHosts: SecurityPolicyList;
   updatedAt?: string;
   updatedBy: string;
 }
 
 export interface UpdateSecurityPolicyRequest {
   corsOrigins: string[];
-  externalApiAllowHosts: string[];
 }
 
 export interface Member {

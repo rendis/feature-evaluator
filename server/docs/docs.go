@@ -7586,9 +7586,6 @@ const docTemplate = `{
                 "corsOrigins": {
                     "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyListResponse"
                 },
-                "externalApiAllowHosts": {
-                    "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyListResponse"
-                },
                 "updatedAt": {
                     "type": "string"
                 },
@@ -8226,12 +8223,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "corsOrigins": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "externalApiAllowHosts": {
                     "type": "array",
                     "items": {
                         "type": "string"

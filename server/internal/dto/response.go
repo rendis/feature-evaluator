@@ -433,16 +433,16 @@ type ToggleMessageResponse struct {
 
 // APIKeyCreatedResponse is the response returned when creating or rotating an API key.
 type APIKeyCreatedResponse struct {
-	Key         string    `json:"key"`
-	ID          string    `json:"id"`
-	Name        string    `json:"name"`
-	Prefix      string    `json:"prefix"`
-	Type        string    `json:"type"`
-	Description string    `json:"description"`
-	Permissions []string  `json:"permissions"`
-	CreatedBy   string    `json:"createdBy"`
-	CreatedAt   string    `json:"createdAt"`
-	ExpiresAt   *string   `json:"expiresAt,omitempty"`
+	Key         string   `json:"key"`
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Prefix      string   `json:"prefix"`
+	Type        string   `json:"type"`
+	Description string   `json:"description"`
+	Permissions []string `json:"permissions"`
+	CreatedBy   string   `json:"createdBy"`
+	CreatedAt   string   `json:"createdAt"`
+	ExpiresAt   *string  `json:"expiresAt,omitempty"`
 }
 
 // DashboardStatsResponse is the response for workspace dashboard stats.
@@ -545,8 +545,7 @@ type SecurityPolicyListResponse struct {
 
 // SecurityPolicyResponse is the response DTO for the global security policy.
 type SecurityPolicyResponse struct {
-	CORSOrigins           SecurityPolicyListResponse `json:"corsOrigins"`
-	ExternalAPIAllowHosts SecurityPolicyListResponse `json:"externalApiAllowHosts"`
-	UpdatedAt             *string                    `json:"updatedAt,omitempty"`
-	UpdatedBy             string                     `json:"updatedBy,omitempty"`
+	CORSOrigins SecurityPolicyListResponse `json:"corsOrigins"`
+	UpdatedAt   *string                    `json:"updatedAt,omitempty"`
+	UpdatedBy   string                     `json:"updatedBy,omitempty"`
 }

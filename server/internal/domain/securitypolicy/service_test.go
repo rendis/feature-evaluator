@@ -9,8 +9,7 @@ func TestServiceLoadUsesInheritedValuesWhenRepositoryIsEmpty(t *testing.T) {
 	t.Parallel()
 
 	svc := NewService(&repositoryStub{}, ManagedPolicy{
-		CORSOrigins:           []string{"https://console.example.com"},
-		ExternalAPIAllowHosts: []string{"api.example.com"},
+		CORSOrigins: []string{"https://console.example.com"},
 	})
 
 	if err := svc.Load(context.Background()); err != nil {
@@ -24,9 +23,6 @@ func TestServiceLoadUsesInheritedValuesWhenRepositoryIsEmpty(t *testing.T) {
 	if got := snapshot.CORSOrigins.Effective; len(got) != 1 || got[0] != "https://console.example.com" {
 		t.Fatalf("CORSOrigins.Effective = %#v, want inherited-only origin", got)
 	}
-	if got := snapshot.ExternalAPIAllowHosts.Effective; len(got) != 1 || got[0] != "api.example.com" {
-		t.Fatalf("ExternalAPIAllowHosts.Effective = %#v, want inherited-only host", got)
-	}
 }
 
 func TestServiceUpdateNormalizesAndUnionsManagedValues(t *testing.T) {
@@ -34,14 +30,12 @@ func TestServiceUpdateNormalizesAndUnionsManagedValues(t *testing.T) {
 
 	repo := &repositoryStub{}
 	svc := NewService(repo, ManagedPolicy{
-		CORSOrigins:           []string{"https://console.example.com"},
-		ExternalAPIAllowHosts: []string{"api.example.com"},
+		CORSOrigins: []string{"https://console.example.com"},
 	})
 
 	snapshot, err := svc.Update(context.Background(), ManagedPolicy{
-		CORSOrigins:           []string{" https://admin.example.com ", "https://console.example.com"},
-		ExternalAPIAllowHosts: []string{" API2.Example.com ", "api.example.com"},
-		UpdatedBy:             "owner@example.com",
+		CORSOrigins: []string{" https://admin.example.com ", "https://console.example.com"},
+		UpdatedBy:   "owner@example.com",
 	})
 	if err != nil {
 		t.Fatalf("Update() error = %v, want nil", err)
@@ -55,9 +49,6 @@ func TestServiceUpdateNormalizesAndUnionsManagedValues(t *testing.T) {
 	}
 	if got := snapshot.CORSOrigins.Effective; len(got) != 2 || got[0] != "https://console.example.com" || got[1] != "https://admin.example.com" {
 		t.Fatalf("effective CORSOrigins = %#v, want inherited first then managed unique values", got)
-	}
-	if got := snapshot.ExternalAPIAllowHosts.Effective; len(got) != 2 || got[0] != "api.example.com" || got[1] != "api2.example.com" {
-		t.Fatalf("effective ExternalAPIAllowHosts = %#v, want inherited first then managed unique values", got)
 	}
 	if snapshot.UpdatedBy != "owner@example.com" {
 		t.Fatalf("UpdatedBy = %q, want %q", snapshot.UpdatedBy, "owner@example.com")
@@ -92,14 +83,12 @@ func (r *repositoryStub) Get(_ context.Context) (*ManagedPolicy, error) {
 
 	copied := *r.managed
 	copied.CORSOrigins = cloneStrings(r.managed.CORSOrigins)
-	copied.ExternalAPIAllowHosts = cloneStrings(r.managed.ExternalAPIAllowHosts)
 	return &copied, nil
 }
 
 func (r *repositoryStub) Upsert(_ context.Context, policy *ManagedPolicy) error {
 	copied := *policy
 	copied.CORSOrigins = cloneStrings(policy.CORSOrigins)
-	copied.ExternalAPIAllowHosts = cloneStrings(policy.ExternalAPIAllowHosts)
 	r.lastUpsert = &copied
 	r.managed = &copied
 	return nil

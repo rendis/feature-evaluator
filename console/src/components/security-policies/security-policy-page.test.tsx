@@ -14,13 +14,8 @@ const state = vi.hoisted(() => ({
   policy: {
     corsOrigins: {
       managed: ['http://localhost'],
-      inherited: [],
-      effective: ['http://localhost'],
-    },
-    externalApiAllowHosts: {
-      managed: ['api.example.com'],
-      inherited: ['core.example.com'],
-      effective: ['core.example.com', 'api.example.com'],
+      inherited: ['https://inherited.example.com'],
+      effective: ['https://inherited.example.com', 'http://localhost'],
     },
     updatedAt: '2026-03-23T12:00:00Z',
     updatedBy: 'owner@example.com',
@@ -112,11 +107,6 @@ describe('SecurityPolicyRoutePage', () => {
         inherited: [],
         effective: [currentOrigin()],
       },
-      externalApiAllowHosts: {
-        managed: ['api.example.com'],
-        inherited: ['core.example.com'],
-        effective: ['core.example.com', 'api.example.com'],
-      },
       updatedAt: '2026-03-23T12:00:00Z',
       updatedBy: 'owner@example.com',
     };
@@ -137,21 +127,29 @@ describe('SecurityPolicyRoutePage', () => {
 
   it('renders inherited values disabled and excludes them from the mutation payload', async () => {
     const user = userEvent.setup();
+    state.policy = {
+      corsOrigins: {
+        managed: [currentOrigin()],
+        inherited: ['https://inherited.example.com'],
+        effective: ['https://inherited.example.com', currentOrigin()],
+      },
+      updatedAt: '2026-03-23T12:00:00Z',
+      updatedBy: 'owner@example.com',
+    };
 
     render(<SecurityPolicyPage />, {
       providerProps: { namespaces: ['security-policies', 'common'] },
     });
 
-    expect(screen.getByRole('button', { name: 'core.example.com' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'https://inherited.example.com' })).toBeDisabled();
 
-    await user.type(screen.getByPlaceholderText('hosts.placeholder'), 'billing.example.com');
-    await user.click(screen.getAllByRole('button', { name: 'hosts.add' })[0]);
+    await user.type(screen.getByPlaceholderText('cors.placeholder'), 'https://billing.example.com');
+    await user.click(screen.getByRole('button', { name: 'cors.add' }));
     await user.click(screen.getByRole('button', { name: 'actions.save' }));
 
     expect(state.mutate).toHaveBeenCalledWith(
       {
-        corsOrigins: [currentOrigin()],
-        externalApiAllowHosts: ['api.example.com', 'billing.example.com'],
+        corsOrigins: [currentOrigin(), 'https://billing.example.com'],
       },
       expect.objectContaining({
         onSuccess: expect.any(Function),
@@ -185,8 +183,8 @@ describe('SecurityPolicyRoutePage', () => {
       providerProps: { namespaces: ['security-policies', 'common'] },
     });
 
-    await user.type(screen.getByPlaceholderText('hosts.placeholder'), 'billing.example.com');
-    await user.click(screen.getAllByRole('button', { name: 'hosts.add' })[0]);
+    await user.type(screen.getByPlaceholderText('cors.placeholder'), 'https://billing.example.com');
+    await user.click(screen.getByRole('button', { name: 'cors.add' }));
     await user.click(screen.getByRole('button', { name: 'actions.save' }));
 
     const [, options] = state.mutate.mock.calls[0];
@@ -198,11 +196,6 @@ describe('SecurityPolicyRoutePage', () => {
   it('handles null lists from the API without crashing', () => {
     state.policy = {
       corsOrigins: {
-        managed: null as unknown as string[],
-        inherited: null as unknown as string[],
-        effective: null as unknown as string[],
-      },
-      externalApiAllowHosts: {
         managed: null as unknown as string[],
         inherited: null as unknown as string[],
         effective: null as unknown as string[],

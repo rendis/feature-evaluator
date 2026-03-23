@@ -17,7 +17,6 @@ export function normalizeSecurityPolicy(
 ): SecurityPolicy {
   return {
     corsOrigins: normalizeList(policy?.corsOrigins),
-    externalApiAllowHosts: normalizeList(policy?.externalApiAllowHosts),
     updatedAt: policy?.updatedAt,
     updatedBy: typeof policy?.updatedBy === 'string' ? policy.updatedBy : '',
   };

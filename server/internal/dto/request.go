@@ -271,8 +271,7 @@ type UpdateWorkspaceRequest struct {
 
 // UpdateSecurityPolicyRequest replaces the app-managed global security policy lists.
 type UpdateSecurityPolicyRequest struct {
-	CORSOrigins           []string `json:"corsOrigins"`
-	ExternalAPIAllowHosts []string `json:"externalApiAllowHosts"`
+	CORSOrigins []string `json:"corsOrigins"`
 }
 
 // CreateAuthProfileRequest is the request body for creating an auth profile.

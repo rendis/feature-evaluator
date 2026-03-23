@@ -264,10 +264,6 @@ function buildInitialState(policy: SecurityPolicy) {
       values: [...asArray(normalizedPolicy.corsOrigins.managed)],
       input: '',
     },
-    externalApiAllowHosts: {
-      values: [...asArray(normalizedPolicy.externalApiAllowHosts.managed)],
-      input: '',
-    },
   };
 }
 
@@ -284,13 +280,10 @@ export function SecurityPolicyRoutePage() {
 export function SecurityPolicyPage() {
   const { t } = useTranslation('security-policies');
   const { data } = useSuspenseQuery(securityPolicyQueries.detail());
-  const policy = normalizeSecurityPolicy(data);
+  const policy = useMemo(() => normalizeSecurityPolicy(data), [data]);
   const updateSecurityPolicy = useUpdateSecurityPolicy();
   const [corsOrigins, setCorsOrigins] = useState<PolicySectionState>(
     () => buildInitialState(policy).corsOrigins,
-  );
-  const [externalApiAllowHosts, setExternalApiAllowHosts] = useState<PolicySectionState>(
-    () => buildInitialState(policy).externalApiAllowHosts,
   );
   const [warningOpen, setWarningOpen] = useState(false);
   const [pendingPayload, setPendingPayload] = useState<UpdateSecurityPolicyRequest | null>(null);
@@ -298,15 +291,13 @@ export function SecurityPolicyPage() {
   useEffect(() => {
     const nextState = buildInitialState(policy);
     setCorsOrigins(nextState.corsOrigins);
-    setExternalApiAllowHosts(nextState.externalApiAllowHosts);
   }, [policy]);
 
   const payload = useMemo<UpdateSecurityPolicyRequest>(
     () => ({
       corsOrigins: sanitizeValues(corsOrigins.values),
-      externalApiAllowHosts: sanitizeValues(externalApiAllowHosts.values),
     }),
-    [corsOrigins.values, externalApiAllowHosts.values],
+    [corsOrigins.values],
   );
 
   const currentOrigin = window.location.origin;
@@ -316,9 +307,7 @@ export function SecurityPolicyPage() {
     inherited: asArray(policy.corsOrigins.inherited),
     nextManaged: payload.corsOrigins,
   });
-  const isDirty =
-    !sameValues(payload.corsOrigins, policy.corsOrigins.managed) ||
-    !sameValues(payload.externalApiAllowHosts, policy.externalApiAllowHosts.managed);
+  const isDirty = !sameValues(payload.corsOrigins, policy.corsOrigins.managed);
 
   const submit = (nextPayload: UpdateSecurityPolicyRequest) => {
     updateSecurityPolicy.mutate(nextPayload, {
@@ -414,33 +403,6 @@ export function SecurityPolicyPage() {
         onChangeInput={(value) => setCorsOrigins((current) => ({ ...current, input: value }))}
         onKeyDown={handleKeyDown(corsOrigins, setCorsOrigins)}
         onRemove={(value) => handleRemove(value, setCorsOrigins)}
-        removeLabel={(value) => t('managed.removeValue', { value })}
-      />
-
-      <SecurityPolicySection
-        title={t('hosts.title')}
-        description={t('hosts.description')}
-        managed={externalApiAllowHosts}
-        managedTitle={t('managed.title')}
-        addLabel={t('hosts.add')}
-        inputPlaceholder={t('hosts.placeholder')}
-        emptyManagedLabel={t('managed.empty')}
-        inheritedTitle={t('inherited.title')}
-        inheritedDescription={t('inherited.description')}
-        inherited={asArray(policy.externalApiAllowHosts.inherited)}
-        emptyInheritedLabel={t('inherited.empty')}
-        effectiveTitle={t('effective.title')}
-        effective={sanitizeValues([
-          ...asArray(policy.externalApiAllowHosts.inherited),
-          ...payload.externalApiAllowHosts,
-        ])}
-        emptyEffectiveLabel={t('effective.empty')}
-        onAdd={() => handleAdd(externalApiAllowHosts, setExternalApiAllowHosts)}
-        onChangeInput={(value) =>
-          setExternalApiAllowHosts((current) => ({ ...current, input: value }))
-        }
-        onKeyDown={handleKeyDown(externalApiAllowHosts, setExternalApiAllowHosts)}
-        onRemove={(value) => handleRemove(value, setExternalApiAllowHosts)}
         removeLabel={(value) => t('managed.removeValue', { value })}
       />
 

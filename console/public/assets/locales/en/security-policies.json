@@ -1,6 +1,6 @@
 {
   "title": "Global security policies",
-  "description": "Manage allowed CORS browser origins and outbound hosts for external API calls.",
+  "description": "Manage the browser origins allowed by CORS to reach the evaluator from the frontend.",
   "actions": {
     "save": "Save changes"
   },
@@ -24,15 +24,9 @@
     "add": "Add origin",
     "placeholder": "https://console.example.com"
   },
-  "hosts": {
-    "title": "Allowed external API hosts",
-    "description": "Use exact hostnames only, without scheme or port.",
-    "add": "Add host",
-    "placeholder": "api.example.com"
-  },
   "notes": {
     "title": "How it applies",
-    "description": "The effective value is the union of server-inherited configuration and app-managed entries.",
+    "description": "The effective value is the union of server-inherited configuration and app-managed entries. This screen only controls browser CORS access and does not affect backend server-to-server callers using Bearer auth or API keys.",
     "updatedBy": "Last updated: {{updatedAt}} by {{updatedBy}}",
     "system": "system"
   },

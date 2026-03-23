@@ -4,10 +4,9 @@ import "time"
 
 // ManagedPolicy stores only the mutable values persisted by the application.
 type ManagedPolicy struct {
-	CORSOrigins           []string
-	ExternalAPIAllowHosts []string
-	UpdatedAt             time.Time
-	UpdatedBy             string
+	CORSOrigins []string
+	UpdatedAt   time.Time
+	UpdatedBy   string
 }
 
 // ListSnapshot describes managed, inherited, and effective values for one policy list.
@@ -19,10 +18,9 @@ type ListSnapshot struct {
 
 // Snapshot is the full runtime view consumed by handlers and middleware.
 type Snapshot struct {
-	CORSOrigins           ListSnapshot
-	ExternalAPIAllowHosts ListSnapshot
-	UpdatedAt             time.Time
-	UpdatedBy             string
+	CORSOrigins ListSnapshot
+	UpdatedAt   time.Time
+	UpdatedBy   string
 }
 
 // Reader exposes the effective runtime policy snapshot.

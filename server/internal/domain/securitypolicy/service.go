@@ -28,7 +28,6 @@ type Service struct {
 // NewService creates a new Service with the inherited env-managed values preloaded.
 func NewService(repo Repository, inherited ManagedPolicy) *Service {
 	inherited.CORSOrigins = cloneStrings(inherited.CORSOrigins)
-	inherited.ExternalAPIAllowHosts = cloneStrings(inherited.ExternalAPIAllowHosts)
 
 	return &Service{
 		repo:      repo,
@@ -134,16 +133,11 @@ func normalizeManagedPolicy(policy *ManagedPolicy) (ManagedPolicy, error) {
 	if err != nil {
 		return ManagedPolicy{}, err
 	}
-	allowHosts, err := NormalizeHosts(policy.ExternalAPIAllowHosts)
-	if err != nil {
-		return ManagedPolicy{}, err
-	}
 
 	return ManagedPolicy{
-		CORSOrigins:           corsOrigins,
-		ExternalAPIAllowHosts: allowHosts,
-		UpdatedAt:             policy.UpdatedAt,
-		UpdatedBy:             policy.UpdatedBy,
+		CORSOrigins: corsOrigins,
+		UpdatedAt:   policy.UpdatedAt,
+		UpdatedBy:   policy.UpdatedBy,
 	}, nil
 }
 
@@ -153,11 +147,6 @@ func buildSnapshot(inherited ManagedPolicy, managed ManagedPolicy) Snapshot {
 			Managed:   cloneStrings(managed.CORSOrigins),
 			Inherited: cloneStrings(inherited.CORSOrigins),
 			Effective: unionStrings(inherited.CORSOrigins, managed.CORSOrigins),
-		},
-		ExternalAPIAllowHosts: ListSnapshot{
-			Managed:   cloneStrings(managed.ExternalAPIAllowHosts),
-			Inherited: cloneStrings(inherited.ExternalAPIAllowHosts),
-			Effective: unionStrings(inherited.ExternalAPIAllowHosts, managed.ExternalAPIAllowHosts),
 		},
 		UpdatedAt: managed.UpdatedAt,
 		UpdatedBy: managed.UpdatedBy,
@@ -188,11 +177,6 @@ func cloneSnapshot(snapshot Snapshot) Snapshot {
 			Managed:   cloneStrings(snapshot.CORSOrigins.Managed),
 			Inherited: cloneStrings(snapshot.CORSOrigins.Inherited),
 			Effective: cloneStrings(snapshot.CORSOrigins.Effective),
-		},
-		ExternalAPIAllowHosts: ListSnapshot{
-			Managed:   cloneStrings(snapshot.ExternalAPIAllowHosts.Managed),
-			Inherited: cloneStrings(snapshot.ExternalAPIAllowHosts.Inherited),
-			Effective: cloneStrings(snapshot.ExternalAPIAllowHosts.Effective),
 		},
 		UpdatedAt: snapshot.UpdatedAt,
 		UpdatedBy: snapshot.UpdatedBy,

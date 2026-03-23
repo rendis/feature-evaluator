@@ -17,7 +17,6 @@ type Config struct {
 	Auth      AuthConfig
 	OIDC      OIDCConfig
 	CORS      CORSConfig
-	External  ExternalConfig
 	RateLimit RateLimitConfig
 	Log       LogConfig
 }
@@ -65,11 +64,6 @@ type CORSConfig struct {
 	AllowOrigins []string
 }
 
-// ExternalConfig holds outbound external API restrictions.
-type ExternalConfig struct {
-	AllowHosts []string
-}
-
 // RateLimitConfig holds rate limiting settings.
 type RateLimitConfig struct {
 	EvalPerSecond  int
@@ -99,7 +93,6 @@ func setDefaults(v *viper.Viper) {
 	v.SetDefault("OIDC_ISSUER", "")
 	v.SetDefault("OIDC_AUDIENCE", "")
 	v.SetDefault("CORS_ALLOW_ORIGINS", "http://localhost:5173")
-	v.SetDefault("EXTERNAL_API_ALLOW_HOSTS", "")
 	v.SetDefault("RATE_LIMIT_EVAL", 500)
 	v.SetDefault("RATE_LIMIT_ADMIN", 60)
 	v.SetDefault("LOG_LEVEL", "info")
@@ -127,10 +120,6 @@ func parseShutdownTimeout(v *viper.Viper) time.Duration {
 
 func parseOrigins(v *viper.Viper) []string {
 	return splitCSV(v.GetString("CORS_ALLOW_ORIGINS"))
-}
-
-func parseHosts(v *viper.Viper) []string {
-	return splitCSV(v.GetString("EXTERNAL_API_ALLOW_HOSTS"))
 }
 
 func splitCSV(value string) []string {
@@ -190,9 +179,6 @@ func Load() (*Config, error) {
 		CORS: CORSConfig{
 			AllowOrigins: parseOrigins(v),
 		},
-		External: ExternalConfig{
-			AllowHosts: parseHosts(v),
-		},
 		RateLimit: RateLimitConfig{
 			EvalPerSecond:  v.GetInt("RATE_LIMIT_EVAL"),
 			AdminPerSecond: v.GetInt("RATE_LIMIT_ADMIN"),
@@ -208,17 +194,12 @@ func Load() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	cfg.External.AllowHosts, err = securitypolicy.NormalizeHosts(cfg.External.AllowHosts)
-	if err != nil {
-		return nil, err
-	}
 
 	slog.Info("configuration loaded",
 		"server.port", cfg.Server.Port,
 		"postgres.maxConns", cfg.Postgres.MaxConns,
 		"auth.disabled", cfg.Auth.Disabled,
 		"cors.allowOrigins", cfg.CORS.AllowOrigins,
-		"external.allowHosts", cfg.External.AllowHosts,
 		"log.level", cfg.Log.Level,
 		"log.format", cfg.Log.Format,
 	)

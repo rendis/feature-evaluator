@@ -63,8 +63,7 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 
 	securityPolicyRepo := postgres.NewSecurityPolicyRepo(postgresDB)
 	securityPolicySvc := securitypolicy.NewService(securityPolicyRepo, securitypolicy.ManagedPolicy{
-		CORSOrigins:           cfg.CORS.AllowOrigins,
-		ExternalAPIAllowHosts: cfg.External.AllowHosts,
+		CORSOrigins: cfg.CORS.AllowOrigins,
 	})
 	if err := securityPolicySvc.Load(context.Background()); err != nil {
 		slog.Error("loading security policy", "error", err)
@@ -123,7 +122,7 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 	auditSvc := audit.NewService(evalErrorRepo)
 	apiKeySvc := apikey.NewService(apiKeyRepo)
 	authProfileSvc := authprofile.NewService(authProfileRepo, secretCipher)
-	externalAPISvc := externalapi.NewService(externalAPIRepo, secretCipher, securityPolicySvc)
+	externalAPISvc := externalapi.NewService(externalAPIRepo, secretCipher)
 	tagSvc := tag.NewService(tagRepo)
 	packCache := redisclient.NewPackCache(redis)
 	packSvc := pack.NewService(packRepo, packActivationRepo, featureRepo, packCache)
@@ -140,7 +139,7 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 	evalSvc.SetAuthValidator(authValidator)
 
 	// External caller (created early so resolver can reference it)
-	extCaller := external.NewCaller(redis, secretCipher, securityPolicySvc)
+	extCaller := external.NewCaller(redis, secretCipher)
 	extAPIResolver := external.NewAPIResolver(externalAPISvc, extCaller)
 	evalSvc.SetExternalAPIResolver(extAPIResolver)
 

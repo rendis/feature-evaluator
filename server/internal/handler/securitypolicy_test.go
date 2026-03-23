@@ -21,13 +21,11 @@ func TestSecurityPolicyHandlerGetReturnsSnapshot(t *testing.T) {
 
 	svc := securitypolicy.NewService(&securityPolicyRepositoryStub{
 		managed: &securitypolicy.ManagedPolicy{
-			CORSOrigins:           []string{"https://admin.example.com"},
-			ExternalAPIAllowHosts: []string{"api2.example.com"},
-			UpdatedBy:             "owner@example.com",
+			CORSOrigins: []string{"https://admin.example.com"},
+			UpdatedBy:   "owner@example.com",
 		},
 	}, securitypolicy.ManagedPolicy{
-		CORSOrigins:           []string{"https://console.example.com"},
-		ExternalAPIAllowHosts: []string{"api.example.com"},
+		CORSOrigins: []string{"https://console.example.com"},
 	})
 	if err := svc.Load(t.Context()); err != nil {
 		t.Fatalf("Load() error = %v, want nil", err)
@@ -66,8 +64,7 @@ func TestSecurityPolicyHandlerUpdateReplacesManagedLists(t *testing.T) {
 
 	repo := &securityPolicyRepositoryStub{}
 	svc := securitypolicy.NewService(repo, securitypolicy.ManagedPolicy{
-		CORSOrigins:           []string{"https://console.example.com"},
-		ExternalAPIAllowHosts: []string{"api.example.com"},
+		CORSOrigins: []string{"https://console.example.com"},
 	})
 	handler := NewSecurityPolicyHandler(svc)
 
@@ -78,8 +75,7 @@ func TestSecurityPolicyHandlerUpdateReplacesManagedLists(t *testing.T) {
 	})
 
 	req := httptest.NewRequest(http.MethodPut, "/security-policy", strings.NewReader(`{
-		"corsOrigins":["https://admin.example.com"],
-		"externalApiAllowHosts":["billing.example.com"]
+		"corsOrigins":["https://admin.example.com"]
 	}`))
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
@@ -190,14 +186,12 @@ func (r *securityPolicyRepositoryStub) Get(_ context.Context) (*securitypolicy.M
 	}
 	copied := *r.managed
 	copied.CORSOrigins = append([]string(nil), r.managed.CORSOrigins...)
-	copied.ExternalAPIAllowHosts = append([]string(nil), r.managed.ExternalAPIAllowHosts...)
 	return &copied, nil
 }
 
 func (r *securityPolicyRepositoryStub) Upsert(_ context.Context, policy *securitypolicy.ManagedPolicy) error {
 	copied := *policy
 	copied.CORSOrigins = append([]string(nil), policy.CORSOrigins...)
-	copied.ExternalAPIAllowHosts = append([]string(nil), policy.ExternalAPIAllowHosts...)
 	r.managed = &copied
 	return nil
 }

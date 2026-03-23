@@ -53,9 +53,8 @@ func (h *SecurityPolicyHandler) Update(c *gin.Context) {
 	}
 
 	snapshot, err := h.svc.Update(c.Request.Context(), securitypolicy.ManagedPolicy{
-		CORSOrigins:           req.CORSOrigins,
-		ExternalAPIAllowHosts: req.ExternalAPIAllowHosts,
-		UpdatedBy:             middleware.GetUserEmail(c),
+		CORSOrigins: req.CORSOrigins,
+		UpdatedBy:   middleware.GetUserEmail(c),
 	})
 	if err != nil {
 		dto.RespondError(c, err)
@@ -71,11 +70,6 @@ func toSecurityPolicyResponse(snapshot securitypolicy.Snapshot) dto.SecurityPoli
 			Managed:   nonNilStrings(snapshot.CORSOrigins.Managed),
 			Inherited: nonNilStrings(snapshot.CORSOrigins.Inherited),
 			Effective: nonNilStrings(snapshot.CORSOrigins.Effective),
-		},
-		ExternalAPIAllowHosts: dto.SecurityPolicyListResponse{
-			Managed:   nonNilStrings(snapshot.ExternalAPIAllowHosts.Managed),
-			Inherited: nonNilStrings(snapshot.ExternalAPIAllowHosts.Inherited),
-			Effective: nonNilStrings(snapshot.ExternalAPIAllowHosts.Effective),
 		},
 		UpdatedBy: snapshot.UpdatedBy,
 	}

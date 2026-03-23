@@ -5615,9 +5615,6 @@ components:
         corsOrigins:
           $ref: "#/components/schemas/github_com_rendis_feature-evaluator_internal_dto.Se\
             curityPolicyListResponse"
-        externalApiAllowHosts:
-          $ref: "#/components/schemas/github_com_rendis_feature-evaluator_internal_dto.Se\
-            curityPolicyListResponse"
         updatedAt:
           type: string
         updatedBy:
@@ -6062,10 +6059,6 @@ components:
     github_com_rendis_feature-evaluator_internal_dto.UpdateSecurityPolicyRequest:
       properties:
         corsOrigins:
-          items:
-            type: string
-          type: array
-        externalApiAllowHosts:
           items:
             type: string
           type: array

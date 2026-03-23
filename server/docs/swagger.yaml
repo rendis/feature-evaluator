@@ -1764,8 +1764,6 @@ definitions:
     properties:
       corsOrigins:
         $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyListResponse'
-      externalApiAllowHosts:
-        $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.SecurityPolicyListResponse'
       updatedAt:
         type: string
       updatedBy:
@@ -2192,10 +2190,6 @@ definitions:
   github_com_rendis_feature-evaluator_internal_dto.UpdateSecurityPolicyRequest:
     properties:
       corsOrigins:
-        items:
-          type: string
-        type: array
-      externalApiAllowHosts:
         items:
           type: string
         type: array

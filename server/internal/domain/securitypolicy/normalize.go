@@ -12,11 +12,6 @@ func NormalizeOrigins(origins []string) ([]string, error) {
 	return normalizeList(origins, NormalizeOrigin)
 }
 
-// NormalizeHosts validates, lowercases, trims, and deduplicates a list of outbound hostnames.
-func NormalizeHosts(hosts []string) ([]string, error) {
-	return normalizeList(hosts, NormalizeHost)
-}
-
 // NormalizeOrigin validates a single origin.
 func NormalizeOrigin(origin string) (string, error) {
 	parsed, err := url.Parse(strings.TrimSpace(origin))
@@ -46,51 +41,6 @@ func NormalizeOrigin(origin string) (string, error) {
 
 	return parsed.String(), nil
 }
-
-// NormalizeHost validates a single outbound hostname.
-func NormalizeHost(host string) (string, error) {
-	normalized := strings.ToLower(strings.TrimSpace(host))
-	if normalized == "" {
-		return "", fmt.Errorf("invalid host %q: value is empty", host)
-	}
-	if strings.Contains(normalized, "://") || strings.ContainsAny(normalized, "/?#@") {
-		return "", fmt.Errorf("invalid host %q: expected hostname without scheme, path, query, or fragment", host)
-	}
-	if strings.Contains(normalized, ":") {
-		return "", fmt.Errorf("invalid host %q: ports are not allowed", host)
-	}
-	if net.ParseIP(normalized) != nil {
-		return "", fmt.Errorf("invalid host %q: use hostnames instead of IP addresses", host)
-	}
-	if normalized == "localhost" {
-		return normalized, nil
-	}
-
-	labels := strings.Split(normalized, ".")
-	if len(labels) < 2 {
-		return "", fmt.Errorf("invalid host %q: expected a hostname like api.example.com", host)
-	}
-	for _, label := range labels {
-		if label == "" {
-			return "", fmt.Errorf("invalid host %q: empty hostname label", host)
-		}
-		if strings.HasPrefix(label, "-") || strings.HasSuffix(label, "-") {
-			return "", fmt.Errorf("invalid host %q: hostname labels cannot start or end with '-'", host)
-		}
-		for _, r := range label {
-			switch {
-			case r >= 'a' && r <= 'z':
-			case r >= '0' && r <= '9':
-			case r == '-':
-			default:
-				return "", fmt.Errorf("invalid host %q: hostname contains invalid character %q", host, r)
-			}
-		}
-	}
-
-	return normalized, nil
-}
-
 func normalizeList(values []string, normalize func(string) (string, error)) ([]string, error) {
 	if len(values) == 0 {
 		return nil, nil

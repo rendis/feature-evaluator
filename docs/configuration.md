@@ -10,24 +10,24 @@ The backend uses `viper.AutomaticEnv()`. That means environment variables must b
 
 ### Server
 
-| Variable | Description | Default |
-| --- | --- | --- |
-| `SERVER_PORT` | HTTP server port | `8080` |
-| `SERVER_SHUTDOWN_TIMEOUT` | graceful shutdown timeout | `10s` |
+| Variable                  | Description               | Default |
+| ------------------------- | ------------------------- | ------- |
+| `SERVER_PORT`             | HTTP server port          | `8080`  |
+| `SERVER_SHUTDOWN_TIMEOUT` | graceful shutdown timeout | `10s`   |
 
 The HTTP server also sets `ReadHeaderTimeout=5s` in code.
 
 ### PostgreSQL
 
-| Variable | Description | Default |
-| --- | --- | --- |
-| `DATABASE_URL` | PostgreSQL connection string | `postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable` |
-| `POSTGRES_MAX_CONNS` | maximum pool size | `20` |
-| `POSTGRES_MIN_CONNS` | minimum pool size | `2` |
-| `POSTGRES_MAX_CONN_LIFETIME` | max connection lifetime | `30m` |
-| `POSTGRES_MAX_CONN_IDLE_TIME` | max idle time per connection | `5m` |
-| `POSTGRES_HEALTHCHECK_PERIOD` | pool healthcheck interval | `1m` |
-| `POSTGRES_CONNECT_TIMEOUT` | connection timeout | `10s` |
+| Variable                      | Description                  | Default                                                                |
+| ----------------------------- | ---------------------------- | ---------------------------------------------------------------------- |
+| `DATABASE_URL`                | PostgreSQL connection string | `postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable` |
+| `POSTGRES_MAX_CONNS`          | maximum pool size            | `20`                                                                   |
+| `POSTGRES_MIN_CONNS`          | minimum pool size            | `2`                                                                    |
+| `POSTGRES_MAX_CONN_LIFETIME`  | max connection lifetime      | `30m`                                                                  |
+| `POSTGRES_MAX_CONN_IDLE_TIME` | max idle time per connection | `5m`                                                                   |
+| `POSTGRES_HEALTHCHECK_PERIOD` | pool healthcheck interval    | `1m`                                                                   |
+| `POSTGRES_CONNECT_TIMEOUT`    | connection timeout           | `10s`                                                                  |
 
 Startup behavior:
 
@@ -36,10 +36,10 @@ Startup behavior:
 
 ### Redis
 
-| Variable | Description | Default |
-| --- | --- | --- |
-| `REDIS_URI` | Redis address | `localhost:6379` |
-| `REDIS_PASSWORD` | Redis password | empty |
+| Variable         | Description    | Default          |
+| ---------------- | -------------- | ---------------- |
+| `REDIS_URI`      | Redis address  | `localhost:6379` |
+| `REDIS_PASSWORD` | Redis password | empty            |
 
 Redis is used for:
 
@@ -53,11 +53,11 @@ Redis is fail-open for rate limiting and caching. If Redis is unavailable, the A
 
 ### Authentication
 
-| Variable | Description | Default |
-| --- | --- | --- |
-| `AUTH_DISABLED` | skip JWT validation for development | `false` |
+| Variable         | Description                               | Default         |
+| ---------------- | ----------------------------------------- | --------------- |
+| `AUTH_DISABLED`  | skip JWT validation for development       | `false`         |
 | `DEV_USER_EMAIL` | injected user email in auth-disabled mode | `dev@local.dev` |
-| `DEV_USER_ROLE` | injected role in auth-disabled mode | `owner` |
+| `DEV_USER_ROLE`  | injected role in auth-disabled mode       | `owner`         |
 
 When `AUTH_DISABLED=true`:
 
@@ -67,52 +67,44 @@ When `AUTH_DISABLED=true`:
 
 ### OIDC
 
-| Variable | Description | Default |
-| --- | --- | --- |
-| `OIDC_ISSUER` | OIDC issuer URL | empty |
-| `OIDC_AUDIENCE` | expected JWT audience | empty |
+| Variable        | Description           | Default |
+| --------------- | --------------------- | ------- |
+| `OIDC_ISSUER`   | OIDC issuer URL       | empty   |
+| `OIDC_AUDIENCE` | expected JWT audience | empty   |
 
 Production deployments should set both values.
 
 ### CORS
 
-| Variable | Description | Default |
-| --- | --- | --- |
+| Variable             | Description                       | Default                 |
+| -------------------- | --------------------------------- | ----------------------- |
 | `CORS_ALLOW_ORIGINS` | comma-separated inherited origins | `http://localhost:5173` |
 
 Each value must be a full origin (`scheme://host[:port]`) without path, query, or fragment. Requests with an `Origin` header that is not on the effective list are rejected with `403`.
-
-### External API host allowlist
-
-| Variable | Description | Default |
-| --- | --- | --- |
-| `EXTERNAL_API_ALLOW_HOSTS` | optional comma-separated inherited outbound hostnames | empty |
-
-When configured, reusable external APIs can only target these hostnames. Values must be hostnames only, without scheme or port. Dynamic host placeholders in `urlTemplate` are rejected while the allowlist is active.
 
 ### Security policy management
 
 The effective runtime policy is the union of:
 
 - inherited entries from `CORS_ALLOW_ORIGINS`
-- inherited entries from `EXTERNAL_API_ALLOW_HOSTS`
 - app-managed entries stored in PostgreSQL and editable from the console at `/settings/security`
 
 Inherited env entries remain active and read-only in the UI. The console only replaces the app-managed portion of the policy.
+This screen controls browser CORS access only. Server-to-server callers that authenticate with Bearer tokens or API keys are not gated by origin/domain.
 
 ### Rate Limiting
 
-| Variable | Description | Default |
-| --- | --- | --- |
-| `RATE_LIMIT_EVAL` | requests/sec for eval and OFREP routes | `500` |
-| `RATE_LIMIT_ADMIN` | requests/sec for admin routes | `60` |
+| Variable           | Description                            | Default |
+| ------------------ | -------------------------------------- | ------- |
+| `RATE_LIMIT_EVAL`  | requests/sec for eval and OFREP routes | `500`   |
+| `RATE_LIMIT_ADMIN` | requests/sec for admin routes          | `60`    |
 
 ### Logging
 
-| Variable | Description | Default |
-| --- | --- | --- |
-| `LOG_LEVEL` | `debug`, `info`, `warn`, `error` | `info` |
-| `LOG_FORMAT` | `text` or `json` | `text` |
+| Variable     | Description                      | Default |
+| ------------ | -------------------------------- | ------- |
+| `LOG_LEVEL`  | `debug`, `info`, `warn`, `error` | `info`  |
+| `LOG_FORMAT` | `text` or `json`                 | `text`  |
 
 When `LOG_FORMAT=json`, Gin is switched to release mode.
 
@@ -139,13 +131,13 @@ Retention and cleanup rules:
 
 ### Vite Variables
 
-| Variable | Description | Default / Example |
-| --- | --- | --- |
-| `VITE_API_URL` | backend base URL | `http://localhost:8080/features` |
-| `VITE_AUTH_DISABLED` | bypass OIDC in local dev | unset |
-| `VITE_OIDC_AUTHORITY` | OIDC authority URL | unset |
-| `VITE_OIDC_CLIENT_ID` | OIDC client ID | unset |
-| `VITE_OIDC_REDIRECT_URI` | OAuth callback URI | `{origin}/auth/callback` |
+| Variable                 | Description              | Default / Example                |
+| ------------------------ | ------------------------ | -------------------------------- |
+| `VITE_API_URL`           | backend base URL         | `http://localhost:8080/features` |
+| `VITE_AUTH_DISABLED`     | bypass OIDC in local dev | unset                            |
+| `VITE_OIDC_AUTHORITY`    | OIDC authority URL       | unset                            |
+| `VITE_OIDC_CLIENT_ID`    | OIDC client ID           | unset                            |
+| `VITE_OIDC_REDIRECT_URI` | OAuth callback URI       | `{origin}/auth/callback`         |
 
 The frontend persists the selected workspace client-side and sends it as `X-Workspace` on every API call.
 
@@ -163,7 +155,6 @@ AUTH_DISABLED=true
 DEV_USER_EMAIL=admin@local.dev
 DEV_USER_ROLE=owner
 CORS_ALLOW_ORIGINS=http://localhost:5173,http://localhost:5174
-EXTERNAL_API_ALLOW_HOSTS=api.example.com,eligibility.example.net
 LOG_LEVEL=debug
 LOG_FORMAT=text
 ```

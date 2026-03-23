@@ -1,6 +1,6 @@
 {
   "title": "Políticas globales de seguridad",
-  "description": "Administra los origins permitidos por CORS y los hosts permitidos para llamadas salientes.",
+  "description": "Administra los origins del navegador permitidos por CORS para acceder al evaluator desde el frontend.",
   "actions": {
     "save": "Guardar cambios"
   },
@@ -24,15 +24,9 @@
     "add": "Agregar origin",
     "placeholder": "https://console.example.com"
   },
-  "hosts": {
-    "title": "Hosts permitidos para external APIs",
-    "description": "Usa solo hostnames exactos, sin scheme ni puerto.",
-    "add": "Agregar host",
-    "placeholder": "api.example.com"
-  },
   "notes": {
     "title": "Cómo se aplica",
-    "description": "El valor efectivo es la unión entre lo heredado por configuración del servidor y lo administrado desde la aplicación.",
+    "description": "El valor efectivo es la unión entre lo heredado por configuración del servidor y lo administrado desde la aplicación. Esta pantalla solo controla CORS del navegador y no afecta callers backend server-to-server con Bearer o API key.",
     "updatedBy": "Última actualización: {{updatedAt}} por {{updatedBy}}",
     "system": "sistema"
   },
