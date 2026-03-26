@@ -49,7 +49,7 @@ function FeatureDetailPage() {
             </span>
           </h2>
           <PermissionButton permission="features.write" size="sm" asChild>
-            <Link to="/features/$featureKey/rules/new" params={{ featureKey }}>
+            <Link to="/features/$featureKey/rules/new" params={{ featureKey }} search={{}}>
               <Plus className="mr-1 h-3 w-3" />
               {t('createRule', { ns: 'rules' })}
             </Link>
@@ -62,7 +62,7 @@ function FeatureDetailPage() {
             description={t('empty.description', { ns: 'rules' })}
             action={
               <PermissionButton permission="features.write" size="sm" asChild>
-                <Link to="/features/$featureKey/rules/new" params={{ featureKey }}>
+                <Link to="/features/$featureKey/rules/new" params={{ featureKey }} search={{}}>
                   {t('empty.cta', { ns: 'rules' })}
                 </Link>
               </PermissionButton>
