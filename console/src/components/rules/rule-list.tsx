@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
-import { GripVertical, Pencil, Trash2 } from 'lucide-react';
+import { Copy, GripVertical, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -73,6 +73,13 @@ export function RuleList({ featureKey, rules }: RuleListProps) {
                 params: { featureKey, ruleId: rule.id },
               })
             }
+            onClone={() =>
+              void navigate({
+                to: '/features/$featureKey/rules/new',
+                params: { featureKey },
+                search: { cloneFrom: rule.id },
+              })
+            }
             onDelete={() => setDeleteTarget(rule)}
             isDragging={dragIndex === i}
           />
@@ -99,11 +106,12 @@ interface RuleRowProps {
   onDragOver: (e: React.DragEvent, index: number) => void;
   onDragEnd: () => void;
   onEdit: () => void;
+  onClone: () => void;
   onDelete: () => void;
   isDragging: boolean;
 }
 
-function RuleRow({ rule, index, onDragStart, onDragOver, onDragEnd, onEdit, onDelete, isDragging }: RuleRowProps) {
+function RuleRow({ rule, index, onDragStart, onDragOver, onDragEnd, onEdit, onClone, onDelete, isDragging }: RuleRowProps) {
   const { t } = useTranslation('rules');
 
   return (
@@ -137,6 +145,15 @@ function RuleRow({ rule, index, onDragStart, onDragOver, onDragEnd, onEdit, onDe
       <div className="flex items-center gap-1">
         <PermissionButton permission="features.write" variant="ghost" size="icon" onClick={onEdit}>
           <Pencil className="h-3 w-3" />
+        </PermissionButton>
+        <PermissionButton
+          permission="features.write"
+          variant="ghost"
+          size="icon"
+          onClick={onClone}
+          aria-label={t('clone.action', { defaultValue: 'Clonar' })}
+        >
+          <Copy className="h-3 w-3" />
         </PermissionButton>
         <PermissionButton
           permission="features.write"

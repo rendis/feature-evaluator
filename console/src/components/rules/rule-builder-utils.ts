@@ -24,11 +24,35 @@ export function createDraft(rule: Rule | undefined, feature: Feature, nextPriori
     enabled: rule?.enabled ?? true,
     value: defaultRuleValue(rule, feature.valueType),
     expression: rule?.expression ?? '',
-    metadata: rule?.metadata ?? {},
-    sourceBindings: rule?.sourceBindings ?? { segments: [] },
-    externalApiBindings: rule?.externalApiBindings ?? [],
+    metadata: deepClone(rule?.metadata ?? {}),
+    sourceBindings: deepClone(rule?.sourceBindings ?? { segments: [] }),
+    externalApiBindings: deepClone(rule?.externalApiBindings ?? []),
     rolloutEnabled: rule?.rolloutPercentage != null,
     rolloutLimit: rule?.rolloutPercentage ?? 100,
+  };
+}
+
+export function createClonedDraft(
+  rule: Rule,
+  feature: Feature,
+  nextPriority: number,
+  clonedName: string,
+): RuleDraft {
+  const draft = createDraft(rule, feature, nextPriority);
+
+  return {
+    ...draft,
+    name: clonedName,
+    priority: nextPriority,
+  };
+}
+
+export function cloneRuleDraft(draft: RuleDraft): RuleDraft {
+  return {
+    ...draft,
+    metadata: deepClone(draft.metadata),
+    sourceBindings: deepClone(draft.sourceBindings),
+    externalApiBindings: deepClone(draft.externalApiBindings),
   };
 }
 
@@ -110,4 +134,12 @@ function stringifyRuleValue(val: unknown, vt: ValueType): string {
 function defaultRuleValue(rule: Rule | undefined, vt: ValueType): string {
   if (rule) return stringifyRuleValue(rule.value, vt);
   return vt === 'boolean' ? 'true' : '';
+}
+
+function deepClone<T>(value: T): T {
+  if (typeof globalThis.structuredClone === 'function') {
+    return globalThis.structuredClone(value);
+  }
+
+  return JSON.parse(JSON.stringify(value)) as T;
 }

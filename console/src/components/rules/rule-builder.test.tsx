@@ -188,6 +188,52 @@ describe('RuleBuilder', () => {
     );
   });
 
+  it('uses create mutation for a cloned draft instead of updating the original rule', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <RuleBuilder
+        feature={feature}
+        initialDraft={{
+          name: 'Copia de Rule A',
+          priority: 3,
+          enabled: true,
+          value: 'enabled',
+          expression: 'true',
+          metadata: { source: 'mcp' },
+          sourceBindings: { segments: [{ segmentKey: 'vip', lookupPath: 'user.id' }] },
+          externalApiBindings: [
+            {
+              externalApiKey: 'kyc',
+              paramMappings: [{ paramName: 'userId', mode: 'input', inputPath: 'user.id' }],
+              failMode: 'open',
+              cacheTTL: 60,
+            },
+          ],
+          rolloutEnabled: true,
+          rolloutLimit: 25,
+        }}
+      />,
+    );
+
+    expect(screen.getByDisplayValue('Copia de Rule A')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('3')).toBeInTheDocument();
+
+    const saveButtons = screen.getAllByRole('button', { name: /actions\.save/i });
+    await user.click(saveButtons[0]);
+
+    expect(ruleMutationState.createMutate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: 'Copia de Rule A',
+        priority: 3,
+        expression: 'true',
+        rolloutPercentage: 25,
+      }),
+      expect.any(Object),
+    );
+    expect(ruleMutationState.updateMutate).not.toHaveBeenCalled();
+  });
+
   it('renders even when a legacy feature does not include inputContract', async () => {
     const user = userEvent.setup();
 

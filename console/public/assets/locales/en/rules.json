@@ -3,6 +3,11 @@
   "createRule": "Create rule",
   "editRule": "Edit rule",
   "reorder": "Reorder",
+  "clone": {
+    "action": "Clone",
+    "nameTemplate": "Copy of {{name}}",
+    "sourceNotFound": "We couldn't find the rule you want to clone."
+  },
   "fields": {
     "name": "Name",
     "priority": "Priority",

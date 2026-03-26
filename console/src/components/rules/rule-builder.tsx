@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 
 import {
   buildPayload,
+  cloneRuleDraft,
   createDraft,
   serializeSnapshot,
   summarizeDraft,
@@ -23,6 +24,7 @@ import {
 import { StepExpression } from './rule-step-expression';
 import { StepRollout } from './rule-step-rollout';
 import { StepRule } from './rule-step-rule';
+
 import type { Feature, Rule } from '@/api/types';
 
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
@@ -45,20 +47,23 @@ interface RuleBuilderProps {
   feature: Feature;
   rule?: Rule;
   nextPriority?: number;
+  initialDraft?: RuleDraft;
 }
 
-export function RuleBuilder({ feature, rule, nextPriority = 1 }: RuleBuilderProps) {
+export function RuleBuilder({ feature, rule, nextPriority = 1, initialDraft }: RuleBuilderProps) {
   const { t } = useTranslation('rules');
   const navigate = useNavigate();
   const isEditing = !!rule;
   const createRule = useCreateRule(feature.key);
   const updateRule = useUpdateRule(feature.key);
   const deleteRule = useDeleteRule(feature.key);
+  const seedDraft = initialDraft ? cloneRuleDraft(initialDraft) : createDraft(rule, feature, nextPriority);
+  const seedSnapshot = isEditing || !initialDraft
+    ? serializeSnapshot(seedDraft)
+    : serializeSnapshot(createDraft(undefined, feature, nextPriority));
 
-  const [draft, setDraft] = useState<RuleDraft>(() => createDraft(rule, feature, nextPriority));
-  const [savedSnapshot, setSavedSnapshot] = useState(() =>
-    serializeSnapshot(createDraft(rule, feature, nextPriority)),
-  );
+  const [draft, setDraft] = useState<RuleDraft>(() => seedDraft);
+  const [savedSnapshot, setSavedSnapshot] = useState(() => seedSnapshot);
   const [activeStep, setActiveStep] = useState<BuilderStep>('rule');
   const [deleteOpen, setDeleteOpen] = useState(false);
 
