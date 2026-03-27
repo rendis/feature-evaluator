@@ -125,6 +125,7 @@ function RuleRow({
   isDragging,
 }: RuleRowProps) {
   const { t } = useTranslation('rules');
+  const formattedValue = formatRuleValue(rule.value);
 
   return (
     <div
@@ -153,6 +154,10 @@ function RuleRow({
         {rule.expression ? (
           <p className="text-muted-foreground mt-1 truncate font-mono text-xs">{rule.expression}</p>
         ) : null}
+        <p className="mt-1 truncate text-xs">
+          <span className="text-muted-foreground">{t('fields.value')}:</span>{' '}
+          <span className="font-mono">{formattedValue}</span>
+        </p>
       </div>
       <div className="flex items-center gap-2">
         <RuleToggle featureKey={featureKey} rule={rule} />
@@ -180,4 +185,19 @@ function RuleRow({
       </div>
     </div>
   );
+}
+
+function formatRuleValue(value: unknown): string {
+  if (value === null) return 'null';
+  if (value === undefined) return '—';
+
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }
+
+  return String(value);
 }

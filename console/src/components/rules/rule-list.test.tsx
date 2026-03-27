@@ -2,6 +2,7 @@ import userEvent from '@testing-library/user-event';
 
 import { RuleList } from './rule-list';
 
+import type { Rule } from '@/api/types';
 import type { ComponentProps } from 'react';
 
 import { render, screen } from '@/test/test-utils';
@@ -63,7 +64,14 @@ vi.mock('@/mutations/rule-mutations', () => ({
   }),
 }));
 
-function createRule() {
+function createRule(overrides: Partial<Rule> = {}): Rule {
+  return {
+    ...createRuleBase(),
+    ...overrides,
+  };
+}
+
+function createRuleBase(): Rule {
   return {
     id: 'rule-1',
     name: 'Rule A',
@@ -79,8 +87,8 @@ function createRule() {
   };
 }
 
-function renderRuleList() {
-  return render(<RuleList featureKey="feature-a" rules={[createRule()]} />, {
+function renderRuleList(rule = createRule()) {
+  return render(<RuleList featureKey="feature-a" rules={[rule]} />, {
     providerProps: { namespaces: ['rules', 'common'] },
   });
 }
@@ -128,6 +136,17 @@ it('renders a toggle for each rule and dispatches the toggle mutation when click
       onError: expect.any(Function),
     }),
   );
+});
+
+it('renders the value returned by the rule when it matches', () => {
+  renderRuleList(
+    createRule({
+      expression: 'user.role == "admin"',
+      value: 'granted',
+    }),
+  );
+
+  expect(screen.getByText((_, node) => node?.textContent === 'fields.value: granted')).toBeInTheDocument();
 });
 
 it('disables the toggle while a rule mutation is pending', () => {
