@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/rendis/feature-evaluator/internal/domain/externalapi"
 	"github.com/rendis/feature-evaluator/internal/domain/feature"
+	"github.com/rendis/feature-evaluator/internal/domain/observability"
 )
 
 // APIResolver resolves external API bindings during rule evaluation.
@@ -29,7 +31,30 @@ func (r *APIResolver) Resolve(
 	results := make(map[string]bool, len(bindings))
 
 	for _, binding := range bindings {
-		passed, err := r.resolveOne(ctx, binding, env)
+		start := time.Now()
+		callResult, err := r.resolveOne(ctx, binding, env)
+		passed := false
+		httpStatus := 0
+		cacheStatus := observability.CacheStatusDisabled
+		if binding.CacheEnabled && binding.CacheTTL > 0 {
+			cacheStatus = observability.CacheStatusMiss
+		}
+		if callResult != nil {
+			passed = callResult.Passed
+			httpStatus = callResult.HTTPStatus
+			if binding.CacheEnabled && binding.CacheTTL > 0 && callResult.Cached {
+				cacheStatus = observability.CacheStatusHit
+			}
+		}
+		if recorder, ok := observability.RuleRecorderFromContext(ctx); ok && recorder != nil {
+			recorder.RecordExternalCall(observability.ExternalCallTrace{
+				APIKey:      binding.ExternalAPIKey,
+				DurationMs:  time.Since(start).Milliseconds(),
+				CacheStatus: cacheStatus,
+				Passed:      passed,
+				HTTPStatus:  httpStatus,
+			})
+		}
 		if err != nil {
 			slog.Warn("external api binding call failed",
 				"apiKey", binding.ExternalAPIKey,
@@ -50,14 +75,14 @@ func (r *APIResolver) resolveOne(
 	ctx context.Context,
 	binding feature.ExternalAPIBinding,
 	env map[string]any,
-) (bool, error) {
+) (*CallResult, error) {
 	api, err := r.apiSvc.GetByKey(ctx, binding.ExternalAPIKey)
 	if err != nil {
-		return false, fmt.Errorf("fetching external api %q: %w", binding.ExternalAPIKey, err)
+		return nil, fmt.Errorf("fetching external api %q: %w", binding.ExternalAPIKey, err)
 	}
 
 	if !api.Active {
-		return false, fmt.Errorf("external api %q is inactive", binding.ExternalAPIKey)
+		return nil, fmt.Errorf("external api %q is inactive", binding.ExternalAPIKey)
 	}
 
 	// Resolve param values from the eval env using the binding's param mappings
@@ -76,10 +101,14 @@ func (r *APIResolver) resolveOne(
 	if api.HasSecrets && api.SecretPayloadEncrypted != "" {
 		decrypted, decErr := r.apiSvc.DecryptSecrets(ctx, api)
 		if decErr != nil {
-			return false, fmt.Errorf("decrypting secrets for %q: %w", binding.ExternalAPIKey, decErr)
+			return nil, fmt.Errorf("decrypting secrets for %q: %w", binding.ExternalAPIKey, decErr)
 		}
 		secretValues = decrypted
 	}
 
-	return r.caller.CallExternalAPI(ctx, api, paramValues, secretValues)
+	callResult, err := r.caller.CallExternalAPI(ctx, api, binding, paramValues, secretValues)
+	if err != nil {
+		return callResult, err
+	}
+	return callResult, nil
 }

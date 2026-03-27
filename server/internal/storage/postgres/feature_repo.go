@@ -56,15 +56,15 @@ func (r *FeatureRepo) Create(ctx context.Context, f *feature.Feature) error { //
 
 		_, err = r.client.db(txCtx).Exec(txCtx, `
 			INSERT INTO features (
-				id, workspace_key, key, name, description, enabled, value_type, default_value,
-				active_from, active_until, environments, access_policy, auth_profile_id, input_contract,
+				id, workspace_key, key, name, description, enabled, eval_cache_enabled, eval_cache_ttl_seconds,
+				value_type, default_value, active_from, active_until, environments, access_policy, auth_profile_id, input_contract,
 				metadata, rollout_salt, created_at, updated_at, created_by, updated_by,
 				trial_until, trial_value
 			) VALUES (
-				$1, $2, $3, $4, $5, $6, $7, $8::jsonb,
-				$9, $10, $11, $12, $13, $14::jsonb,
-				$15::jsonb, $16, $17, $18, $19, $20,
-				$21, $22::jsonb
+				$1, $2, $3, $4, $5, $6, $7, $8,
+				$9, $10::jsonb, $11, $12, $13, $14, $15, $16::jsonb,
+				$17::jsonb, $18, $19, $20, $21, $22,
+				$23, $24::jsonb
 			)
 		`,
 			f.ID,
@@ -73,6 +73,8 @@ func (r *FeatureRepo) Create(ctx context.Context, f *feature.Feature) error { //
 			f.Name,
 			f.Description,
 			f.Enabled,
+			f.EvalCacheEnabled,
+			f.EvalCacheTTLSeconds,
 			f.ValueType,
 			defaultValueJSON,
 			f.ActiveFrom,
@@ -165,11 +167,12 @@ func (r *FeatureRepo) Update(ctx context.Context, f *feature.Feature) error {
 		var featureID string
 		tag, err := r.client.db(txCtx).Exec(txCtx, `
 			UPDATE features
-			SET name = $3, description = $4, enabled = $5, value_type = $6, default_value = $7::jsonb,
-			    active_from = $8, active_until = $9, environments = $10, access_policy = $11,
-			    auth_profile_id = $12, input_contract = $13::jsonb, metadata = $14::jsonb,
-			    updated_at = $15, updated_by = $16,
-			    trial_until = $17, trial_value = $18::jsonb
+			SET name = $3, description = $4, enabled = $5, eval_cache_enabled = $6,
+			    eval_cache_ttl_seconds = $7, value_type = $8, default_value = $9::jsonb,
+			    active_from = $10, active_until = $11, environments = $12, access_policy = $13,
+			    auth_profile_id = $14, input_contract = $15::jsonb, metadata = $16::jsonb,
+			    updated_at = $17, updated_by = $18,
+			    trial_until = $19, trial_value = $20::jsonb
 			WHERE workspace_key = $1 AND key = $2
 		`,
 			wsKey(txCtx),
@@ -177,6 +180,8 @@ func (r *FeatureRepo) Update(ctx context.Context, f *feature.Feature) error {
 			f.Name,
 			f.Description,
 			f.Enabled,
+			f.EvalCacheEnabled,
+			f.EvalCacheTTLSeconds,
 			f.ValueType,
 			defaultValueJSON,
 			f.ActiveFrom,
@@ -595,8 +600,8 @@ func buildFeaturePredicate(ctx context.Context, params feature.ListParams) (stri
 
 func featureSelectQuery(suffix string) string {
 	return `
-		SELECT f.id, f.workspace_key, f.key, f.name, f.description, f.enabled, f.value_type,
-		       f.default_value, f.active_from, f.active_until, f.environments, f.access_policy,
+		SELECT f.id, f.workspace_key, f.key, f.name, f.description, f.enabled, f.eval_cache_enabled,
+		       f.eval_cache_ttl_seconds, f.value_type, f.default_value, f.active_from, f.active_until, f.environments, f.access_policy,
 		       COALESCE(ap.key, '') AS auth_profile_key, f.input_contract, f.metadata, f.rollout_salt,
 		       f.created_at, f.updated_at, f.created_by, f.updated_by,
 		       f.trial_until, f.trial_value
@@ -607,7 +612,8 @@ func featureSelectQuery(suffix string) string {
 
 func featureSummarySelectQuery(suffix string) string {
 	return `
-		SELECT f.id, f.workspace_key, f.key, f.name, f.description, f.enabled, f.value_type,
+		SELECT f.id, f.workspace_key, f.key, f.name, f.description, f.enabled, f.eval_cache_enabled,
+		       f.eval_cache_ttl_seconds, f.value_type,
 		       f.active_from, f.active_until, f.environments, f.access_policy,
 		       COALESCE(ap.key, '') AS auth_profile_key,
 		       f.created_at, f.updated_at, f.created_by, f.updated_by,
@@ -1016,6 +1022,8 @@ func scanFeature(scanner featureScanner) (*feature.Feature, error) {
 		&f.Name,
 		&f.Description,
 		&f.Enabled,
+		&f.EvalCacheEnabled,
+		&f.EvalCacheTTLSeconds,
 		&f.ValueType,
 		&defaultValueJSON,
 		&f.ActiveFrom,
@@ -1060,6 +1068,8 @@ func scanFeatureSummary(scanner featureScanner) (*feature.Feature, error) {
 		&f.Name,
 		&f.Description,
 		&f.Enabled,
+		&f.EvalCacheEnabled,
+		&f.EvalCacheTTLSeconds,
 		&f.ValueType,
 		&f.ActiveFrom,
 		&f.ActiveUntil,

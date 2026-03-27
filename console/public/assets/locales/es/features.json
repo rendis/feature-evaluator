@@ -76,7 +76,11 @@
   "detail": {
     "rulesCount_one": "{{count}} regla",
     "rulesCount_other": "{{count}} reglas",
-    "noRules": "Sin reglas configuradas"
+    "noRules": "Sin reglas configuradas",
+    "tabs": {
+      "summary": "Resumen",
+      "observability": "Observability"
+    }
   },
   "empty": {
     "title": "Sin features",
@@ -112,6 +116,47 @@
     "value": "Valor durante trial",
     "helper": "Mientras el trial este activo, las rules seran ignoradas y se retornara este valor",
     "valueRequired": "El valor de trial es requerido cuando se configura una fecha"
+  },
+  "cache": {
+    "title": "Cache",
+    "disabled": "Desactivada",
+    "feature": {
+      "enabled": "Cache de evaluacion",
+      "help": "Cachea el snapshot de evaluacion de este feature en Redis.",
+      "ttl": "TTL de cache"
+    }
+  },
+  "observability": {
+    "title": "Observability",
+    "rules": {
+      "title": "Rules",
+      "empty": {
+        "title": "Aun no hay metricas de rules",
+        "description": "Ejecuta evaluaciones para ver latencia, cache y llamadas externas."
+      }
+    },
+    "traces": {
+      "title": "Traces",
+      "empty": {
+        "title": "Aun no hay trazas",
+        "description": "Las trazas filtradas apareceran aqui cuando existan evaluaciones."
+      },
+      "filters": {
+        "search": "Buscar request id…",
+        "rule": "Rule",
+        "all": "Todas",
+        "cacheStatus": "Estado de cache",
+        "redis": "Usado Redis"
+      }
+    },
+    "ruleDrawer": {
+      "title": "Detalle de rule",
+      "externalCalls": "Llamadas externas",
+      "traces": "Trazas recientes",
+      "noExternalCalls": "Esta rule no usa validadores externos.",
+      "noTraces": "Aun no se registran trazas para esta rule.",
+      "loading": "Cargando detalle de la rule…"
+    }
   },
   "builder": {
     "steps": {

@@ -154,6 +154,7 @@ type mockCache struct {
 	data      map[string]*Experiment // "wsKey:featureKey" -> exp
 	getCalled bool
 	setCalled bool
+	lastTTL   time.Duration
 }
 
 func newMockCache() *mockCache {
@@ -168,8 +169,9 @@ func (m *mockCache) GetRunning(_ context.Context, workspaceKey, featureKey strin
 	return exp, ok
 }
 
-func (m *mockCache) SetRunning(_ context.Context, workspaceKey, featureKey string, exp *Experiment) {
+func (m *mockCache) SetRunning(_ context.Context, workspaceKey, featureKey string, exp *Experiment, ttl time.Duration) {
 	m.setCalled = true
+	m.lastTTL = ttl
 	m.data[workspaceKey+":"+featureKey] = exp
 }
 
@@ -898,7 +900,7 @@ func TestFindRunning_CacheHit(t *testing.T) {
 	t.Parallel()
 	repo := newMockExperimentRepo()
 	cache := newMockCache()
-	cachedExp := &Experiment{ID: "cached-exp", FeatureKey: "feat-1", Status: StatusRunning}
+	cachedExp := &Experiment{ID: "cached-exp", FeatureKey: "feat-1", Status: StatusRunning, LookupCacheEnabled: true, LookupCacheTTLSeconds: 60}
 	cache.data["ws-test:feat-1"] = cachedExp
 
 	svc := newTestService(repo, newMockExposureRepo(), newMockConversionRepo(), newMockFeatureRepo(), cache)
@@ -924,7 +926,7 @@ func TestFindRunning_CacheHit(t *testing.T) {
 func TestFindRunning_CacheMiss(t *testing.T) {
 	t.Parallel()
 	repo := newMockExperimentRepo()
-	repo.running["feat-1"] = &Experiment{ID: "repo-exp", FeatureKey: "feat-1", Status: StatusRunning}
+	repo.running["feat-1"] = &Experiment{ID: "repo-exp", FeatureKey: "feat-1", Status: StatusRunning, LookupCacheEnabled: true, LookupCacheTTLSeconds: 60}
 	cache := newMockCache()
 
 	svc := newTestService(repo, newMockExposureRepo(), newMockConversionRepo(), newMockFeatureRepo(), cache)
@@ -943,6 +945,9 @@ func TestFindRunning_CacheMiss(t *testing.T) {
 	if !cache.setCalled {
 		t.Fatal("expected cache.SetRunning to be called after miss")
 	}
+	if cache.lastTTL != 60*time.Second {
+		t.Fatalf("lastTTL = %s, want 60s", cache.lastTTL)
+	}
 }
 
 func TestFindRunning_NilCache(t *testing.T) {
@@ -960,5 +965,35 @@ func TestFindRunning_NilCache(t *testing.T) {
 	}
 	if exp == nil || exp.ID != "repo-exp" {
 		t.Fatalf("expected repo experiment, got %v", exp)
+	}
+}
+
+func TestFindRunning_DoesNotWriteCacheWhenDisabled(t *testing.T) {
+	t.Parallel()
+	repo := newMockExperimentRepo()
+	repo.running["feat-1"] = &Experiment{
+		ID:                    "repo-exp",
+		FeatureKey:            "feat-1",
+		Status:                StatusRunning,
+		LookupCacheEnabled:    false,
+		LookupCacheTTLSeconds: 60,
+	}
+	cache := newMockCache()
+
+	svc := newTestService(repo, newMockExposureRepo(), newMockConversionRepo(), newMockFeatureRepo(), cache)
+
+	ctx := ctxWithWorkspace()
+	exp, err := svc.FindRunningByFeatureKey(ctx, "feat-1")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if exp == nil || exp.ID != "repo-exp" {
+		t.Fatalf("expected repo experiment, got %v", exp)
+	}
+	if !cache.getCalled {
+		t.Fatal("expected cache.GetRunning to be called")
+	}
+	if cache.setCalled {
+		t.Fatal("expected cache.SetRunning to be skipped when cache disabled")
 	}
 }

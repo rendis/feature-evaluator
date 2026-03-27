@@ -84,10 +84,12 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 
 	// Repositories
 	memberRepo := postgres.NewMemberRepo(postgresDB)
-	featureRepo := postgres.NewFeatureRepo(postgresDB)
+	baseFeatureRepo := postgres.NewFeatureRepo(postgresDB)
+	featureRepo := redisclient.NewCachedFeatureRepo(baseFeatureRepo, redis)
 	segmentRepo := postgres.NewSegmentRepo(postgresDB)
 	segmentRecordRepo := postgres.NewSegmentRecordRepo(postgresDB)
 	evalErrorRepo := postgres.NewEvalErrorRepo(postgresDB)
+	evalTraceRepo := postgres.NewEvalTraceRepo(postgresDB)
 	apiKeyRepo := postgres.NewAPIKeyRepo(postgresDB)
 	authProfileRepo := postgres.NewAuthProfileRepo(postgresDB)
 	externalAPIRepo := postgres.NewExternalAPIRepo(postgresDB)
@@ -142,6 +144,8 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 	extCaller := external.NewCaller(redis, secretCipher)
 	extAPIResolver := external.NewAPIResolver(externalAPISvc, extCaller)
 	evalSvc.SetExternalAPIResolver(extAPIResolver)
+	observabilitySvc := evalmetrics.NewObservabilityService(redis, evalTraceRepo)
+	evalSvc.SetObserver(observabilitySvc)
 
 	// Metrics collector
 	metricsCollector := evalmetrics.NewCollector(redis)
@@ -191,6 +195,7 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 	ofrepHandler := handler.NewOFREPHandler(evalSvc, metricsCollector)
 	segmentHandler := handler.NewSegmentHandler(segmentSvc, changelogSvc)
 	auditHandler := handler.NewAuditHandler(auditSvc)
+	featureObservabilityHandler := handler.NewFeatureObservabilityHandler(observabilitySvc)
 	dashboardHandler := handler.NewDashboardHandler(featureSvc, segmentSvc, auditSvc, metricsCollector, postgresDB, redis)
 	apiKeyHandler := handler.NewAPIKeyHandler(apiKeySvc)
 	metricsHandler := handler.NewMetricsHandler(metricsCollector)
@@ -369,6 +374,13 @@ func New(cfg *config.Config, postgresDB *postgres.Client, redis *redisclient.Cli
 	featuresWrite.PUT("/:key/rules/reorder", ruleHandler.Reorder)
 	featuresWrite.POST("/:key/expression/test", ruleHandler.FeatureTestExpression)
 	featuresWrite.POST("/:key/schedules", scheduleHandler.Create)
+
+	featuresObservability := admin.Group("/features")
+	featuresObservability.Use(middleware.RequirePermission(member.PermAuditRead))
+	featuresObservability.GET("/:key/observability/overview", featureObservabilityHandler.Overview)
+	featuresObservability.GET("/:key/observability/rules", featureObservabilityHandler.Rules)
+	featuresObservability.GET("/:key/observability/rules/:ruleId", featureObservabilityHandler.Rule)
+	featuresObservability.GET("/:key/observability/traces", featureObservabilityHandler.Traces)
 
 	featuresRead.GET("/:key/schedules", scheduleHandler.List)
 

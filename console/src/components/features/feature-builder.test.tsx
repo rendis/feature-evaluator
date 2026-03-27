@@ -72,6 +72,17 @@ describe('FeatureBuilder', () => {
     expect(keyInput.value).toBe('mi_flag_a_test_2026');
   });
 
+  it('shows evaluation cache controls in the config step', async () => {
+    const user = userEvent.setup();
+
+    render(<FeatureBuilder />);
+
+    await user.click(screen.getByRole('button', { name: 'Configuracion' }));
+
+    expect(screen.getByRole('switch', { name: 'cache.feature.enabled' })).toBeInTheDocument();
+    expect(screen.getByLabelText('cache.feature.ttl')).toBeInTheDocument();
+  });
+
   it('shows the global loading modal while creating a feature', () => {
     featureMutationState.createPending = true;
 

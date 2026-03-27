@@ -15,6 +15,8 @@ describe('rule conditions hydration', () => {
         conditionKind: 'externalApi',
         externalApiKey: 'payment-validator',
         externalApiName: '',
+        cacheEnabled: true,
+        cacheTTL: 300,
         paramMappings: [],
         negate: false,
       },
@@ -41,6 +43,8 @@ describe('rule conditions hydration', () => {
     const externalApiBindings: ExternalApiBinding[] = [
       {
         externalApiKey: 'payment-validator',
+        cacheEnabled: true,
+        cacheTTL: 120,
         paramMappings: [
           {
             paramName: 'userId',
@@ -55,7 +59,6 @@ describe('rule conditions hydration', () => {
           },
         ],
         failMode: 'open',
-        cacheTTL: 0,
       },
     ];
     const externalApis: ExternalApi[] = [
@@ -126,12 +129,13 @@ describe('rule conditions hydration', () => {
     const externalApiBindings: ExternalApiBinding[] = [
       {
         externalApiKey: 'payment-validator',
+        cacheEnabled: false,
+        cacheTTL: 0,
         paramMappings: [
           { paramName: 'userId', mode: 'input', inputPath: 'headers.userId' },
           { paramName: 'legacyParam', mode: 'literal', literalValue: 'legacy' },
         ],
         failMode: 'open',
-        cacheTTL: 0,
       },
     ];
     const externalApis: ExternalApi[] = [
@@ -197,6 +201,8 @@ describe('rule conditions hydration', () => {
     const externalApiBindings: ExternalApiBinding[] = [
       {
         externalApiKey: 'payment-validator',
+        cacheEnabled: false,
+        cacheTTL: 0,
         paramMappings: [
           {
             paramName: 'userId',
@@ -205,7 +211,6 @@ describe('rule conditions hydration', () => {
           },
         ],
         failMode: 'open',
-        cacheTTL: 0,
       },
     ];
 

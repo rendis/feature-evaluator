@@ -70,3 +70,33 @@ func TestValidateProfileOIDCStandardRequiresIssuerAndAudience(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateProfileCustomNormalizesCacheConfig(t *testing.T) {
+	t.Parallel()
+
+	profile := &Profile{
+		Type:            TypeCustom,
+		CacheEnabled:    true,
+		CacheTTLSeconds: 5,
+		Config: map[string]any{
+			"url":            "https://example.com/auth",
+			"method":         "POST",
+			"headers":        []any{},
+			"body":           []any{},
+			"requestHeaders": []any{},
+			"successRule": map[string]any{
+				"type": "any_2xx",
+			},
+		},
+	}
+
+	if err := ValidateProfile(profile, nil, true, false); err != nil {
+		t.Fatalf("ValidateProfile() error = %v", err)
+	}
+	if !profile.CacheEnabled {
+		t.Fatal("expected cache to remain enabled for custom profile")
+	}
+	if profile.CacheTTLSeconds != 30 {
+		t.Fatalf("CacheTTLSeconds = %d, want 30", profile.CacheTTLSeconds)
+	}
+}

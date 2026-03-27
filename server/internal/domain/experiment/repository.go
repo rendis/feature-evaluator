@@ -1,11 +1,14 @@
 package experiment
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 // Cache defines the interface for caching running experiments.
 type Cache interface {
 	GetRunning(ctx context.Context, workspaceKey, featureKey string) (*Experiment, bool)
-	SetRunning(ctx context.Context, workspaceKey, featureKey string, exp *Experiment)
+	SetRunning(ctx context.Context, workspaceKey, featureKey string, exp *Experiment, ttl time.Duration)
 	Invalidate(ctx context.Context, workspaceKey, featureKey string)
 }
 

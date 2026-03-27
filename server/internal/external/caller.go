@@ -3,6 +3,8 @@ package external
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,6 +17,8 @@ import (
 	"time"
 
 	"github.com/rendis/feature-evaluator/internal/domain/externalapi"
+	"github.com/rendis/feature-evaluator/internal/domain/feature"
+	"github.com/rendis/feature-evaluator/internal/domain/workspace"
 	"github.com/rendis/feature-evaluator/internal/secrets"
 	redisclient "github.com/rendis/feature-evaluator/internal/storage/redis"
 )
@@ -95,26 +99,31 @@ func (c *Caller) CBManager() *CircuitBreakerManager {
 	return c.cbManager
 }
 
-// CallExternalAPI executes a reusable external API request and returns whether it passed.
+// CallExternalAPI executes a reusable external API request and returns whether it passed plus the HTTP status.
 func (c *Caller) CallExternalAPI(
 	ctx context.Context,
 	api *externalapi.ExternalAPI,
+	binding feature.ExternalAPIBinding,
 	paramValues map[string]any,
 	secretValues map[string]string,
-) (bool, error) {
+) (*CallResult, error) {
+	if cached := c.getCachedCallResult(ctx, api, binding, paramValues); cached != nil {
+		return cached, nil
+	}
+
 	expressionVars, err := buildExternalAPIExpressionVars(api, paramValues)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	rendered, err := RenderExternalAPIRequest(api.Request, api.Params, paramValues, secretValues)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	callResult, err := c.executeRenderedRequest(ctx, rendered, 10*time.Second, nil)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
 	passed, err := EvaluateExternalAPIResponse(
@@ -133,9 +142,13 @@ func (c *Caller) CallExternalAPI(
 			"apiKey", api.Key,
 			"error", err,
 		)
-		return false, nil
+		result := &CallResult{Passed: false, HTTPStatus: callResult.HTTPStatus}
+		c.setCachedCallResult(ctx, api, binding, paramValues, result)
+		return result, nil
 	}
-	return passed, nil
+	result := &CallResult{Passed: passed, HTTPStatus: callResult.HTTPStatus}
+	c.setCachedCallResult(ctx, api, binding, paramValues, result)
+	return result, nil
 }
 
 // TestExternalAPI executes one reusable external API request and returns debug details.
@@ -197,6 +210,83 @@ func requestBodyPreview(body []byte) any {
 		return parsed
 	}
 	return string(body)
+}
+
+type externalCallCachePayload struct {
+	Passed     bool `json:"passed"`
+	HTTPStatus int  `json:"httpStatus"`
+}
+
+func (c *Caller) getCachedCallResult(
+	ctx context.Context,
+	api *externalapi.ExternalAPI,
+	binding feature.ExternalAPIBinding,
+	paramValues map[string]any,
+) *CallResult {
+	if c.redis == nil || !binding.CacheEnabled || binding.CacheTTL <= 0 {
+		return nil
+	}
+	key, err := externalCallCacheKey(ctx, api, paramValues)
+	if err != nil {
+		return nil
+	}
+	raw, _ := c.redis.Get(ctx, key)
+	if raw == "" {
+		return nil
+	}
+	var payload externalCallCachePayload
+	if err := json.Unmarshal([]byte(raw), &payload); err != nil {
+		_ = c.redis.Del(ctx, key)
+		return nil
+	}
+	return &CallResult{
+		Passed:     payload.Passed,
+		Cached:     true,
+		HTTPStatus: payload.HTTPStatus,
+	}
+}
+
+func (c *Caller) setCachedCallResult(
+	ctx context.Context,
+	api *externalapi.ExternalAPI,
+	binding feature.ExternalAPIBinding,
+	paramValues map[string]any,
+	result *CallResult,
+) {
+	if c.redis == nil || result == nil || !binding.CacheEnabled || binding.CacheTTL <= 0 {
+		return
+	}
+	key, err := externalCallCacheKey(ctx, api, paramValues)
+	if err != nil {
+		return
+	}
+	payload, err := json.Marshal(externalCallCachePayload{
+		Passed:     result.Passed,
+		HTTPStatus: result.HTTPStatus,
+	})
+	if err != nil {
+		return
+	}
+	_ = c.redis.Set(ctx, key, payload, time.Duration(binding.CacheTTL)*time.Second)
+}
+
+func externalCallCacheKey(ctx context.Context, api *externalapi.ExternalAPI, paramValues map[string]any) (string, error) {
+	payload, err := json.Marshal(struct {
+		Workspace string         `json:"workspace"`
+		API       string         `json:"api"`
+		Version   int            `json:"version"`
+		Params    map[string]any `json:"params"`
+	}{
+		Workspace: workspace.KeyFromContext(ctx),
+		API:       api.Key,
+		Version:   api.Version,
+		Params:    paramValues,
+	})
+	if err != nil {
+		return "", err
+	}
+	sum := sha256.Sum256(payload)
+	return redisclient.ExternalCallKey(hex.EncodeToString(sum[:])), nil
 }
 
 func previewHeaderStrings(headers http.Header) map[string]string {

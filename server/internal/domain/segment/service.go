@@ -2,9 +2,13 @@ package segment
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
+
+	"github.com/rendis/feature-evaluator/internal/domain/observability"
+	"github.com/rendis/feature-evaluator/pkg/apierror"
 )
 
 // TxManager coordinates multi-step persistence operations under one transaction.
@@ -17,7 +21,11 @@ type Cache interface {
 	// GetMembership returns the cached membership value ("1"/"0") and whether it was found.
 	GetMembership(ctx context.Context, segmentKey, userID, tenantID string) (isMember bool, found bool)
 	// SetMembership caches the membership result with TTL.
-	SetMembership(ctx context.Context, segmentKey, userID, tenantID string, isMember bool)
+	SetMembership(ctx context.Context, segmentKey, userID, tenantID string, isMember bool, ttl time.Duration)
+	// GetRecord returns the cached record and whether it was found.
+	GetRecord(ctx context.Context, segmentKey, datasetVersion, recordKey string) (*Record, bool)
+	// SetRecord caches a record with TTL.
+	SetRecord(ctx context.Context, segmentKey, datasetVersion, recordKey string, record *Record, ttl time.Duration)
 	// InvalidateSegment removes all cached membership entries for a segment.
 	InvalidateSegment(ctx context.Context, segmentKey string)
 }
@@ -47,6 +55,7 @@ func (s *Service) Create(ctx context.Context, seg *Segment) error {
 	if err := ValidateNormalizedKey(seg.Key); err != nil {
 		return err
 	}
+	seg.NormalizeCacheConfig()
 	seg.CreatedAt = now
 	seg.UpdatedAt = now
 	seg.RecordCount = 0
@@ -67,8 +76,15 @@ func (s *Service) GetByKey(ctx context.Context, key string) (*Segment, error) {
 
 // Update updates an existing segment.
 func (s *Service) Update(ctx context.Context, seg *Segment) error {
+	seg.NormalizeCacheConfig()
 	seg.UpdatedAt = time.Now().UTC()
-	return s.repo.Update(ctx, seg)
+	if err := s.repo.Update(ctx, seg); err != nil {
+		return err
+	}
+	if s.cache != nil {
+		s.cache.InvalidateSegment(ctx, seg.Key)
+	}
+	return nil
 }
 
 // Delete removes a segment and its records.
@@ -115,11 +131,26 @@ func (s *Service) ListRecords(ctx context.Context, params RecordListParams) (*Re
 
 // GetRecordByKey returns a single record from the active dataset version.
 func (s *Service) GetRecordByKey(ctx context.Context, segmentKey, recordKey string) (*Record, error) {
+	trace, _ := observability.TraceRecorderFromContext(ctx)
+	stepStart := time.Now()
 	seg, err := s.GetByKey(ctx, segmentKey)
 	if err != nil {
 		return nil, err
 	}
-	return s.recordRepo.GetRecordByKey(ctx, segmentKey, seg.ActiveDatasetVersion, recordKey)
+	if record, found := s.cachedRecord(ctx, seg, segmentKey, recordKey); found {
+		s.recordRecordTrace(trace, segmentKey, seg, stepStart, observability.CacheStatusHit, "cached")
+		return record, nil
+	}
+	record, err := s.recordRepo.GetRecordByKey(ctx, segmentKey, seg.ActiveDatasetVersion, recordKey)
+	if err != nil {
+		s.recordRecordTrace(trace, segmentKey, seg, stepStart, recordCacheStatusForError(seg, err), recordCacheOutcomeForError(seg, err))
+		return nil, err
+	}
+	if s.shouldCacheRecord(seg) && record != nil {
+		s.cache.SetRecord(ctx, segmentKey, seg.ActiveDatasetVersion, recordKey, record, time.Duration(seg.RecordCacheTTLSeconds)*time.Second)
+	}
+	s.recordRecordTrace(trace, segmentKey, seg, stepStart, recordCacheStatusForComputed(seg), "computed")
+	return record, nil
 }
 
 // ReplaceRecords imports a new dataset version for a segment.
@@ -212,16 +243,17 @@ func (s *Service) ReplaceRecords(ctx context.Context, segmentKey string, input R
 
 // IsMember keeps current rule evaluation compiling by treating userID as the lookup key.
 func (s *Service) IsMember(ctx context.Context, segmentKey, userID, tenantID string) (bool, error) {
-	// Check cache first
-	if s.cache != nil {
-		if isMember, found := s.cache.GetMembership(ctx, segmentKey, userID, tenantID); found {
-			return isMember, nil
-		}
-	}
-
+	trace, _ := observability.TraceRecorderFromContext(ctx)
+	stepStart := time.Now()
 	seg, err := s.GetByKey(ctx, segmentKey)
 	if err != nil {
 		return false, err
+	}
+
+	// Check cache first, but only when explicitly enabled for the segment.
+	if isMember, found := s.cachedMembership(ctx, seg, segmentKey, userID, tenantID); found {
+		s.recordMembershipTrace(trace, segmentKey, seg, stepStart, observability.CacheStatusHit, "cached")
+		return isMember, nil
 	}
 
 	if seg.RecordKeyPath != "" && !isUserIDCompatibleKeyPath(seg.RecordKeyPath) {
@@ -237,12 +269,101 @@ func (s *Service) IsMember(ctx context.Context, segmentKey, userID, tenantID str
 		return false, err
 	}
 
-	// Store in cache
-	if s.cache != nil {
-		s.cache.SetMembership(ctx, segmentKey, userID, tenantID, result)
+	// Store in cache when enabled.
+	if s.shouldCacheMembership(seg) {
+		s.cache.SetMembership(ctx, segmentKey, userID, tenantID, result, time.Duration(seg.MembershipCacheTTLSeconds)*time.Second)
 	}
+	s.recordMembershipTrace(trace, segmentKey, seg, stepStart, recordMembershipCacheStatus(seg), "computed")
 
 	return result, nil
+}
+
+func (s *Service) cachedRecord(ctx context.Context, seg *Segment, segmentKey, recordKey string) (*Record, bool) {
+	if !s.shouldCacheRecord(seg) {
+		return nil, false
+	}
+	return s.cache.GetRecord(ctx, segmentKey, seg.ActiveDatasetVersion, recordKey)
+}
+
+func (s *Service) shouldCacheRecord(seg *Segment) bool {
+	return s.cache != nil && seg.RecordCacheEnabled && seg.RecordCacheTTLSeconds > 0
+}
+
+func (s *Service) cachedMembership(ctx context.Context, seg *Segment, segmentKey, userID, tenantID string) (bool, bool) {
+	if !s.shouldCacheMembership(seg) {
+		return false, false
+	}
+	return s.cache.GetMembership(ctx, segmentKey, userID, tenantID)
+}
+
+func (s *Service) shouldCacheMembership(seg *Segment) bool {
+	return s.cache != nil && seg.MembershipCacheEnabled && seg.MembershipCacheTTLSeconds > 0
+}
+
+func (s *Service) recordRecordTrace(trace observability.TraceRecorder, segmentKey string, seg *Segment, stepStart time.Time, status observability.CacheStatus, outcome string) {
+	if trace == nil {
+		return
+	}
+	trace.RecordComponent(observability.ComponentTrace{
+		Name:         "segment_record:" + segmentKey,
+		CacheBackend: observability.CacheBackendRedis,
+		CacheEnabled: seg.RecordCacheEnabled,
+		CacheStatus:  status,
+		TTLSeconds:   seg.RecordCacheTTLSeconds,
+		DurationMs:   time.Since(stepStart).Milliseconds(),
+		Outcome:      outcome,
+	})
+}
+
+func (s *Service) recordMembershipTrace(trace observability.TraceRecorder, segmentKey string, seg *Segment, stepStart time.Time, status observability.CacheStatus, outcome string) {
+	if trace == nil {
+		return
+	}
+	trace.RecordComponent(observability.ComponentTrace{
+		Name:         "segment_membership:" + segmentKey,
+		CacheBackend: observability.CacheBackendRedis,
+		CacheEnabled: seg.MembershipCacheEnabled,
+		CacheStatus:  status,
+		TTLSeconds:   seg.MembershipCacheTTLSeconds,
+		DurationMs:   time.Since(stepStart).Milliseconds(),
+		Outcome:      outcome,
+	})
+}
+
+func recordCacheStatusForError(seg *Segment, err error) observability.CacheStatus {
+	if !seg.RecordCacheEnabled || seg.RecordCacheTTLSeconds <= 0 {
+		return observability.CacheStatusDisabled
+	}
+	var apiErr *apierror.APIError
+	if errors.As(err, &apiErr) && apiErr.Code == apierror.CodeNotFound {
+		return observability.CacheStatusMiss
+	}
+	return observability.CacheStatusComputed
+}
+
+func recordCacheOutcomeForError(seg *Segment, err error) string {
+	if !seg.RecordCacheEnabled || seg.RecordCacheTTLSeconds <= 0 {
+		return "error"
+	}
+	var apiErr *apierror.APIError
+	if errors.As(err, &apiErr) && apiErr.Code == apierror.CodeNotFound {
+		return "not_found"
+	}
+	return "error"
+}
+
+func recordCacheStatusForComputed(seg *Segment) observability.CacheStatus {
+	if !seg.RecordCacheEnabled || seg.RecordCacheTTLSeconds <= 0 {
+		return observability.CacheStatusDisabled
+	}
+	return observability.CacheStatusMiss
+}
+
+func recordMembershipCacheStatus(seg *Segment) observability.CacheStatus {
+	if !seg.MembershipCacheEnabled || seg.MembershipCacheTTLSeconds <= 0 {
+		return observability.CacheStatusDisabled
+	}
+	return observability.CacheStatusMiss
 }
 
 // isUserIDCompatibleKeyPath returns true if the segment's recordKeyPath

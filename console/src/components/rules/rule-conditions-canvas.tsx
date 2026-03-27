@@ -78,6 +78,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
@@ -905,6 +906,47 @@ function ExternalApiConditionCard({
           </div>
         </div>
 
+        <div className="rounded-xl border border-border/60 bg-muted/5 p-3">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3">
+              <Switch
+                checked={condition.cacheEnabled}
+                aria-label="Cache de API externa"
+                onCheckedChange={(checked) =>
+                  onChange({
+                    ...condition,
+                    cacheEnabled: checked,
+                    cacheTTL: checked ? condition.cacheTTL || 300 : 0,
+                  })
+                }
+              />
+              <div>
+                <p className="text-sm font-medium">Cache de API externa</p>
+                <p className="text-muted-foreground text-xs">
+                  Habilita Redis para el resultado final de esta validacion.
+                </p>
+              </div>
+            </div>
+            <div className="flex w-full items-center gap-2 md:max-w-64">
+              <Label htmlFor={`external-api-cache-ttl-${condition.id}`} className="shrink-0 text-sm">
+                TTL
+              </Label>
+              <Input
+                id={`external-api-cache-ttl-${condition.id}`}
+                value={String(condition.cacheTTL)}
+                disabled={!condition.cacheEnabled}
+                onChange={(event) =>
+                  onChange({
+                    ...condition,
+                    cacheTTL: normalizePositiveInt(event.target.value, condition.cacheTTL || 300),
+                  })
+                }
+                placeholder="300"
+              />
+            </div>
+          </div>
+        </div>
+
         {condition.paramMappings.length > 0 ? (
           <div className="rounded-xl border border-border/60 bg-muted/5 p-3 space-y-2">
             <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -1280,10 +1322,15 @@ function ConditionCardWrapper({
         onClick={onRemove}
       >
         <Trash2 className="h-4 w-4" />
-        <span className="sr-only">Eliminar condicion</span>
-      </Button>
-    </div>
-  );
+      <span className="sr-only">Eliminar condicion</span>
+    </Button>
+  </div>
+);
+}
+
+function normalizePositiveInt(raw: string, fallback: number) {
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 // ---------------------------------------------------------------------------

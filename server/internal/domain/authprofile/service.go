@@ -140,6 +140,7 @@ func (s *Service) Update( //nolint:cyclop,funlen // update validates many option
 	existing.Active = profile.Active
 	existing.Type = profile.Type
 	existing.Config = profile.Config
+	existing.CacheEnabled = profile.CacheEnabled
 	existing.CacheTTLSeconds = profile.CacheTTLSeconds
 	existing.UpdatedAt = time.Now().UTC()
 	existing.UpdatedBy = profile.UpdatedBy

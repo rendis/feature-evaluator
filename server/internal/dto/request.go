@@ -24,41 +24,45 @@ type TransferOwnershipRequest struct {
 
 // CreateFeatureRequest is the request body for creating a feature.
 type CreateFeatureRequest struct {
-	Key            string               `json:"key" binding:"required"`
-	Name           string               `json:"name" binding:"required"`
-	Description    string               `json:"description"`
-	Enabled        bool                 `json:"enabled"`
-	ValueType      string               `json:"valueType" binding:"required"`
-	DefaultValue   any                  `json:"defaultValue" binding:"required"`
-	ActiveFrom     *string              `json:"activeFrom"`
-	ActiveUntil    *string              `json:"activeUntil"`
-	Environments   []string             `json:"environments"`
-	AccessPolicy   string               `json:"accessPolicy"`
-	AuthProfileKey string               `json:"authProfileKey"`
-	InputContract  InputContractRequest `json:"inputContract"`
-	Metadata       map[string]any       `json:"metadata"`
-	Tags           []string             `json:"tags"`
-	TrialUntil     *string              `json:"trialUntil"`
-	TrialValue     any                  `json:"trialValue"`
+	Key                 string               `json:"key" binding:"required"`
+	Name                string               `json:"name" binding:"required"`
+	Description         string               `json:"description"`
+	Enabled             bool                 `json:"enabled"`
+	EvalCacheEnabled    bool                 `json:"evalCacheEnabled"`
+	EvalCacheTTLSeconds int                  `json:"evalCacheTTLSeconds"`
+	ValueType           string               `json:"valueType" binding:"required"`
+	DefaultValue        any                  `json:"defaultValue" binding:"required"`
+	ActiveFrom          *string              `json:"activeFrom"`
+	ActiveUntil         *string              `json:"activeUntil"`
+	Environments        []string             `json:"environments"`
+	AccessPolicy        string               `json:"accessPolicy"`
+	AuthProfileKey      string               `json:"authProfileKey"`
+	InputContract       InputContractRequest `json:"inputContract"`
+	Metadata            map[string]any       `json:"metadata"`
+	Tags                []string             `json:"tags"`
+	TrialUntil          *string              `json:"trialUntil"`
+	TrialValue          any                  `json:"trialValue"`
 }
 
 // UpdateFeatureRequest is the request body for updating a feature.
 type UpdateFeatureRequest struct {
-	Name           string               `json:"name" binding:"required"`
-	Description    string               `json:"description"`
-	Enabled        *bool                `json:"enabled"`
-	ValueType      string               `json:"valueType"`
-	DefaultValue   any                  `json:"defaultValue"`
-	ActiveFrom     *string              `json:"activeFrom"`
-	ActiveUntil    *string              `json:"activeUntil"`
-	Environments   []string             `json:"environments"`
-	AccessPolicy   string               `json:"accessPolicy"`
-	AuthProfileKey string               `json:"authProfileKey"`
-	InputContract  InputContractRequest `json:"inputContract"`
-	Metadata       map[string]any       `json:"metadata"`
-	Tags           []string             `json:"tags"`
-	TrialUntil     *string              `json:"trialUntil"`
-	TrialValue     any                  `json:"trialValue"`
+	Name                string               `json:"name" binding:"required"`
+	Description         string               `json:"description"`
+	Enabled             *bool                `json:"enabled"`
+	EvalCacheEnabled    *bool                `json:"evalCacheEnabled"`
+	EvalCacheTTLSeconds *int                 `json:"evalCacheTTLSeconds"`
+	ValueType           string               `json:"valueType"`
+	DefaultValue        any                  `json:"defaultValue"`
+	ActiveFrom          *string              `json:"activeFrom"`
+	ActiveUntil         *string              `json:"activeUntil"`
+	Environments        []string             `json:"environments"`
+	AccessPolicy        string               `json:"accessPolicy"`
+	AuthProfileKey      string               `json:"authProfileKey"`
+	InputContract       InputContractRequest `json:"inputContract"`
+	Metadata            map[string]any       `json:"metadata"`
+	Tags                []string             `json:"tags"`
+	TrialUntil          *string              `json:"trialUntil"`
+	TrialValue          any                  `json:"trialValue"`
 }
 
 // ToggleFeatureRequest is the request body for toggling a feature.
@@ -97,6 +101,7 @@ type ExternalAPIBindingRequest struct {
 	ExternalAPIKey string                `json:"externalApiKey" binding:"required"`
 	ParamMappings  []ParamMappingRequest `json:"paramMappings"`
 	FailMode       string                `json:"failMode"`
+	CacheEnabled   bool                  `json:"cacheEnabled"`
 	CacheTTL       int                   `json:"cacheTTL"`
 }
 
@@ -115,17 +120,25 @@ type ReorderRulesRequest struct {
 
 // CreateSegmentRequest is the request body for creating a segment.
 type CreateSegmentRequest struct {
-	Key         string         `json:"key" binding:"required"`
-	Name        string         `json:"name" binding:"required"`
-	Description string         `json:"description"`
-	Metadata    map[string]any `json:"metadata"`
+	Key                       string         `json:"key" binding:"required"`
+	Name                      string         `json:"name" binding:"required"`
+	Description               string         `json:"description"`
+	Metadata                  map[string]any `json:"metadata"`
+	MembershipCacheEnabled    bool           `json:"membershipCacheEnabled"`
+	MembershipCacheTTLSeconds int            `json:"membershipCacheTTLSeconds"`
+	RecordCacheEnabled        bool           `json:"recordCacheEnabled"`
+	RecordCacheTTLSeconds     int            `json:"recordCacheTTLSeconds"`
 }
 
 // UpdateSegmentRequest is the request body for updating a segment.
 type UpdateSegmentRequest struct {
-	Name        string         `json:"name" binding:"required"`
-	Description string         `json:"description"`
-	Metadata    map[string]any `json:"metadata"`
+	Name                      string         `json:"name" binding:"required"`
+	Description               string         `json:"description"`
+	Metadata                  map[string]any `json:"metadata"`
+	MembershipCacheEnabled    bool           `json:"membershipCacheEnabled"`
+	MembershipCacheTTLSeconds int            `json:"membershipCacheTTLSeconds"`
+	RecordCacheEnabled        bool           `json:"recordCacheEnabled"`
+	RecordCacheTTLSeconds     int            `json:"recordCacheTTLSeconds"`
 }
 
 // ImportSegmentDataRequest is the request body for importing dynamic segment records.
@@ -281,6 +294,7 @@ type CreateAuthProfileRequest struct {
 	Type            authprofile.Type  `json:"type" binding:"required"`
 	Active          bool              `json:"active"`
 	Config          map[string]any    `json:"config"`
+	CacheEnabled    bool              `json:"cacheEnabled"`
 	CacheTTLSeconds int               `json:"cacheTTLSeconds"`
 	SecretPayload   map[string]string `json:"secretPayload"`
 }
@@ -292,6 +306,7 @@ type UpdateAuthProfileRequest struct {
 	Type            authprofile.Type  `json:"type" binding:"required"`
 	Active          bool              `json:"active"`
 	Config          map[string]any    `json:"config"`
+	CacheEnabled    bool              `json:"cacheEnabled"`
 	CacheTTLSeconds int               `json:"cacheTTLSeconds"`
 	SecretPayload   map[string]string `json:"secretPayload"`
 	ReplaceSecret   bool              `json:"replaceSecret"`
@@ -303,6 +318,7 @@ type TestAuthProfileRequest struct {
 	Type            authprofile.Type            `json:"type" binding:"required"`
 	Active          bool                        `json:"active"`
 	Config          map[string]any              `json:"config"`
+	CacheEnabled    bool                        `json:"cacheEnabled"`
 	CacheTTLSeconds int                         `json:"cacheTTLSeconds"`
 	SecretPayload   map[string]string           `json:"secretPayload"`
 	TestRequest     TestAuthProfileRequestInput `json:"testRequest"`

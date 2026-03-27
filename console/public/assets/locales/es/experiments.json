@@ -40,6 +40,13 @@
     "success": "Experimento guardado",
     "error": "Error al guardar experimento"
   },
+  "cache": {
+    "lookup": {
+      "enabled": "Cache de lookup",
+      "help": "Cachea la resolucion del experimento activo para este feature.",
+      "ttl": "TTL de cache"
+    }
+  },
   "actions": {
     "start": "Iniciar",
     "pause": "Pausar",

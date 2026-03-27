@@ -10,6 +10,7 @@ export interface CreateAuthProfileRequest {
   active: boolean;
   type: AuthProfileType;
   config?: Record<string, unknown>;
+  cacheEnabled?: boolean;
   cacheTTLSeconds?: number;
   secretPayload?: Record<string, string>;
 }
@@ -20,6 +21,7 @@ export interface UpdateAuthProfileRequest {
   active: boolean;
   type: AuthProfileType;
   config?: Record<string, unknown>;
+  cacheEnabled?: boolean;
   cacheTTLSeconds?: number;
   secretPayload?: Record<string, string>;
   replaceSecret?: boolean;
@@ -30,6 +32,7 @@ export interface TestAuthProfileRequest {
   active: boolean;
   type: AuthProfileType;
   config?: Record<string, unknown>;
+  cacheEnabled?: boolean;
   cacheTTLSeconds?: number;
   secretPayload?: Record<string, string>;
   testRequest: {

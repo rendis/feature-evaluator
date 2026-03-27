@@ -76,7 +76,11 @@
   "detail": {
     "rulesCount_one": "{{count}} rule",
     "rulesCount_other": "{{count}} rules",
-    "noRules": "No rules configured"
+    "noRules": "No rules configured",
+    "tabs": {
+      "summary": "Summary",
+      "observability": "Observability"
+    }
   },
   "empty": {
     "title": "No features",
@@ -112,6 +116,47 @@
     "value": "Value during trial",
     "helper": "While the trial is active, rules will be ignored and this value will be returned",
     "valueRequired": "Trial value is required when a date is configured"
+  },
+  "cache": {
+    "title": "Cache",
+    "disabled": "Disabled",
+    "feature": {
+      "enabled": "Evaluation cache",
+      "help": "Cache this feature evaluation snapshot in Redis.",
+      "ttl": "Cache TTL"
+    }
+  },
+  "observability": {
+    "title": "Observability",
+    "rules": {
+      "title": "Rules",
+      "empty": {
+        "title": "No rule metrics yet",
+        "description": "Run evaluations to see latency, cache behavior and external calls."
+      }
+    },
+    "traces": {
+      "title": "Traces",
+      "empty": {
+        "title": "No traces yet",
+        "description": "Filtered traces will appear here once evaluations are recorded."
+      },
+      "filters": {
+        "search": "Search request id…",
+        "rule": "Rule",
+        "all": "All",
+        "cacheStatus": "Cache status",
+        "redis": "Used Redis"
+      }
+    },
+    "ruleDrawer": {
+      "title": "Rule details",
+      "externalCalls": "External calls",
+      "traces": "Recent traces",
+      "noExternalCalls": "This rule does not use external validators.",
+      "noTraces": "No traces recorded for this rule yet.",
+      "loading": "Loading rule details…"
+    }
   },
   "builder": {
     "steps": {

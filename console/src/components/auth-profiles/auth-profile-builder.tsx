@@ -139,18 +139,19 @@ export function AuthProfileBuilder({ profile }: AuthProfileBuilderProps) {
 
     if (isEditing && profile) {
       updateAuthProfile.mutate(
-        {
-          key: profile.key,
-          data: {
-            key: payload.key,
-            name: payload.name,
-            active: payload.active,
-            type: payload.type,
-            config: payload.config,
-            cacheTTLSeconds: payload.cacheTTLSeconds,
-            secretPayload: cleanSecretPayload(payload.secretPayload),
-            replaceSecret: shouldReplaceSecrets(draft),
-          },
+          {
+            key: profile.key,
+            data: {
+              key: payload.key,
+              name: payload.name,
+              active: payload.active,
+              type: payload.type,
+              config: payload.config,
+              cacheEnabled: payload.cacheEnabled,
+              cacheTTLSeconds: payload.cacheTTLSeconds,
+              secretPayload: cleanSecretPayload(payload.secretPayload),
+              replaceSecret: shouldReplaceSecrets(draft),
+            },
         },
         {
           onSuccess: (saved) => {
@@ -210,17 +211,20 @@ export function AuthProfileBuilder({ profile }: AuthProfileBuilderProps) {
       return;
     }
 
-    const payload: TestAuthProfileRequest = {
+    const payload = buildPayload(draft, derivedKey);
+
+    const testPayload: TestAuthProfileRequest = {
       name: draft.name,
       active: draft.active,
       type: draft.type,
-      config: buildPayload(draft, derivedKey).config,
-      cacheTTLSeconds: buildPayload(draft, derivedKey).cacheTTLSeconds,
-      secretPayload: cleanSecretPayload(buildPayload(draft, derivedKey).secretPayload),
+      config: payload.config,
+      cacheEnabled: payload.cacheEnabled,
+      cacheTTLSeconds: payload.cacheTTLSeconds,
+      secretPayload: cleanSecretPayload(payload.secretPayload),
       testRequest: { headers, query, body },
     };
 
-    testAuthProfile.mutate(payload, {
+    testAuthProfile.mutate(testPayload, {
       onSuccess: (result) => {
         setTestResult(result);
         if (!result.attempted) {

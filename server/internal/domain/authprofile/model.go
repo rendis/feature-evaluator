@@ -31,6 +31,7 @@ type Profile struct {
 	Active                 bool           `json:"active"`
 	Type                   Type           `json:"type"`
 	Config                 map[string]any `json:"config,omitempty"`
+	CacheEnabled           bool           `json:"cacheEnabled,omitempty"`
 	CacheTTLSeconds        int            `json:"cacheTTLSeconds,omitempty"`
 	Version                int            `json:"version"`
 	SecretPayloadEncrypted string         `json:"-"`
@@ -44,10 +45,16 @@ type Profile struct {
 // Normalize applies defaults and bounds to runtime cache settings.
 func (p *Profile) Normalize() {
 	if p.Type == TypeAPIKey || p.Type == TypeOIDCStandard {
+		p.CacheEnabled = false
 		p.CacheTTLSeconds = 0
 		return
 	}
-	if p.CacheTTLSeconds == 0 {
+	if !p.CacheEnabled {
+		p.CacheTTLSeconds = 0
+		return
+	}
+	if p.CacheTTLSeconds <= 0 {
+		p.CacheTTLSeconds = 30
 		return
 	}
 	if p.CacheTTLSeconds < 30 {

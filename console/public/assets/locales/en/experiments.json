@@ -40,6 +40,13 @@
     "success": "Experiment saved",
     "error": "Error saving experiment"
   },
+  "cache": {
+    "lookup": {
+      "enabled": "Lookup cache",
+      "help": "Cache the active experiment resolution for this feature.",
+      "ttl": "Cache TTL"
+    }
+  },
   "actions": {
     "start": "Start",
     "pause": "Pause",

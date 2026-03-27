@@ -271,6 +271,7 @@ func (h *RuleHandler) toDomainExternalAPIBindings(c *gin.Context, bindings []dto
 			ExternalAPIKey: b.ExternalAPIKey,
 			ParamMappings:  mappings,
 			FailMode:       failMode,
+			CacheEnabled:   b.CacheEnabled,
 			CacheTTL:       b.CacheTTL,
 		})
 	}

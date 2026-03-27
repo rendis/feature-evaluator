@@ -135,6 +135,8 @@ function hydrateExternalApiCondition(
   return {
     ...condition,
     externalApiName: nextName,
+    cacheEnabled: binding?.cacheEnabled ?? condition.cacheEnabled,
+    cacheTTL: binding?.cacheTTL ?? condition.cacheTTL,
     paramMappings,
   };
 }

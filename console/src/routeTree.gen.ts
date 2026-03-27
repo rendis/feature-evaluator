@@ -42,6 +42,7 @@ import { Route as AuthenticatedSettingsExternalApisNewRouteImport } from './rout
 import { Route as AuthenticatedSettingsExternalApisKeyRouteImport } from './routes/_authenticated/settings/external-apis/$key'
 import { Route as AuthenticatedSettingsAuthProfilesNewRouteImport } from './routes/_authenticated/settings/auth-profiles/new'
 import { Route as AuthenticatedSettingsAuthProfilesKeyRouteImport } from './routes/_authenticated/settings/auth-profiles/$key'
+import { Route as AuthenticatedFeaturesFeatureKeyObservabilityRouteImport } from './routes/_authenticated/features/$featureKey/observability'
 import { Route as AuthenticatedFeaturesFeatureKeyEditRouteImport } from './routes/_authenticated/features/$featureKey/edit'
 import { Route as AuthenticatedSettingsPacksPackKeyIndexRouteImport } from './routes/_authenticated/settings/packs/$packKey/index'
 import { Route as AuthenticatedFeaturesFeatureKeyRulesNewRouteImport } from './routes/_authenticated/features/$featureKey/rules/new'
@@ -237,6 +238,12 @@ const AuthenticatedSettingsAuthProfilesKeyRoute =
     path: '/$key',
     getParentRoute: () => AuthenticatedSettingsAuthProfilesRoute,
   } as any)
+const AuthenticatedFeaturesFeatureKeyObservabilityRoute =
+  AuthenticatedFeaturesFeatureKeyObservabilityRouteImport.update({
+    id: '/observability',
+    path: '/observability',
+    getParentRoute: () => AuthenticatedFeaturesFeatureKeyRoute,
+  } as any)
 const AuthenticatedFeaturesFeatureKeyEditRoute =
   AuthenticatedFeaturesFeatureKeyEditRouteImport.update({
     id: '/edit',
@@ -286,6 +293,7 @@ export interface FileRoutesByFullPath {
   '/history/': typeof AuthenticatedHistoryIndexRoute
   '/segments/': typeof AuthenticatedSegmentsIndexRoute
   '/features/$featureKey/edit': typeof AuthenticatedFeaturesFeatureKeyEditRoute
+  '/features/$featureKey/observability': typeof AuthenticatedFeaturesFeatureKeyObservabilityRoute
   '/settings/auth-profiles/$key': typeof AuthenticatedSettingsAuthProfilesKeyRoute
   '/settings/auth-profiles/new': typeof AuthenticatedSettingsAuthProfilesNewRoute
   '/settings/external-apis/$key': typeof AuthenticatedSettingsExternalApisKeyRoute
@@ -318,6 +326,7 @@ export interface FileRoutesByTo {
   '/history': typeof AuthenticatedHistoryIndexRoute
   '/segments': typeof AuthenticatedSegmentsIndexRoute
   '/features/$featureKey/edit': typeof AuthenticatedFeaturesFeatureKeyEditRoute
+  '/features/$featureKey/observability': typeof AuthenticatedFeaturesFeatureKeyObservabilityRoute
   '/settings/auth-profiles/$key': typeof AuthenticatedSettingsAuthProfilesKeyRoute
   '/settings/auth-profiles/new': typeof AuthenticatedSettingsAuthProfilesNewRoute
   '/settings/external-apis/$key': typeof AuthenticatedSettingsExternalApisKeyRoute
@@ -357,6 +366,7 @@ export interface FileRoutesById {
   '/_authenticated/history/': typeof AuthenticatedHistoryIndexRoute
   '/_authenticated/segments/': typeof AuthenticatedSegmentsIndexRoute
   '/_authenticated/features/$featureKey/edit': typeof AuthenticatedFeaturesFeatureKeyEditRoute
+  '/_authenticated/features/$featureKey/observability': typeof AuthenticatedFeaturesFeatureKeyObservabilityRoute
   '/_authenticated/settings/auth-profiles/$key': typeof AuthenticatedSettingsAuthProfilesKeyRoute
   '/_authenticated/settings/auth-profiles/new': typeof AuthenticatedSettingsAuthProfilesNewRoute
   '/_authenticated/settings/external-apis/$key': typeof AuthenticatedSettingsExternalApisKeyRoute
@@ -397,6 +407,7 @@ export interface FileRouteTypes {
     | '/history/'
     | '/segments/'
     | '/features/$featureKey/edit'
+    | '/features/$featureKey/observability'
     | '/settings/auth-profiles/$key'
     | '/settings/auth-profiles/new'
     | '/settings/external-apis/$key'
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/segments'
     | '/features/$featureKey/edit'
+    | '/features/$featureKey/observability'
     | '/settings/auth-profiles/$key'
     | '/settings/auth-profiles/new'
     | '/settings/external-apis/$key'
@@ -467,6 +479,7 @@ export interface FileRouteTypes {
     | '/_authenticated/history/'
     | '/_authenticated/segments/'
     | '/_authenticated/features/$featureKey/edit'
+    | '/_authenticated/features/$featureKey/observability'
     | '/_authenticated/settings/auth-profiles/$key'
     | '/_authenticated/settings/auth-profiles/new'
     | '/_authenticated/settings/external-apis/$key'
@@ -722,6 +735,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsAuthProfilesKeyRouteImport
       parentRoute: typeof AuthenticatedSettingsAuthProfilesRoute
     }
+    '/_authenticated/features/$featureKey/observability': {
+      id: '/_authenticated/features/$featureKey/observability'
+      path: '/observability'
+      fullPath: '/features/$featureKey/observability'
+      preLoaderRoute: typeof AuthenticatedFeaturesFeatureKeyObservabilityRouteImport
+      parentRoute: typeof AuthenticatedFeaturesFeatureKeyRoute
+    }
     '/_authenticated/features/$featureKey/edit': {
       id: '/_authenticated/features/$featureKey/edit'
       path: '/edit'
@@ -785,6 +805,7 @@ const AuthenticatedHistoryRouteWithChildren =
 
 interface AuthenticatedFeaturesFeatureKeyRouteChildren {
   AuthenticatedFeaturesFeatureKeyEditRoute: typeof AuthenticatedFeaturesFeatureKeyEditRoute
+  AuthenticatedFeaturesFeatureKeyObservabilityRoute: typeof AuthenticatedFeaturesFeatureKeyObservabilityRoute
   AuthenticatedFeaturesFeatureKeyIndexRoute: typeof AuthenticatedFeaturesFeatureKeyIndexRoute
   AuthenticatedFeaturesFeatureKeyRulesNewRoute: typeof AuthenticatedFeaturesFeatureKeyRulesNewRoute
   AuthenticatedFeaturesFeatureKeyRulesRuleIdEditRoute: typeof AuthenticatedFeaturesFeatureKeyRulesRuleIdEditRoute
@@ -794,6 +815,8 @@ const AuthenticatedFeaturesFeatureKeyRouteChildren: AuthenticatedFeaturesFeature
   {
     AuthenticatedFeaturesFeatureKeyEditRoute:
       AuthenticatedFeaturesFeatureKeyEditRoute,
+    AuthenticatedFeaturesFeatureKeyObservabilityRoute:
+      AuthenticatedFeaturesFeatureKeyObservabilityRoute,
     AuthenticatedFeaturesFeatureKeyIndexRoute:
       AuthenticatedFeaturesFeatureKeyIndexRoute,
     AuthenticatedFeaturesFeatureKeyRulesNewRoute:

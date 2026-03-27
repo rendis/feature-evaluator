@@ -67,6 +67,8 @@ export interface BuilderExternalApiCondition {
   conditionKind: 'externalApi';
   externalApiKey: string;
   externalApiName: string;
+  cacheEnabled: boolean;
+  cacheTTL: number;
   paramMappings: BuilderExternalApiParamMapping[];
   negate: boolean;
 }
@@ -159,6 +161,8 @@ export function emptyExternalApiCondition(): BuilderExternalApiCondition {
     conditionKind: 'externalApi',
     externalApiKey: '',
     externalApiName: '',
+    cacheEnabled: false,
+    cacheTTL: 300,
     paramMappings: [],
     negate: false,
   };
@@ -314,7 +318,8 @@ function serializeExternalApiCondition(
           literalValue: m.mode === 'literal' ? m.literalValue : '',
         })),
       failMode: 'open',
-      cacheTTL: 0,
+      cacheEnabled: c.cacheEnabled,
+      cacheTTL: c.cacheEnabled ? c.cacheTTL : 0,
     });
   }
 
@@ -528,6 +533,8 @@ function parseExternalApiCondition(v: Record<string, unknown>): BuilderExternalA
     conditionKind: 'externalApi',
     externalApiKey: typeof v.externalApiKey === 'string' ? v.externalApiKey : '',
     externalApiName: typeof v.externalApiName === 'string' ? v.externalApiName : '',
+    cacheEnabled: v.cacheEnabled === true,
+    cacheTTL: typeof v.cacheTTL === 'number' && Number.isFinite(v.cacheTTL) ? v.cacheTTL : 300,
     paramMappings: rawMappings.map(parseParamMapping).filter(Boolean) as BuilderExternalApiParamMapping[],
     negate: v.negate === true,
   };

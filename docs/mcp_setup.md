@@ -14,6 +14,8 @@ Examples:
 - `fe_get_feature` — Get feature by key
 - `fe_evaluate` — Evaluate a single feature
 - `fe_bulk_evaluate` — Bulk evaluate features
+- `fe_get_feature_observability_overview` — Feature-level observability summary
+- `fe_get_feature_observability_traces` — Persisted evaluation traces for audit
 
 ## Prerequisites
 
@@ -134,6 +136,31 @@ mcp-openapi-proxy logout
 ```
 
 Set `MCP_OIDC_ISSUER` and `MCP_OIDC_CLIENT_ID` in your env or `.mcp.json` for OIDC to work. Remove `MCP_AUTH_TOKEN` when using OIDC — the proxy will use the OIDC token automatically.
+
+## New Observability + Cache Configuration Surface
+
+After regenerating Swagger, MCP will expose tools for:
+
+- `GET /admin/features/{key}/observability/overview`
+- `GET /admin/features/{key}/observability/rules`
+- `GET /admin/features/{key}/observability/rules/{ruleId}`
+- `GET /admin/features/{key}/observability/traces`
+
+The admin DTOs also now include user-configurable cache settings for:
+
+- features: `evalCacheEnabled`, `evalCacheTTLSeconds`
+- rule external bindings: `cacheEnabled`, `cacheTTL`
+- auth profiles: `cacheEnabled`, `cacheTTLSeconds`
+- segments: `membershipCacheEnabled`, `membershipCacheTTLSeconds`, `recordCacheEnabled`, `recordCacheTTLSeconds`
+- experiments: `lookupCacheEnabled`, `lookupCacheTTLSeconds`
+
+Recommended validation loop for agents:
+
+1. Read the feature and rule config.
+2. Confirm cache settings are enabled where expected.
+3. Evaluate traffic or reproduce with the eval endpoints.
+4. Inspect observability overview/rules.
+5. Use the traces endpoint filters (`ruleId`, `search`, `cacheStatus`, `usedRedis`) for request-level audit.
 
 ## Troubleshooting
 

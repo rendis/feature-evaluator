@@ -8,8 +8,10 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/rendis/feature-evaluator/internal/domain/feature"
+	"github.com/rendis/feature-evaluator/internal/domain/observability"
 	"github.com/rendis/feature-evaluator/internal/domain/segment"
 	"github.com/rendis/feature-evaluator/pkg/apierror"
 )
@@ -62,50 +64,83 @@ func ResolveSegmentSources(
 	}
 	results := make([]ResolvedSegmentSource, 0, len(rawBindings.Segments))
 	for _, binding := range rawBindings.Segments {
-		segmentKey := strings.TrimSpace(binding.SegmentKey)
-		lookupValue, found := resolveLookupPath(prepared, binding.LookupPath)
-		resolved := ResolvedSegmentSource{
-			SegmentKey:  segmentKey,
-			LookupPath:  binding.LookupPath,
-			LookupValue: lookupValue,
-			Found:       false,
-			Data:        map[string]any{},
-		}
-		prepared.Sources[segmentKey] = map[string]any{}
-
-		if segmentSvc == nil {
-			return nil, fmt.Errorf("segment service is not configured")
-		}
-		if !found {
-			results = append(results, resolved)
-			continue
-		}
-
-		recordKey := strings.TrimSpace(fmt.Sprintf("%v", lookupValue))
-		if recordKey == "" {
-			results = append(results, resolved)
-			continue
-		}
-
-		record, err := segmentSvc.GetRecordByKey(ctx, segmentKey, recordKey)
+		resolved, err := resolveSegmentSource(ctx, segmentSvc, prepared, binding)
 		if err != nil {
-			var apiErr *apierror.APIError
-			if errAs(err, &apiErr) && apiErr.Code == apierror.CodeNotFound {
-				results = append(results, resolved)
-				continue
-			}
-			return nil, fmt.Errorf("resolving segment %s with key %s: %w", segmentKey, recordKey, err)
+			return nil, err
 		}
-		attributes := record.Attributes
-		if attributes == nil {
-			attributes = map[string]any{}
-		}
-		prepared.Sources[segmentKey] = attributes
-		resolved.Found = true
-		resolved.Data = attributes
 		results = append(results, resolved)
 	}
 	return results, nil
+}
+
+func resolveSegmentSource(
+	ctx context.Context,
+	segmentSvc *segment.Service,
+	prepared *PreparedExpressionInput,
+	binding feature.SegmentSourceBinding,
+) (ResolvedSegmentSource, error) {
+	stepStart := time.Now()
+	segmentKey := strings.TrimSpace(binding.SegmentKey)
+	resolved := ResolvedSegmentSource{
+		SegmentKey: segmentKey,
+		LookupPath: binding.LookupPath,
+		Data:       map[string]any{},
+	}
+	prepared.Sources[segmentKey] = map[string]any{}
+
+	if segmentSvc == nil {
+		return resolved, fmt.Errorf("segment service is not configured")
+	}
+
+	lookupValue, found := resolveLookupPath(prepared, binding.LookupPath)
+	resolved.LookupValue = lookupValue
+	if !found {
+		recordSegmentSourceTrace(ctx, segmentKey, stepStart, observability.CacheStatusNotApplicable, "not_applicable")
+		return resolved, nil
+	}
+
+	recordKey := strings.TrimSpace(fmt.Sprintf("%v", lookupValue))
+	if recordKey == "" {
+		recordSegmentSourceTrace(ctx, segmentKey, stepStart, observability.CacheStatusNotApplicable, "not_applicable")
+		return resolved, nil
+	}
+
+	record, err := segmentSvc.GetRecordByKey(ctx, segmentKey, recordKey)
+	if err != nil {
+		if isNotFoundError(err) {
+			return resolved, nil
+		}
+		return resolved, fmt.Errorf("resolving segment %s with key %s: %w", segmentKey, recordKey, err)
+	}
+
+	attributes := record.Attributes
+	if attributes == nil {
+		attributes = map[string]any{}
+	}
+	prepared.Sources[segmentKey] = attributes
+	resolved.Found = true
+	resolved.Data = attributes
+	return resolved, nil
+}
+
+func recordSegmentSourceTrace(ctx context.Context, segmentKey string, stepStart time.Time, status observability.CacheStatus, outcome string) {
+	trace, ok := observability.TraceRecorderFromContext(ctx)
+	if !ok || trace == nil {
+		return
+	}
+	trace.RecordComponent(observability.ComponentTrace{
+		Name:         "segment_record:" + segmentKey,
+		CacheBackend: observability.CacheBackendNone,
+		CacheEnabled: false,
+		CacheStatus:  status,
+		DurationMs:   time.Since(stepStart).Milliseconds(),
+		Outcome:      outcome,
+	})
+}
+
+func isNotFoundError(err error) bool {
+	var apiErr *apierror.APIError
+	return errAs(err, &apiErr) && apiErr.Code == apierror.CodeNotFound
 }
 
 func normalizeHeaders(headers []feature.InputHeader, raw map[string]any) map[string]any {

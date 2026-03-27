@@ -10,6 +10,8 @@ export interface FeatureDraft {
   description: string;
   valueType: ValueType;
   defaultValue: string;
+  evalCacheEnabled: boolean;
+  evalCacheTTLSeconds: string;
   accessPolicy: FeatureAccessPolicy;
   authProfileKey: string;
   headers: InputHeader[];
@@ -32,6 +34,8 @@ export function createDraft(feature?: Feature): FeatureDraft {
     description: feature?.description ?? '',
     valueType: feature?.valueType ?? 'boolean',
     defaultValue: feature ? stringifyDefault(feature.defaultValue, feature.valueType) : 'false',
+    evalCacheEnabled: feature?.evalCacheEnabled ?? (feature?.evalCacheTTLSeconds ?? 0) > 0,
+    evalCacheTTLSeconds: feature?.evalCacheTTLSeconds ? String(feature.evalCacheTTLSeconds) : '300',
     accessPolicy: feature?.accessPolicy ?? 'required',
     authProfileKey: feature?.authProfileKey ?? '',
     headers: ic.headers,
@@ -54,6 +58,8 @@ export function serializeSnapshot(draft: FeatureDraft): string {
     description: draft.description,
     valueType: draft.valueType,
     defaultValue: draft.defaultValue,
+    evalCacheEnabled: draft.evalCacheEnabled,
+    evalCacheTTLSeconds: draft.evalCacheTTLSeconds,
     accessPolicy: draft.accessPolicy,
     authProfileKey: draft.authProfileKey,
     headers: draft.headers,
@@ -109,6 +115,8 @@ export function buildCreatePayload(draft: FeatureDraft): CreateFeatureRequest {
     description: draft.description,
     valueType: draft.valueType,
     defaultValue: parseDefaultValue(draft.defaultValue, draft.valueType),
+    evalCacheEnabled: draft.evalCacheEnabled,
+    evalCacheTTLSeconds: draft.evalCacheEnabled ? normalizePositiveInt(draft.evalCacheTTLSeconds, 300) : 0,
     accessPolicy: draft.accessPolicy,
     authProfileKey: draft.accessPolicy === 'public' ? '' : draft.authProfileKey,
     inputContract: normalizedIC,
@@ -132,6 +140,8 @@ export function buildUpdatePayload(draft: FeatureDraft): UpdateFeatureRequest {
     name: draft.name,
     description: draft.description,
     defaultValue: parseDefaultValue(draft.defaultValue, draft.valueType),
+    evalCacheEnabled: draft.evalCacheEnabled,
+    evalCacheTTLSeconds: draft.evalCacheEnabled ? normalizePositiveInt(draft.evalCacheTTLSeconds, 300) : 0,
     accessPolicy: draft.accessPolicy,
     authProfileKey: draft.accessPolicy === 'public' ? '' : draft.authProfileKey,
     inputContract: normalizedIC,
@@ -158,6 +168,9 @@ export function summarizeDraft(draft: FeatureDraft, t: TFunction<'features'>): s
   if (draft.environments.length > 0) {
     parts.push(`${t('fields.environments')}: ${draft.environments.join(', ')}`);
   }
+  parts.push(
+    `${t('cache.title', { defaultValue: 'Cache' })}: ${draft.evalCacheEnabled ? `${draft.evalCacheTTLSeconds || '300'}s` : t('cache.disabled', { defaultValue: 'disabled' })}`,
+  );
   return parts.join(' · ');
 }
 
@@ -168,6 +181,14 @@ export function parseDefaultValue(raw: string, vt: ValueType): unknown {
   if (vt === 'number') return Number(raw);
   if (vt === 'json') return JSON.parse(raw) as unknown;
   return raw;
+}
+
+function normalizePositiveInt(raw: string, fallback: number): number {
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+  return parsed;
 }
 
 export function stringifyDefault(val: unknown, vt: ValueType): string {

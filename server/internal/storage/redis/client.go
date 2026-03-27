@@ -254,6 +254,8 @@ const (
 	memberKeyPrefix = "fe:member:"
 	// SegmentMemberKey prefix for segment membership cache.
 	segmentMemberPrefix = "fe:seg:"
+	// SegmentRecordKey prefix for segment record cache.
+	segmentRecordPrefix = "fe:segrec:"
 	// ExternalCallKey prefix for external call result cache.
 	externalCallPrefix = "fe:ext:"
 	// AuthProfileValidationKey prefix for auth profile validation cache.
@@ -268,6 +270,11 @@ func FeatureKey(key string) string {
 	return fmt.Sprintf("%s%s", featureKeyPrefix, key)
 }
 
+// FeatureWorkspaceKey returns the Redis key for caching a feature within a workspace.
+func FeatureWorkspaceKey(workspaceKey, key string) string {
+	return fmt.Sprintf("%s%s:%s", featureKeyPrefix, workspaceKey, key)
+}
+
 // MemberKey returns the Redis key for caching a member.
 func MemberKey(email string) string {
 	return fmt.Sprintf("%s%s", memberKeyPrefix, email)
@@ -276,6 +283,11 @@ func MemberKey(email string) string {
 // SegmentMemberKey returns the Redis key for caching segment membership.
 func SegmentMemberKey(segmentKey, userID, tenantID string) string {
 	return fmt.Sprintf("%s%s:%s:%s", segmentMemberPrefix, segmentKey, userID, tenantID)
+}
+
+// SegmentRecordKey returns the Redis key for caching a segment record lookup.
+func SegmentRecordKey(segmentKey, datasetVersion, recordKey string) string {
+	return fmt.Sprintf("%s%s:%s:%s", segmentRecordPrefix, segmentKey, datasetVersion, recordKey)
 }
 
 // ExternalCallKey returns the Redis key for caching external call results.
@@ -296,4 +308,9 @@ func AuthProfileTokenKey(workspaceKey, profileKey string, version int) string {
 // SegmentPattern returns the pattern for deleting all segment membership cache entries.
 func SegmentPattern(segmentKey string) string {
 	return fmt.Sprintf("%s%s:*", segmentMemberPrefix, segmentKey)
+}
+
+// SegmentRecordPattern returns the pattern for deleting all segment record cache entries.
+func SegmentRecordPattern(segmentKey string) string {
+	return fmt.Sprintf("%s%s:*", segmentRecordPrefix, segmentKey)
 }

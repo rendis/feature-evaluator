@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { createInstance } from 'i18next';
 import { type ReactNode } from 'react';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
@@ -62,7 +63,9 @@ export function TestProviders({
   return (
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
-        <GlobalLoadingProvider>{children}</GlobalLoadingProvider>
+        <TooltipProvider>
+          <GlobalLoadingProvider>{children}</GlobalLoadingProvider>
+        </TooltipProvider>
       </I18nextProvider>
     </QueryClientProvider>
   );

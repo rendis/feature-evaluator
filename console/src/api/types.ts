@@ -76,6 +76,8 @@ export interface Feature {
   name: string;
   description: string;
   enabled: boolean;
+  evalCacheEnabled?: boolean;
+  evalCacheTTLSeconds?: number;
   valueType: ValueType;
   defaultValue: unknown;
   metadata: Record<string, unknown>;
@@ -130,6 +132,7 @@ export interface ExternalApiBinding {
   externalApiKey: string;
   paramMappings: ParamMapping[];
   failMode: 'open' | 'closed';
+  cacheEnabled?: boolean;
   cacheTTL: number;
 }
 
@@ -186,6 +189,7 @@ export interface AuthProfile {
   active: boolean;
   type: AuthProfileType;
   config: Record<string, unknown>;
+  cacheEnabled?: boolean;
   cacheTTLSeconds?: number;
   version: number;
   hasSecret: boolean;
@@ -332,6 +336,10 @@ export interface Segment {
   name: string;
   description: string;
   metadata: Record<string, unknown>;
+  membershipCacheEnabled?: boolean;
+  membershipCacheTTLSeconds?: number;
+  recordCacheEnabled?: boolean;
+  recordCacheTTLSeconds?: number;
   recordCount: number;
   recordKeyPath?: string;
   previewFields: string[];
@@ -372,6 +380,116 @@ export interface AuditError {
   programId: string;
   requestId: string;
   createdAt: string;
+}
+
+export type FeatureObservabilityCacheStatus =
+  | 'hit'
+  | 'miss'
+  | 'disabled'
+  | 'computed'
+  | 'not_applicable';
+
+export type FeatureObservabilityCacheBackend = 'redis' | 'memory' | 'none';
+
+export interface FeatureObservabilitySummaryCard {
+  key: string;
+  label: string;
+  value: number;
+  unit?: 'count' | 'ms' | 'ratio';
+  accent?: 'default' | 'success' | 'warning' | 'destructive';
+}
+
+export interface FeatureObservabilityComponentMetric {
+  component: string;
+  cacheEnabled: boolean;
+  cacheBackend: FeatureObservabilityCacheBackend;
+  cacheStatus: FeatureObservabilityCacheStatus;
+  ttlSeconds?: number | null;
+  totalDurationMs: number;
+  averageDurationMs: number;
+  p95DurationMs?: number;
+  hitCount: number;
+  missCount: number;
+  computedCount: number;
+  disabledCount: number;
+  outcome?: string;
+}
+
+export interface FeatureObservabilityOverview {
+  featureKey: string;
+  generatedAt?: string | null;
+  summary: FeatureObservabilitySummaryCard[];
+  components: FeatureObservabilityComponentMetric[];
+  totalEvaluations: number;
+  usedRedisCount: number;
+  usedRedisRatio: number;
+  averageDurationMs: number;
+  p95DurationMs: number;
+  ruleCount: number;
+  matchedRuleCount: number;
+  slowEvaluations: number;
+}
+
+export interface FeatureObservabilityRuleExternalCallMetric {
+  apiKey: string;
+  cacheEnabled: boolean;
+  cacheStatus: FeatureObservabilityCacheStatus;
+  durationMs: number;
+  totalCalls: number;
+  hitCount: number;
+  missCount: number;
+  computedCount: number;
+  ttlSeconds?: number | null;
+  passedCount: number;
+  failedCount: number;
+  httpStatus?: number | null;
+}
+
+export interface FeatureObservabilityRuleMetric {
+  ruleId: string;
+  ruleName: string;
+  priority: number;
+  matchedCount: number;
+  totalCount: number;
+  averageDurationMs: number;
+  p95DurationMs: number;
+  cacheEnabled: boolean;
+  cacheStatus: FeatureObservabilityCacheStatus;
+  cacheBackend: FeatureObservabilityCacheBackend;
+  expressionDurationMs: number;
+  expressionCompileCacheHitCount: number;
+  expressionCompileCacheMissCount: number;
+  externalCalls: FeatureObservabilityRuleExternalCallMetric[];
+}
+
+export interface FeatureObservabilityRuleDetail extends FeatureObservabilityRuleMetric {
+  generatedAt?: string | null;
+  traces: FeatureObservabilityTrace[];
+}
+
+export interface FeatureObservabilityTraceStep {
+  component: string;
+  cacheEnabled: boolean;
+  cacheBackend: FeatureObservabilityCacheBackend;
+  cacheStatus: FeatureObservabilityCacheStatus;
+  ttlSeconds?: number | null;
+  durationMs: number;
+  outcome?: string;
+}
+
+export interface FeatureObservabilityTrace {
+  id: string;
+  requestId: string;
+  createdAt: string;
+  totalDurationMs: number;
+  usedRedis: boolean;
+  cacheStatus: FeatureObservabilityCacheStatus;
+  matched: boolean;
+  ruleId?: string | null;
+  ruleName?: string | null;
+  reason?: string;
+  featureKey?: string;
+  steps: FeatureObservabilityTraceStep[];
 }
 
 export interface ExpressionValidateResponse {
@@ -611,6 +729,8 @@ export interface Experiment {
   name: string;
   description: string;
   status: ExperimentStatus;
+  lookupCacheEnabled?: boolean;
+  lookupCacheTTLSeconds?: number;
   variants: Variant[];
   metrics: ExperimentMetric[];
   winnerKey?: string;
@@ -642,6 +762,8 @@ export interface CreateExperimentRequest {
   featureKey: string;
   name: string;
   description?: string;
+  lookupCacheEnabled?: boolean;
+  lookupCacheTTLSeconds?: number;
   variants: Variant[];
   metrics?: ExperimentMetric[];
 }
@@ -649,6 +771,8 @@ export interface CreateExperimentRequest {
 export interface UpdateExperimentRequest {
   name: string;
   description?: string;
+  lookupCacheEnabled?: boolean;
+  lookupCacheTTLSeconds?: number;
   variants: Variant[];
   metrics?: ExperimentMetric[];
 }

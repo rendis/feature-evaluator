@@ -111,12 +111,16 @@ func (h *SegmentHandler) Create(c *gin.Context) {
 	}
 
 	seg := &segment.Segment{
-		Key:         req.Key,
-		Name:        req.Name,
-		Description: req.Description,
-		Metadata:    req.Metadata,
-		CreatedBy:   middleware.GetUserEmail(c),
-		UpdatedBy:   middleware.GetUserEmail(c),
+		Key:                       req.Key,
+		Name:                      req.Name,
+		Description:               req.Description,
+		Metadata:                  req.Metadata,
+		MembershipCacheEnabled:    req.MembershipCacheEnabled,
+		MembershipCacheTTLSeconds: req.MembershipCacheTTLSeconds,
+		RecordCacheEnabled:        req.RecordCacheEnabled,
+		RecordCacheTTLSeconds:     req.RecordCacheTTLSeconds,
+		CreatedBy:                 middleware.GetUserEmail(c),
+		UpdatedBy:                 middleware.GetUserEmail(c),
 	}
 
 	if err := h.svc.Create(c.Request.Context(), seg); err != nil {
@@ -156,11 +160,15 @@ func (h *SegmentHandler) Update(c *gin.Context) {
 	}
 
 	seg := &segment.Segment{
-		Key:         key,
-		Name:        req.Name,
-		Description: req.Description,
-		Metadata:    req.Metadata,
-		UpdatedBy:   middleware.GetUserEmail(c),
+		Key:                       key,
+		Name:                      req.Name,
+		Description:               req.Description,
+		Metadata:                  req.Metadata,
+		MembershipCacheEnabled:    req.MembershipCacheEnabled,
+		MembershipCacheTTLSeconds: req.MembershipCacheTTLSeconds,
+		RecordCacheEnabled:        req.RecordCacheEnabled,
+		RecordCacheTTLSeconds:     req.RecordCacheTTLSeconds,
+		UpdatedBy:                 middleware.GetUserEmail(c),
 	}
 
 	if err := h.svc.Update(c.Request.Context(), seg); err != nil {

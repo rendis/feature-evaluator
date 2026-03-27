@@ -81,6 +81,8 @@ describe('conditions builder types', () => {
           conditionKind: 'externalApi',
           externalApiKey: 'payment-validator',
           externalApiName: 'Payment Validator',
+          cacheEnabled: true,
+          cacheTTL: 120,
           paramMappings: [
             {
               paramName: 'userId',
@@ -117,7 +119,8 @@ describe('conditions builder types', () => {
           },
         ],
         failMode: 'open',
-        cacheTTL: 0,
+        cacheEnabled: true,
+        cacheTTL: 120,
       },
     ]);
   });

@@ -12,6 +12,7 @@ import (
 	"github.com/rendis/feature-evaluator/internal/domain/audit"
 	"github.com/rendis/feature-evaluator/internal/domain/experiment"
 	"github.com/rendis/feature-evaluator/internal/domain/feature"
+	"github.com/rendis/feature-evaluator/internal/domain/observability"
 	"github.com/rendis/feature-evaluator/internal/domain/pack"
 	"github.com/rendis/feature-evaluator/internal/domain/segment"
 	"github.com/rendis/feature-evaluator/internal/domain/workspace"
@@ -55,6 +56,7 @@ type Service struct {
 	externalAPIResolver ExternalAPIResolver
 	engine              *engine.Engine
 	onSegmentLookup     SegmentLookupFunc
+	observer            observability.Observer
 }
 
 // NewService creates a new evaluation service.
@@ -69,6 +71,7 @@ func NewService(
 		segmentSvc:  segmentSvc,
 		auditSvc:    auditSvc,
 		engine:      eng,
+		observer:    observability.NoopObserver{},
 	}
 }
 
@@ -97,6 +100,15 @@ func (s *Service) SetOnSegmentLookup(fn SegmentLookupFunc) {
 	s.onSegmentLookup = fn
 }
 
+// SetObserver sets the trace observer used to capture evaluation traces.
+func (s *Service) SetObserver(observer observability.Observer) {
+	if observer == nil {
+		s.observer = observability.NoopObserver{}
+		return
+	}
+	s.observer = observer
+}
+
 // EvalContext holds the context for a single evaluation.
 type EvalContext struct {
 	Context     map[string]any
@@ -105,18 +117,67 @@ type EvalContext struct {
 	Environment string
 }
 
+func (s *Service) startTrace(workspaceKey, featureKey string, evalCtx EvalContext) observability.TraceRecorder {
+	if s.observer == nil {
+		return observability.NoopObserver{}.Start(observability.EvaluationMeta{
+			WorkspaceKey: workspaceKey,
+			FeatureKey:   featureKey,
+			RequestID:    evalCtx.RequestID,
+			Environment:  evalCtx.Environment,
+			StartedAt:    time.Now().UTC(),
+		})
+	}
+	return s.observer.Start(observability.EvaluationMeta{
+		WorkspaceKey: workspaceKey,
+		FeatureKey:   featureKey,
+		RequestID:    evalCtx.RequestID,
+		Environment:  evalCtx.Environment,
+		StartedAt:    time.Now().UTC(),
+	})
+}
+
 // Evaluate evaluates a single feature for a given context.
 //
 //nolint:funlen,gocognit,cyclop // Evaluation is the main orchestration path and is easier to audit as one linear flow.
-func (s *Service) Evaluate(ctx context.Context, req Request, evalCtx EvalContext) Result {
+func (s *Service) Evaluate(ctx context.Context, req Request, evalCtx EvalContext) (result Result) {
 	now := time.Now().UTC()
+	trace := s.startTrace(workspace.KeyFromContext(ctx), req.FeatureKey, evalCtx)
+	defer func() {
+		errorCode := ""
+		if result.Error != nil {
+			errorCode = result.Error.Code
+		}
+		trace.Finalize(string(result.Reason), errorCode, time.Since(now))
+	}()
+	ctx = observability.WithTraceRecorder(ctx, trace)
 
 	f, err := s.featureRepo.GetByKey(ctx, req.FeatureKey)
 	if err != nil {
 		return s.errorResult(req.FeatureKey, now, "FEATURE_NOT_FOUND", err.Error())
 	}
 
+	stepStart := time.Now()
 	authState, authErr := s.resolveAuthState(ctx, f, evalCtx)
+	trace.RecordComponent(observability.ComponentTrace{
+		Name:         "auth_validation",
+		CacheBackend: observability.CacheBackendRedis,
+		CacheEnabled: f.AuthProfileKey != "",
+		CacheStatus: func() observability.CacheStatus {
+			if f.AuthProfileKey == "" {
+				return observability.CacheStatusNotApplicable
+			}
+			if authErr != nil {
+				return observability.CacheStatusComputed
+			}
+			if authState.Cached {
+				trace.MarkUsedRedis()
+				return observability.CacheStatusHit
+			}
+			return observability.CacheStatusMiss
+		}(),
+		DurationMs: time.Since(stepStart).Milliseconds(),
+		Outcome:    "validated",
+	})
 	if authErr != nil {
 		return s.errorResult(req.FeatureKey, now, "AUTH_VALIDATION_FAILED", authErr.Error())
 	}
@@ -178,8 +239,26 @@ func (s *Service) Evaluate(ctx context.Context, req Request, evalCtx EvalContext
 	}
 
 	// Trial: bypass rules if active
+	stepStart = time.Now()
 	trialActive, trialEndsAt := s.resolveTrial(ctx, f, now)
+	trace.RecordComponent(observability.ComponentTrace{
+		Name:         "trial_lookup",
+		CacheBackend: observability.CacheBackendNone,
+		CacheEnabled: false,
+		CacheStatus:  observability.CacheStatusComputed,
+		DurationMs:   time.Since(stepStart).Milliseconds(),
+		Outcome:      "resolved",
+	})
+	stepStart = time.Now()
 	tierKeys := s.resolveTierKeys(ctx, f.Key)
+	trace.RecordComponent(observability.ComponentTrace{
+		Name:         "tier_lookup",
+		CacheBackend: observability.CacheBackendNone,
+		CacheEnabled: false,
+		CacheStatus:  observability.CacheStatusComputed,
+		DurationMs:   time.Since(stepStart).Milliseconds(),
+		Outcome:      "resolved",
+	})
 	if trialActive && f.TrialValue != nil {
 		return Result{
 			FeatureKey:  f.Key,
@@ -209,7 +288,16 @@ func (s *Service) Evaluate(ctx context.Context, req Request, evalCtx EvalContext
 	// Resolve pack activations
 	campusID := extractNamespaceID(evalCtx.Context, "campus")
 	programID := extractNamespaceID(evalCtx.Context, "program")
+	stepStart = time.Now()
 	packKey := s.resolvePackActivation(ctx, req.FeatureKey, tenantID, campusID, programID)
+	trace.RecordComponent(observability.ComponentTrace{
+		Name:         "pack_activation",
+		CacheBackend: observability.CacheBackendNone,
+		CacheEnabled: false,
+		CacheStatus:  observability.CacheStatusComputed,
+		DurationMs:   time.Since(stepStart).Milliseconds(),
+		Outcome:      "resolved",
+	})
 
 	// Create segment checker function
 	segmentChecker := func(segKey string) bool {
@@ -222,9 +310,12 @@ func (s *Service) Evaluate(ctx context.Context, req Request, evalCtx EvalContext
 	// Iterate rules by priority (ascending)
 	sortedRules := sortRulesByPriority(f.Rules)
 	for _, rule := range sortedRules {
+		ruleStart := time.Now()
+		ruleRecorder := trace.StartRule(rule.ID, rule.Priority)
+		ruleCtx := observability.WithRuleRecorder(ctx, ruleRecorder)
 		preparedInput := PrepareExpressionInput(f.InputContract, evalCtx.Input, authState, evalCtx.Context)
-		if _, err := ResolveSegmentSources(ctx, s.segmentSvc, rule.SourceBindings, &preparedInput); err != nil {
-			s.logEvalError(ctx, f.Key, rule.ID, err, evalCtx)
+		if _, err := ResolveSegmentSources(ruleCtx, s.segmentSvc, rule.SourceBindings, &preparedInput); err != nil {
+			s.logEvalError(ruleCtx, f.Key, rule.ID, err, evalCtx)
 			continue
 		}
 		// Resolve authenticated: true if auth profile validated OR bearer token present on public feature
@@ -250,14 +341,15 @@ func (s *Service) Evaluate(ctx context.Context, req Request, evalCtx EvalContext
 		)
 		// Resolve externalApi bindings with the full env so param input paths work.
 		if len(rule.ExternalAPIBindings) > 0 && s.externalAPIResolver != nil {
-			extResults := s.externalAPIResolver.Resolve(ctx, rule.ExternalAPIBindings, env)
+			extResults := s.externalAPIResolver.Resolve(ruleCtx, rule.ExternalAPIBindings, env)
 			env["externalApi"] = engine.ExternalAPIChecker(func(apiKey string) bool {
 				return extResults[apiKey]
 			})
 		}
-		matched, err := s.evaluateRule(&rule, env, evalCtx, f.Key, f.RolloutSalt)
+		matched, err := s.evaluateRule(ruleCtx, &rule, env, evalCtx, f.Key, f.RolloutSalt)
+		ruleRecorder.Finalize(matched, time.Since(ruleStart))
 		if err != nil {
-			s.logEvalError(ctx, f.Key, rule.ID, err, evalCtx)
+			s.logEvalError(ruleCtx, f.Key, rule.ID, err, evalCtx)
 			continue
 		}
 		if matched {
@@ -374,10 +466,40 @@ func (s *Service) EvaluateAll(ctx context.Context, req AllRequest, evalCtx EvalC
 // evaluateFeature evaluates a single pre-loaded feature (skips repo lookup).
 //
 //nolint:funlen,gocognit,cyclop // Feature-level evaluation keeps all rule, rollout, and experiment decisions in one place.
-func (s *Service) evaluateFeature(ctx context.Context, f *feature.Feature, evalCtx EvalContext) Result {
+func (s *Service) evaluateFeature(ctx context.Context, f *feature.Feature, evalCtx EvalContext) (result Result) {
 	now := time.Now().UTC()
+	trace := s.startTrace(workspace.KeyFromContext(ctx), f.Key, evalCtx)
+	defer func() {
+		errorCode := ""
+		if result.Error != nil {
+			errorCode = result.Error.Code
+		}
+		trace.Finalize(string(result.Reason), errorCode, time.Since(now))
+	}()
+	ctx = observability.WithTraceRecorder(ctx, trace)
 
+	stepStart := time.Now()
 	authState, authErr := s.resolveAuthState(ctx, f, evalCtx)
+	trace.RecordComponent(observability.ComponentTrace{
+		Name:         "auth_validation",
+		CacheBackend: observability.CacheBackendRedis,
+		CacheEnabled: f.AuthProfileKey != "",
+		CacheStatus: func() observability.CacheStatus {
+			if f.AuthProfileKey == "" {
+				return observability.CacheStatusNotApplicable
+			}
+			if authErr != nil {
+				return observability.CacheStatusComputed
+			}
+			if authState.Cached {
+				trace.MarkUsedRedis()
+				return observability.CacheStatusHit
+			}
+			return observability.CacheStatusMiss
+		}(),
+		DurationMs: time.Since(stepStart).Milliseconds(),
+		Outcome:    "validated",
+	})
 	if authErr != nil {
 		return s.errorResult(f.Key, now, "AUTH_VALIDATION_FAILED", authErr.Error())
 	}
@@ -426,8 +548,26 @@ func (s *Service) evaluateFeature(ctx context.Context, f *feature.Feature, evalC
 	}
 
 	// Trial: bypass rules if active
+	stepStart = time.Now()
 	trialActive, trialEndsAt := s.resolveTrial(ctx, f, now)
+	trace.RecordComponent(observability.ComponentTrace{
+		Name:         "trial_lookup",
+		CacheBackend: observability.CacheBackendNone,
+		CacheEnabled: false,
+		CacheStatus:  observability.CacheStatusComputed,
+		DurationMs:   time.Since(stepStart).Milliseconds(),
+		Outcome:      "resolved",
+	})
+	stepStart = time.Now()
 	tierKeys := s.resolveTierKeys(ctx, f.Key)
+	trace.RecordComponent(observability.ComponentTrace{
+		Name:         "tier_lookup",
+		CacheBackend: observability.CacheBackendNone,
+		CacheEnabled: false,
+		CacheStatus:  observability.CacheStatusComputed,
+		DurationMs:   time.Since(stepStart).Milliseconds(),
+		Outcome:      "resolved",
+	})
 	if trialActive && f.TrialValue != nil {
 		return Result{
 			FeatureKey:  f.Key,
@@ -457,7 +597,16 @@ func (s *Service) evaluateFeature(ctx context.Context, f *feature.Feature, evalC
 	// Resolve pack activations
 	campusID := extractNamespaceID(evalCtx.Context, "campus")
 	programID := extractNamespaceID(evalCtx.Context, "program")
+	stepStart = time.Now()
 	packKey := s.resolvePackActivation(ctx, f.Key, tenantID, campusID, programID)
+	trace.RecordComponent(observability.ComponentTrace{
+		Name:         "pack_activation",
+		CacheBackend: observability.CacheBackendNone,
+		CacheEnabled: false,
+		CacheStatus:  observability.CacheStatusComputed,
+		DurationMs:   time.Since(stepStart).Milliseconds(),
+		Outcome:      "resolved",
+	})
 
 	// Create segment checker function
 	segmentChecker := func(segKey string) bool {
@@ -470,9 +619,12 @@ func (s *Service) evaluateFeature(ctx context.Context, f *feature.Feature, evalC
 	// Iterate rules by priority (ascending)
 	sortedRules := sortRulesByPriority(f.Rules)
 	for _, rule := range sortedRules {
+		ruleStart := time.Now()
+		ruleRecorder := trace.StartRule(rule.ID, rule.Priority)
+		ruleCtx := observability.WithRuleRecorder(ctx, ruleRecorder)
 		preparedInput := PrepareExpressionInput(f.InputContract, evalCtx.Input, authState, evalCtx.Context)
-		if _, err := ResolveSegmentSources(ctx, s.segmentSvc, rule.SourceBindings, &preparedInput); err != nil {
-			s.logEvalError(ctx, f.Key, rule.ID, err, evalCtx)
+		if _, err := ResolveSegmentSources(ruleCtx, s.segmentSvc, rule.SourceBindings, &preparedInput); err != nil {
+			s.logEvalError(ruleCtx, f.Key, rule.ID, err, evalCtx)
 			continue
 		}
 		// Resolve authenticated: true if auth profile validated OR bearer token present on public feature
@@ -496,14 +648,15 @@ func (s *Service) evaluateFeature(ctx context.Context, f *feature.Feature, evalC
 			noopExtAPI,
 		)
 		if len(rule.ExternalAPIBindings) > 0 && s.externalAPIResolver != nil {
-			extResults := s.externalAPIResolver.Resolve(ctx, rule.ExternalAPIBindings, env)
+			extResults := s.externalAPIResolver.Resolve(ruleCtx, rule.ExternalAPIBindings, env)
 			env["externalApi"] = engine.ExternalAPIChecker(func(apiKey string) bool {
 				return extResults[apiKey]
 			})
 		}
-		matched, err := s.evaluateRule(&rule, env, evalCtx, f.Key, f.RolloutSalt)
+		matched, err := s.evaluateRule(ruleCtx, &rule, env, evalCtx, f.Key, f.RolloutSalt)
+		ruleRecorder.Finalize(matched, time.Since(ruleStart))
 		if err != nil {
-			s.logEvalError(ctx, f.Key, rule.ID, err, evalCtx)
+			s.logEvalError(ruleCtx, f.Key, rule.ID, err, evalCtx)
 			continue
 		}
 		if matched {
@@ -617,6 +770,7 @@ func hasAllTags(featureTags, requiredTags []string) bool {
 }
 
 func (s *Service) evaluateRule(
+	ctx context.Context,
 	rule *feature.Rule,
 	env map[string]any,
 	evalCtx EvalContext,
@@ -629,9 +783,14 @@ func (s *Service) evaluateRule(
 	}
 
 	// Evaluate expression
-	result, err := s.engine.CompileAndRun(rule.Expression, env)
+	ruleRecorder, _ := observability.RuleRecorderFromContext(ctx)
+	exprStart := time.Now()
+	result, compileCacheHit, err := s.engine.CompileAndRunWithStats(rule.Expression, env)
 	if err != nil {
 		return false, fmt.Errorf("evaluating rule %s expression: %w", rule.ID, err)
+	}
+	if ruleRecorder != nil {
+		ruleRecorder.RecordExpression(time.Since(exprStart), compileCacheHit)
 	}
 
 	matched, ok := result.(bool)

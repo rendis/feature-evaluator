@@ -21,6 +21,14 @@
     "success": "Segmento guardado exitosamente",
     "error": "Error al guardar segmento"
   },
+  "cache": {
+    "title": "Cache",
+    "help": "Configura si el segmento debe cachear sus miembros y lecturas de registros.",
+    "membership": "Cache de membership",
+    "membershipHelp": "Cachea el resultado de pertenencia al segmento.",
+    "record": "Cache de registros",
+    "recordHelp": "Cachea la lectura de registros del segmento."
+  },
   "delete": {
     "title": "Eliminar segmento",
     "description": "Esta seguro que desea eliminar el segmento \"{{key}}\"?",

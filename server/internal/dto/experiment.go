@@ -8,19 +8,23 @@ import (
 
 // CreateExperimentRequest is the request body for creating an experiment.
 type CreateExperimentRequest struct {
-	FeatureKey  string           `json:"featureKey" binding:"required"`
-	Name        string           `json:"name" binding:"required"`
-	Description string           `json:"description"`
-	Variants    []VariantRequest `json:"variants" binding:"required,min=2"`
-	Metrics     []MetricRequest  `json:"metrics"`
+	FeatureKey            string           `json:"featureKey" binding:"required"`
+	Name                  string           `json:"name" binding:"required"`
+	Description           string           `json:"description"`
+	LookupCacheEnabled    bool             `json:"lookupCacheEnabled"`
+	LookupCacheTTLSeconds int              `json:"lookupCacheTTLSeconds"`
+	Variants              []VariantRequest `json:"variants" binding:"required,min=2"`
+	Metrics               []MetricRequest  `json:"metrics"`
 }
 
 // UpdateExperimentRequest is the request body for updating a draft experiment.
 type UpdateExperimentRequest struct {
-	Name        string           `json:"name" binding:"required"`
-	Description string           `json:"description"`
-	Variants    []VariantRequest `json:"variants" binding:"required,min=2"`
-	Metrics     []MetricRequest  `json:"metrics"`
+	Name                  string           `json:"name" binding:"required"`
+	Description           string           `json:"description"`
+	LookupCacheEnabled    bool             `json:"lookupCacheEnabled"`
+	LookupCacheTTLSeconds int              `json:"lookupCacheTTLSeconds"`
+	Variants              []VariantRequest `json:"variants" binding:"required,min=2"`
+	Metrics               []MetricRequest  `json:"metrics"`
 }
 
 // VariantRequest is a variant in a create/update request.
@@ -52,20 +56,22 @@ type RecordConversionRequest struct {
 
 // ExperimentResponse is the response for an experiment.
 type ExperimentResponse struct {
-	ID           string            `json:"id"`
-	WorkspaceKey string            `json:"workspaceKey"`
-	FeatureKey   string            `json:"featureKey"`
-	Name         string            `json:"name"`
-	Description  string            `json:"description"`
-	Status       string            `json:"status"`
-	Variants     []VariantResponse `json:"variants"`
-	Metrics      []MetricResponse  `json:"metrics"`
-	WinnerKey    string            `json:"winnerKey,omitempty"`
-	StartedAt    *time.Time        `json:"startedAt,omitempty"`
-	CompletedAt  *time.Time        `json:"completedAt,omitempty"`
-	CreatedBy    string            `json:"createdBy"`
-	CreatedAt    time.Time         `json:"createdAt"`
-	UpdatedAt    time.Time         `json:"updatedAt"`
+	ID                    string            `json:"id"`
+	WorkspaceKey          string            `json:"workspaceKey"`
+	FeatureKey            string            `json:"featureKey"`
+	Name                  string            `json:"name"`
+	Description           string            `json:"description"`
+	Status                string            `json:"status"`
+	LookupCacheEnabled    bool              `json:"lookupCacheEnabled,omitempty"`
+	LookupCacheTTLSeconds int               `json:"lookupCacheTTLSeconds,omitempty"`
+	Variants              []VariantResponse `json:"variants"`
+	Metrics               []MetricResponse  `json:"metrics"`
+	WinnerKey             string            `json:"winnerKey,omitempty"`
+	StartedAt             *time.Time        `json:"startedAt,omitempty"`
+	CompletedAt           *time.Time        `json:"completedAt,omitempty"`
+	CreatedBy             string            `json:"createdBy"`
+	CreatedAt             time.Time         `json:"createdAt"`
+	UpdatedAt             time.Time         `json:"updatedAt"`
 }
 
 // VariantResponse is a variant in a response.
@@ -103,19 +109,21 @@ func ToExperimentResponse(exp *experiment.Experiment) ExperimentResponse {
 	}
 
 	return ExperimentResponse{
-		ID:           exp.ID,
-		WorkspaceKey: exp.WorkspaceKey,
-		FeatureKey:   exp.FeatureKey,
-		Name:         exp.Name,
-		Description:  exp.Description,
-		Status:       string(exp.Status),
-		Variants:     variants,
-		Metrics:      metrics,
-		WinnerKey:    exp.WinnerKey,
-		StartedAt:    exp.StartedAt,
-		CompletedAt:  exp.CompletedAt,
-		CreatedBy:    exp.CreatedBy,
-		CreatedAt:    exp.CreatedAt,
-		UpdatedAt:    exp.UpdatedAt,
+		ID:                    exp.ID,
+		WorkspaceKey:          exp.WorkspaceKey,
+		FeatureKey:            exp.FeatureKey,
+		Name:                  exp.Name,
+		Description:           exp.Description,
+		Status:                string(exp.Status),
+		LookupCacheEnabled:    exp.LookupCacheEnabled,
+		LookupCacheTTLSeconds: exp.LookupCacheTTLSeconds,
+		Variants:              variants,
+		Metrics:               metrics,
+		WinnerKey:             exp.WinnerKey,
+		StartedAt:             exp.StartedAt,
+		CompletedAt:           exp.CompletedAt,
+		CreatedBy:             exp.CreatedBy,
+		CreatedAt:             exp.CreatedAt,
+		UpdatedAt:             exp.UpdatedAt,
 	}
 }

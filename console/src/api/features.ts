@@ -30,6 +30,8 @@ export interface CreateFeatureRequest {
   valueType: string;
   defaultValue: unknown;
   metadata?: Record<string, unknown>;
+  evalCacheEnabled?: boolean;
+  evalCacheTTLSeconds?: number;
   tags?: string[];
   activeFrom?: string | null;
   activeUntil?: string | null;
@@ -46,6 +48,8 @@ export interface UpdateFeatureRequest {
   description?: string;
   defaultValue?: unknown;
   metadata?: Record<string, unknown>;
+  evalCacheEnabled?: boolean;
+  evalCacheTTLSeconds?: number;
   tags?: string[];
   activeFrom?: string | null;
   activeUntil?: string | null;

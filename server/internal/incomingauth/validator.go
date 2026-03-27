@@ -319,7 +319,7 @@ func (v *Validator) validateCustomDraft( //nolint:gocognit,cyclop,funlen // cust
 
 	cacheKey := ""
 	ttl := time.Duration(profile.CacheTTLSeconds) * time.Second
-	if ttl > 0 {
+	if profile.CacheEnabled && ttl > 0 {
 		cacheKey = redisclient.AuthProfileValidationKey(
 			profile.WorkspaceKey,
 			profile.Key,

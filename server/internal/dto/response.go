@@ -54,53 +54,57 @@ type TagDetailResponse struct {
 
 // FeatureResponse is the response DTO for a feature.
 type FeatureResponse struct {
-	ID             string                `json:"id"`
-	Key            string                `json:"key"`
-	Name           string                `json:"name"`
-	Description    string                `json:"description"`
-	Enabled        bool                  `json:"enabled"`
-	ValueType      string                `json:"valueType"`
-	DefaultValue   any                   `json:"defaultValue"`
-	ActiveFrom     *string               `json:"activeFrom,omitempty"`
-	ActiveUntil    *string               `json:"activeUntil,omitempty"`
-	Environments   []string              `json:"environments,omitempty"`
-	AccessPolicy   string                `json:"accessPolicy,omitempty"`
-	AuthProfileKey string                `json:"authProfileKey,omitempty"`
-	InputContract  InputContractResponse `json:"inputContract"`
-	Metadata       map[string]any        `json:"metadata,omitempty"`
-	Tags           []TagResponse         `json:"tags"`
-	Packs          []PackRef             `json:"packs"`
-	RolloutSalt    string                `json:"rolloutSalt,omitempty"`
-	RuleCount      int                   `json:"ruleCount"`
-	CreatedAt      string                `json:"createdAt"`
-	UpdatedAt      string                `json:"updatedAt"`
-	CreatedBy      string                `json:"createdBy"`
-	UpdatedBy      string                `json:"updatedBy"`
-	TrialUntil     *string               `json:"trialUntil,omitempty"`
-	TrialValue     any                   `json:"trialValue,omitempty"`
-	Tiers          []TierRef             `json:"tiers"`
+	ID                  string                `json:"id"`
+	Key                 string                `json:"key"`
+	Name                string                `json:"name"`
+	Description         string                `json:"description"`
+	Enabled             bool                  `json:"enabled"`
+	EvalCacheEnabled    bool                  `json:"evalCacheEnabled,omitempty"`
+	EvalCacheTTLSeconds int                   `json:"evalCacheTTLSeconds,omitempty"`
+	ValueType           string                `json:"valueType"`
+	DefaultValue        any                   `json:"defaultValue"`
+	ActiveFrom          *string               `json:"activeFrom,omitempty"`
+	ActiveUntil         *string               `json:"activeUntil,omitempty"`
+	Environments        []string              `json:"environments,omitempty"`
+	AccessPolicy        string                `json:"accessPolicy,omitempty"`
+	AuthProfileKey      string                `json:"authProfileKey,omitempty"`
+	InputContract       InputContractResponse `json:"inputContract"`
+	Metadata            map[string]any        `json:"metadata,omitempty"`
+	Tags                []TagResponse         `json:"tags"`
+	Packs               []PackRef             `json:"packs"`
+	RolloutSalt         string                `json:"rolloutSalt,omitempty"`
+	RuleCount           int                   `json:"ruleCount"`
+	CreatedAt           string                `json:"createdAt"`
+	UpdatedAt           string                `json:"updatedAt"`
+	CreatedBy           string                `json:"createdBy"`
+	UpdatedBy           string                `json:"updatedBy"`
+	TrialUntil          *string               `json:"trialUntil,omitempty"`
+	TrialValue          any                   `json:"trialValue,omitempty"`
+	Tiers               []TierRef             `json:"tiers"`
 }
 
 // FeatureSummaryResponse is the lightweight DTO used by feature list views.
 type FeatureSummaryResponse struct {
-	ID             string        `json:"id"`
-	Key            string        `json:"key"`
-	Name           string        `json:"name"`
-	Description    string        `json:"description"`
-	Enabled        bool          `json:"enabled"`
-	ValueType      string        `json:"valueType"`
-	Environments   []string      `json:"environments,omitempty"`
-	AccessPolicy   string        `json:"accessPolicy,omitempty"`
-	AuthProfileKey string        `json:"authProfileKey,omitempty"`
-	Tags           []TagResponse `json:"tags"`
-	PackCount      int           `json:"packCount"`
-	RuleCount      int           `json:"ruleCount"`
-	CreatedAt      string        `json:"createdAt"`
-	UpdatedAt      string        `json:"updatedAt"`
-	CreatedBy      string        `json:"createdBy"`
-	UpdatedBy      string        `json:"updatedBy"`
-	TrialUntil     *string       `json:"trialUntil,omitempty"`
-	Tiers          []TierRef     `json:"tiers"`
+	ID                  string        `json:"id"`
+	Key                 string        `json:"key"`
+	Name                string        `json:"name"`
+	Description         string        `json:"description"`
+	Enabled             bool          `json:"enabled"`
+	EvalCacheEnabled    bool          `json:"evalCacheEnabled,omitempty"`
+	EvalCacheTTLSeconds int           `json:"evalCacheTTLSeconds,omitempty"`
+	ValueType           string        `json:"valueType"`
+	Environments        []string      `json:"environments,omitempty"`
+	AccessPolicy        string        `json:"accessPolicy,omitempty"`
+	AuthProfileKey      string        `json:"authProfileKey,omitempty"`
+	Tags                []TagResponse `json:"tags"`
+	PackCount           int           `json:"packCount"`
+	RuleCount           int           `json:"ruleCount"`
+	CreatedAt           string        `json:"createdAt"`
+	UpdatedAt           string        `json:"updatedAt"`
+	CreatedBy           string        `json:"createdBy"`
+	UpdatedBy           string        `json:"updatedBy"`
+	TrialUntil          *string       `json:"trialUntil,omitempty"`
+	Tiers               []TierRef     `json:"tiers"`
 }
 
 // FeatureDetailResponse includes rules in the feature response.
@@ -130,6 +134,7 @@ type ExternalAPIBindingResponse struct {
 	ExternalAPIKey string                 `json:"externalApiKey"`
 	ParamMappings  []ParamMappingResponse `json:"paramMappings"`
 	FailMode       string                 `json:"failMode"`
+	CacheEnabled   bool                   `json:"cacheEnabled,omitempty"`
 	CacheTTL       int                    `json:"cacheTTL"`
 }
 
@@ -143,20 +148,24 @@ type ParamMappingResponse struct {
 
 // SegmentResponse is the response DTO for a segment.
 type SegmentResponse struct {
-	ID            string         `json:"id"`
-	Key           string         `json:"key"`
-	Name          string         `json:"name"`
-	Description   string         `json:"description"`
-	Metadata      map[string]any `json:"metadata,omitempty"`
-	RecordCount   int64          `json:"recordCount"`
-	RecordKeyPath string         `json:"recordKeyPath,omitempty"`
-	PreviewFields []string       `json:"previewFields,omitempty"`
-	SourceType    string         `json:"sourceType,omitempty"`
-	LastImportAt  *string        `json:"lastImportAt,omitempty"`
-	CreatedAt     string         `json:"createdAt"`
-	UpdatedAt     string         `json:"updatedAt"`
-	CreatedBy     string         `json:"createdBy"`
-	UpdatedBy     string         `json:"updatedBy"`
+	ID                        string         `json:"id"`
+	Key                       string         `json:"key"`
+	Name                      string         `json:"name"`
+	Description               string         `json:"description"`
+	Metadata                  map[string]any `json:"metadata,omitempty"`
+	MembershipCacheEnabled    bool           `json:"membershipCacheEnabled,omitempty"`
+	MembershipCacheTTLSeconds int            `json:"membershipCacheTTLSeconds,omitempty"`
+	RecordCacheEnabled        bool           `json:"recordCacheEnabled,omitempty"`
+	RecordCacheTTLSeconds     int            `json:"recordCacheTTLSeconds,omitempty"`
+	RecordCount               int64          `json:"recordCount"`
+	RecordKeyPath             string         `json:"recordKeyPath,omitempty"`
+	PreviewFields             []string       `json:"previewFields,omitempty"`
+	SourceType                string         `json:"sourceType,omitempty"`
+	LastImportAt              *string        `json:"lastImportAt,omitempty"`
+	CreatedAt                 string         `json:"createdAt"`
+	UpdatedAt                 string         `json:"updatedAt"`
+	CreatedBy                 string         `json:"createdBy"`
+	UpdatedBy                 string         `json:"updatedBy"`
 }
 
 // SegmentSchemaResponse returns the stored schema metadata for a segment.
@@ -316,6 +325,7 @@ type AuthProfileResponse struct {
 	Active          bool           `json:"active"`
 	Type            string         `json:"type"`
 	Config          map[string]any `json:"config,omitempty"`
+	CacheEnabled    bool           `json:"cacheEnabled,omitempty"`
 	CacheTTLSeconds int            `json:"cacheTTLSeconds,omitempty"`
 	Version         int            `json:"version"`
 	HasSecret       bool           `json:"hasSecret"`

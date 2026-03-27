@@ -179,45 +179,67 @@ func applyOptionalFeatureFields(
 	activeUntil *time.Time,
 	trialUntil *time.Time,
 ) {
-	if _, ok := payload["enabled"]; ok && req.Enabled != nil {
-		existing.Enabled = *req.Enabled
-	}
-	if _, ok := payload["valueType"]; ok {
+	applyOptionalPointerField(payload, "enabled", req.Enabled, func(value bool) {
+		existing.Enabled = value
+	})
+	applyOptionalPointerField(payload, "evalCacheEnabled", req.EvalCacheEnabled, func(value bool) {
+		existing.EvalCacheEnabled = value
+	})
+	applyOptionalPointerField(payload, "evalCacheTTLSeconds", req.EvalCacheTTLSeconds, func(value int) {
+		existing.EvalCacheTTLSeconds = value
+	})
+	applyOptionalValueField(payload, "valueType", func() {
 		existing.ValueType = feature.ValueType(req.ValueType)
-	}
-	if _, ok := payload["defaultValue"]; ok {
+	})
+	applyOptionalValueField(payload, "defaultValue", func() {
 		existing.DefaultValue = req.DefaultValue
-	}
-	if _, ok := payload["activeFrom"]; ok {
+	})
+	applyOptionalValueField(payload, "activeFrom", func() {
 		existing.ActiveFrom = activeFrom
-	}
-	if _, ok := payload["activeUntil"]; ok {
+	})
+	applyOptionalValueField(payload, "activeUntil", func() {
 		existing.ActiveUntil = activeUntil
-	}
-	if _, ok := payload["environments"]; ok {
+	})
+	applyOptionalValueField(payload, "environments", func() {
 		existing.Environments = req.Environments
-	}
-	if _, ok := payload["accessPolicy"]; ok {
+	})
+	applyOptionalValueField(payload, "accessPolicy", func() {
 		existing.AccessPolicy = feature.AccessPolicy(req.AccessPolicy)
-	}
-	if _, ok := payload["authProfileKey"]; ok {
+	})
+	applyOptionalValueField(payload, "authProfileKey", func() {
 		existing.AuthProfileKey = req.AuthProfileKey
-	}
-	if _, ok := payload["inputContract"]; ok {
+	})
+	applyOptionalValueField(payload, "inputContract", func() {
 		existing.InputContract = toDomainInputContract(req.InputContract)
-	}
-	if _, ok := payload["metadata"]; ok {
+	})
+	applyOptionalValueField(payload, "metadata", func() {
 		existing.Metadata = req.Metadata
-	}
-	if _, ok := payload["tags"]; ok {
+	})
+	applyOptionalValueField(payload, "tags", func() {
 		existing.Tags = req.Tags
-	}
-	if _, ok := payload["trialUntil"]; ok {
+	})
+	applyOptionalValueField(payload, "trialUntil", func() {
 		existing.TrialUntil = trialUntil
-	}
-	if _, ok := payload["trialValue"]; ok {
+	})
+	applyOptionalValueField(payload, "trialValue", func() {
 		existing.TrialValue = req.TrialValue
+	})
+}
+
+func applyOptionalValueField(payload map[string]json.RawMessage, key string, apply func()) {
+	if _, ok := payload[key]; !ok {
+		return
 	}
+	apply()
+}
+
+func applyOptionalPointerField[T any](payload map[string]json.RawMessage, key string, value *T, apply func(T)) {
+	if value == nil {
+		return
+	}
+	applyOptionalValueField(payload, key, func() {
+		apply(*value)
+	})
 }
 
 func toDomainInputContract(req dto.InputContractRequest) feature.InputContract {
@@ -403,24 +425,26 @@ func (h *FeatureHandler) Create(c *gin.Context) {
 	}
 
 	f := &feature.Feature{
-		Key:            req.Key,
-		Name:           req.Name,
-		Description:    req.Description,
-		Enabled:        req.Enabled,
-		ValueType:      feature.ValueType(req.ValueType),
-		DefaultValue:   req.DefaultValue,
-		ActiveFrom:     activeFrom,
-		ActiveUntil:    activeUntil,
-		Environments:   req.Environments,
-		AccessPolicy:   feature.AccessPolicy(req.AccessPolicy),
-		AuthProfileKey: req.AuthProfileKey,
-		InputContract:  toDomainInputContract(req.InputContract),
-		Metadata:       req.Metadata,
-		Tags:           req.Tags,
-		TrialUntil:     trialUntil,
-		TrialValue:     req.TrialValue,
-		CreatedBy:      middleware.GetUserEmail(c),
-		UpdatedBy:      middleware.GetUserEmail(c),
+		Key:                 req.Key,
+		Name:                req.Name,
+		Description:         req.Description,
+		Enabled:             req.Enabled,
+		EvalCacheEnabled:    req.EvalCacheEnabled,
+		EvalCacheTTLSeconds: req.EvalCacheTTLSeconds,
+		ValueType:           feature.ValueType(req.ValueType),
+		DefaultValue:        req.DefaultValue,
+		ActiveFrom:          activeFrom,
+		ActiveUntil:         activeUntil,
+		Environments:        req.Environments,
+		AccessPolicy:        feature.AccessPolicy(req.AccessPolicy),
+		AuthProfileKey:      req.AuthProfileKey,
+		InputContract:       toDomainInputContract(req.InputContract),
+		Metadata:            req.Metadata,
+		Tags:                req.Tags,
+		TrialUntil:          trialUntil,
+		TrialValue:          req.TrialValue,
+		CreatedBy:           middleware.GetUserEmail(c),
+		UpdatedBy:           middleware.GetUserEmail(c),
 	}
 
 	if err := h.svc.Create(c.Request.Context(), f); err != nil {

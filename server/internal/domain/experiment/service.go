@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/rendis/feature-evaluator/internal/domain/feature"
+	"github.com/rendis/feature-evaluator/internal/domain/observability"
 	"github.com/rendis/feature-evaluator/internal/domain/workspace"
 	"github.com/rendis/feature-evaluator/pkg/apierror"
 )
@@ -58,6 +59,7 @@ func (s *Service) Create(ctx context.Context, exp *Experiment) error {
 	if err := validateVariants(exp.Variants); err != nil {
 		return err
 	}
+	exp.NormalizeCacheConfig()
 
 	// Verify feature exists.
 	if _, err := s.featureSvc.GetByKey(ctx, exp.FeatureKey); err != nil {
@@ -125,9 +127,12 @@ func (s *Service) Update(ctx context.Context, exp *Experiment) error {
 	existing.Description = exp.Description
 	existing.Variants = exp.Variants
 	existing.Metrics = exp.Metrics
+	existing.LookupCacheEnabled = exp.LookupCacheEnabled
+	existing.LookupCacheTTLSeconds = exp.LookupCacheTTLSeconds
 	if existing.Metrics == nil {
 		existing.Metrics = []Metric{}
 	}
+	existing.NormalizeCacheConfig()
 	existing.UpdatedAt = time.Now().UTC()
 
 	return s.repo.Update(ctx, existing)
@@ -423,22 +428,92 @@ func (s *Service) GetResults(ctx context.Context, id string) (*Results, error) {
 // FindRunningByFeatureKey returns the running experiment for a feature, if any.
 // Uses Redis cache to avoid hitting the database on every evaluation.
 func (s *Service) FindRunningByFeatureKey(ctx context.Context, featureKey string) (*Experiment, error) {
+	trace, _ := observability.TraceRecorderFromContext(ctx)
+	stepStart := time.Now()
 	wsKey := workspace.KeyFromContext(ctx)
-	if s.cache != nil {
-		if exp, found := s.cache.GetRunning(ctx, wsKey, featureKey); found {
-			return exp, nil
-		}
+	if exp, found := s.cachedRunningExperiment(ctx, wsKey, featureKey, trace, stepStart); found {
+		return exp, nil
 	}
 
 	exp, err := s.repo.FindRunningByFeatureKey(ctx, featureKey)
 	if err != nil {
+		s.recordExperimentLookupTrace(trace, featureKey, s.cache != nil, 0, stepStart, "error")
 		return nil, err
 	}
 
-	if s.cache != nil {
-		s.cache.SetRunning(ctx, wsKey, featureKey, exp)
-	}
+	s.cacheRunningExperiment(ctx, wsKey, featureKey, exp)
+	s.recordExperimentLookupTrace(trace, featureKey, exp != nil && exp.LookupCacheEnabled, experimentLookupTTL(exp), stepStart, "resolved")
 	return exp, nil
+}
+
+func (s *Service) cachedRunningExperiment(
+	ctx context.Context,
+	wsKey, featureKey string,
+	trace observability.TraceRecorder,
+	stepStart time.Time,
+) (*Experiment, bool) {
+	if s.cache == nil {
+		return nil, false
+	}
+	exp, found := s.cache.GetRunning(ctx, wsKey, featureKey)
+	if !found || !canUseCachedRunningExperiment(exp) {
+		return nil, false
+	}
+	s.recordExperimentLookupTrace(trace, featureKey, true, experimentLookupTTL(exp), stepStart, "cached")
+	return exp, true
+}
+
+func (s *Service) cacheRunningExperiment(ctx context.Context, wsKey, featureKey string, exp *Experiment) {
+	if s.cache == nil || !canCacheRunningExperiment(exp) {
+		return
+	}
+	s.cache.SetRunning(ctx, wsKey, featureKey, exp, time.Duration(exp.LookupCacheTTLSeconds)*time.Second)
+}
+
+func (s *Service) recordExperimentLookupTrace(
+	trace observability.TraceRecorder,
+	featureKey string,
+	cacheEnabled bool,
+	ttlSeconds int,
+	stepStart time.Time,
+	outcome string,
+) {
+	if trace == nil {
+		return
+	}
+	cacheStatus := observability.CacheStatusMiss
+	if outcome == "cached" {
+		cacheStatus = observability.CacheStatusHit
+		trace.MarkUsedRedis()
+	} else if !cacheEnabled {
+		cacheStatus = observability.CacheStatusNotApplicable
+	} else if outcome == "error" {
+		cacheStatus = observability.CacheStatusComputed
+	}
+	trace.RecordComponent(observability.ComponentTrace{
+		Name:         "experiment_lookup:" + featureKey,
+		CacheBackend: observability.CacheBackendRedis,
+		CacheEnabled: cacheEnabled,
+		CacheStatus:  cacheStatus,
+		TTLSeconds:   ttlSeconds,
+		DurationMs:   time.Since(stepStart).Milliseconds(),
+		Outcome:      outcome,
+	})
+}
+
+func canUseCachedRunningExperiment(exp *Experiment) bool {
+	return exp == nil || (exp.LookupCacheEnabled && exp.LookupCacheTTLSeconds > 0)
+}
+
+func canCacheRunningExperiment(exp *Experiment) bool {
+	return exp != nil && exp.LookupCacheEnabled && exp.LookupCacheTTLSeconds > 0
+}
+
+func experimentLookupTTL(exp *Experiment) int {
+	if exp == nil {
+		return 0
+	}
+	return exp.LookupCacheTTLSeconds
 }
 
 func (s *Service) invalidateCache(ctx context.Context, featureKey string) {

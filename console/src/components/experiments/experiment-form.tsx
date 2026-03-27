@@ -10,6 +10,7 @@ import { VariantEditor } from '@/components/experiments/variant-editor';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { useSubmissionLoadingModal } from '@/hooks/use-global-loading';
 import { useCreateExperiment, useUpdateExperiment } from '@/mutations/experiment-mutations';
 
@@ -26,6 +27,8 @@ interface SubmitExperimentParams {
   updateExperiment: UpdateExperimentMutation;
   description: string;
   featureKey: string;
+  lookupCacheEnabled: boolean;
+  lookupCacheTTLSeconds: string;
   isEditing: boolean;
   metrics: ExperimentMetric[];
   name: string;
@@ -39,6 +42,8 @@ function submitExperiment({
   updateExperiment,
   description,
   featureKey,
+  lookupCacheEnabled,
+  lookupCacheTTLSeconds,
   isEditing,
   metrics,
   name,
@@ -55,7 +60,19 @@ function submitExperiment({
   };
 
   if (isEditing) {
-    updateExperiment.mutate({ name, description, variants, metrics }, callbacks);
+    updateExperiment.mutate(
+      {
+        name,
+        description,
+        lookupCacheEnabled,
+        lookupCacheTTLSeconds: lookupCacheEnabled
+          ? normalizePositiveInt(lookupCacheTTLSeconds, 300)
+          : 0,
+        variants,
+        metrics,
+      },
+      callbacks,
+    );
     return;
   }
 
@@ -63,7 +80,20 @@ function submitExperiment({
     return;
   }
 
-  createExperiment.mutate({ featureKey, name, description, variants, metrics }, callbacks);
+  createExperiment.mutate(
+    {
+      featureKey,
+      name,
+      description,
+      lookupCacheEnabled,
+      lookupCacheTTLSeconds: lookupCacheEnabled
+        ? normalizePositiveInt(lookupCacheTTLSeconds, 300)
+        : 0,
+      variants,
+      metrics,
+    },
+    callbacks,
+  );
 }
 
 function createSubmitHandler(params: SubmitExperimentParams) {
@@ -88,11 +118,15 @@ function ExperimentFormContent({
   isDraft,
   isEditing,
   isPending,
+  lookupCacheEnabled,
+  lookupCacheTTLSeconds,
   name,
   navigate,
   onDescriptionChange,
   onFeatureKeyChange,
   onNameChange,
+  onLookupCacheEnabledChange,
+  onLookupCacheTTLChange,
   onSubmit,
   onMetricsChange,
   onVariantsChange,
@@ -105,12 +139,16 @@ function ExperimentFormContent({
   isDraft: boolean;
   isEditing: boolean;
   isPending: boolean;
+  lookupCacheEnabled: boolean;
+  lookupCacheTTLSeconds: string;
   name: string;
   navigate: ReturnType<typeof useNavigate>;
   onDescriptionChange: (value: string) => void;
   onFeatureKeyChange: (value: string) => void;
   onMetricsChange: (value: ExperimentMetric[]) => void;
   onNameChange: (value: string) => void;
+  onLookupCacheEnabledChange: (value: boolean) => void;
+  onLookupCacheTTLChange: (value: string) => void;
   onSubmit: (event: React.FormEvent) => void;
   onVariantsChange: (value: Variant[]) => void;
   description: string;
@@ -129,6 +167,12 @@ function ExperimentFormContent({
         onNameChange={onNameChange}
         description={description}
         onDescriptionChange={onDescriptionChange}
+      />
+      <CacheSettings
+        enabled={lookupCacheEnabled}
+        ttlSeconds={lookupCacheTTLSeconds}
+        onEnabledChange={onLookupCacheEnabledChange}
+        onTTLChange={onLookupCacheTTLChange}
       />
       <VariantEditor variants={variants} onChange={onVariantsChange} disabled={!isDraft} />
       <MetricEditor metrics={metrics} onChange={onMetricsChange} disabled={!isDraft} />
@@ -154,6 +198,12 @@ export function ExperimentForm({ experiment, featureKeys }: ExperimentFormProps)
   const [name, setName] = useState(experiment?.name ?? '');
   const [description, setDescription] = useState(experiment?.description ?? '');
   const [featureKey, setFeatureKey] = useState(experiment?.featureKey ?? '');
+  const [lookupCacheEnabled, setLookupCacheEnabled] = useState(
+    experiment?.lookupCacheEnabled ?? (experiment?.lookupCacheTTLSeconds ?? 0) > 0,
+  );
+  const [lookupCacheTTLSeconds, setLookupCacheTTLSeconds] = useState(
+    experiment?.lookupCacheTTLSeconds ? String(experiment.lookupCacheTTLSeconds) : '300',
+  );
   const [variants, setVariants] = useState<Variant[]>(
     experiment?.variants ?? [
       { key: 'control', value: '', weight: 50 },
@@ -171,6 +221,8 @@ export function ExperimentForm({ experiment, featureKeys }: ExperimentFormProps)
     updateExperiment,
     description,
     featureKey,
+    lookupCacheEnabled,
+    lookupCacheTTLSeconds,
     isEditing,
     metrics,
     name,
@@ -186,12 +238,16 @@ export function ExperimentForm({ experiment, featureKeys }: ExperimentFormProps)
       isDraft={isDraft}
       isEditing={isEditing}
       isPending={isPending}
+      lookupCacheEnabled={lookupCacheEnabled}
+      lookupCacheTTLSeconds={lookupCacheTTLSeconds}
       name={name}
       navigate={navigate}
       onDescriptionChange={setDescription}
       onFeatureKeyChange={setFeatureKey}
       onMetricsChange={setMetrics}
       onNameChange={setName}
+      onLookupCacheEnabledChange={setLookupCacheEnabled}
+      onLookupCacheTTLChange={setLookupCacheTTLSeconds}
       onSubmit={handleSubmit}
       onVariantsChange={setVariants}
       description={description}
@@ -254,4 +310,53 @@ function FormFields({
       </div>
     </>
   );
+}
+
+function CacheSettings({
+  enabled,
+  ttlSeconds,
+  onEnabledChange,
+  onTTLChange,
+}: {
+  enabled: boolean;
+  ttlSeconds: string;
+  onEnabledChange: (value: boolean) => void;
+  onTTLChange: (value: string) => void;
+}) {
+  const { t } = useTranslation('experiments');
+
+  return (
+    <div className="rounded-2xl border border-border/70 bg-muted/10 p-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-3">
+          <Switch
+            checked={enabled}
+            aria-label={t('cache.lookup.enabled')}
+            onCheckedChange={onEnabledChange}
+          />
+          <div>
+            <p className="text-sm font-medium">{t('cache.lookup.enabled')}</p>
+            <p className="text-muted-foreground text-xs">{t('cache.lookup.help')}</p>
+          </div>
+        </div>
+        <div className="flex w-full items-center gap-2 md:max-w-64">
+          <Label htmlFor="experiment-cache-ttl" className="shrink-0 text-sm">
+            {t('cache.lookup.ttl')}
+          </Label>
+          <Input
+            id="experiment-cache-ttl"
+            value={ttlSeconds}
+            disabled={!enabled}
+            onChange={(event) => onTTLChange(event.target.value)}
+            placeholder="300"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function normalizePositiveInt(value: string, fallback: number) {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }

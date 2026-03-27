@@ -37,6 +37,7 @@ export function StepValidation({ draft, onChange }: StepValidationProps) {
         <div className="flex items-center gap-3">
           <Switch
             checked={draft.cacheEnabled}
+            aria-label={t('authProfiles.cacheCustom')}
             onCheckedChange={(checked) =>
               onChange((current) => ({ ...current, cacheEnabled: checked }))
             }

@@ -51,6 +51,7 @@ func validateAPIKeyProfile(profile *Profile, secretPayload map[string]string, cr
 	profile.Config["location"] = location
 	profile.Config["name"] = name
 	profile.Config["prefix"] = strings.TrimSpace(stringConfig(profile.Config, "prefix"))
+	profile.CacheEnabled = false
 	profile.CacheTTLSeconds = 0
 
 	if requireSecret || creating {
@@ -103,6 +104,7 @@ func validateOIDCStandardProfile(profile *Profile, secretPayload map[string]stri
 		"issuer":   strings.TrimRight(issuer, "/"),
 		"audience": audience,
 	}
+	profile.CacheEnabled = false
 	profile.CacheTTLSeconds = 0
 	return nil
 }

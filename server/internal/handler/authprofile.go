@@ -95,6 +95,7 @@ func (h *AuthProfileHandler) Create(c *gin.Context) {
 		Active:          req.Active,
 		Type:            req.Type,
 		Config:          req.Config,
+		CacheEnabled:    req.CacheEnabled,
 		CacheTTLSeconds: req.CacheTTLSeconds,
 		CreatedBy:       middleware.GetUserEmail(c),
 		UpdatedBy:       middleware.GetUserEmail(c),
@@ -135,6 +136,7 @@ func (h *AuthProfileHandler) Update(c *gin.Context) {
 		Active:          req.Active,
 		Type:            req.Type,
 		Config:          req.Config,
+		CacheEnabled:    req.CacheEnabled,
 		CacheTTLSeconds: req.CacheTTLSeconds,
 		UpdatedBy:       middleware.GetUserEmail(c),
 	}
@@ -195,6 +197,7 @@ func (h *AuthProfileHandler) Test(c *gin.Context) {
 		Active:          req.Active,
 		Type:            req.Type,
 		Config:          req.Config,
+		CacheEnabled:    req.CacheEnabled,
 		CacheTTLSeconds: req.CacheTTLSeconds,
 	}
 	result, err := h.validator.ValidateDraft(c.Request.Context(), profile, req.SecretPayload, map[string]any{

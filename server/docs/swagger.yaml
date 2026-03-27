@@ -509,6 +509,8 @@ definitions:
     properties:
       active:
         type: boolean
+      cacheEnabled:
+        type: boolean
       cacheTTLSeconds:
         type: integer
       config:
@@ -579,6 +581,8 @@ definitions:
     properties:
       active:
         type: boolean
+      cacheEnabled:
+        type: boolean
       cacheTTLSeconds:
         type: integer
       config:
@@ -605,6 +609,10 @@ definitions:
         type: string
       featureKey:
         type: string
+      lookupCacheEnabled:
+        type: boolean
+      lookupCacheTTLSeconds:
+        type: integer
       metrics:
         items:
           $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.MetricRequest'
@@ -670,6 +678,10 @@ definitions:
         items:
           type: string
         type: array
+      evalCacheEnabled:
+        type: boolean
+      evalCacheTTLSeconds:
+        type: integer
       inputContract:
         $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.InputContractRequest'
       key:
@@ -782,11 +794,19 @@ definitions:
         type: string
       key:
         type: string
+      membershipCacheEnabled:
+        type: boolean
+      membershipCacheTTLSeconds:
+        type: integer
       metadata:
         additionalProperties: {}
         type: object
       name:
         type: string
+      recordCacheEnabled:
+        type: boolean
+      recordCacheTTLSeconds:
+        type: integer
     required:
     - key
     - name
@@ -895,6 +915,13 @@ definitions:
           $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.MemberResponse'
         type: array
     type: object
+  ? github_com_rendis_feature-evaluator_internal_dto.DataResponse-array_github_com_rendis_feature-evaluator_internal_dto_ObservabilityRuleResponse
+  : properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityRuleResponse'
+        type: array
+    type: object
   ? github_com_rendis_feature-evaluator_internal_dto.DataResponse-array_github_com_rendis_feature-evaluator_internal_dto_PackResponse
   : properties:
       data:
@@ -959,6 +986,10 @@ definitions:
         type: string
       id:
         type: string
+      lookupCacheEnabled:
+        type: boolean
+      lookupCacheTTLSeconds:
+        type: integer
       metrics:
         items:
           $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.MetricResponse'
@@ -989,6 +1020,8 @@ definitions:
     type: object
   github_com_rendis_feature-evaluator_internal_dto.ExternalAPIBindingRequest:
     properties:
+      cacheEnabled:
+        type: boolean
       cacheTTL:
         type: integer
       externalApiKey:
@@ -1004,6 +1037,8 @@ definitions:
     type: object
   github_com_rendis_feature-evaluator_internal_dto.ExternalAPIBindingResponse:
     properties:
+      cacheEnabled:
+        type: boolean
       cacheTTL:
         type: integer
       externalApiKey:
@@ -1145,6 +1180,10 @@ definitions:
         items:
           type: string
         type: array
+      evalCacheEnabled:
+        type: boolean
+      evalCacheTTLSeconds:
+        type: integer
       id:
         type: string
       inputContract:
@@ -1268,6 +1307,10 @@ definitions:
         items:
           type: string
         type: array
+      evalCacheEnabled:
+        type: boolean
+      evalCacheTTLSeconds:
+        type: integer
       id:
         type: string
       key:
@@ -1436,6 +1479,15 @@ definitions:
       pagination:
         $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.PaginationResponse'
     type: object
+  ? github_com_rendis_feature-evaluator_internal_dto.ListResponse-github_com_rendis_feature-evaluator_internal_dto_ObservabilityTraceResponse
+  : properties:
+      data:
+        items:
+          $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityTraceResponse'
+        type: array
+      pagination:
+        $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.PaginationResponse'
+    type: object
   ? github_com_rendis_feature-evaluator_internal_dto.ListResponse-github_com_rendis_feature-evaluator_internal_dto_SegmentRecordResponse
   : properties:
       data:
@@ -1594,6 +1646,170 @@ definitions:
       value: {}
       variant:
         type: string
+    type: object
+  github_com_rendis_feature-evaluator_internal_dto.ObservabilityComponentResponse:
+    properties:
+      cacheBackend:
+        type: string
+      cacheEnabled:
+        type: boolean
+      cacheStatus:
+        type: string
+      computedCount:
+        type: integer
+      count:
+        type: integer
+      disabledCount:
+        type: integer
+      hitCount:
+        type: integer
+      missCount:
+        type: integer
+      name:
+        type: string
+      notApplicableCount:
+        type: integer
+      totalDurationMs:
+        type: integer
+      ttlSeconds:
+        type: integer
+    type: object
+  github_com_rendis_feature-evaluator_internal_dto.ObservabilityComponentTraceResponse:
+    properties:
+      cacheBackend:
+        type: string
+      cacheEnabled:
+        type: boolean
+      cacheStatus:
+        type: string
+      durationMs:
+        type: integer
+      name:
+        type: string
+      outcome:
+        type: string
+      ttlSeconds:
+        type: integer
+    type: object
+  github_com_rendis_feature-evaluator_internal_dto.ObservabilityExternalCallResponse:
+    properties:
+      apiKey:
+        type: string
+      computedCount:
+        type: integer
+      count:
+        type: integer
+      disabledCount:
+        type: integer
+      hitCount:
+        type: integer
+      missCount:
+        type: integer
+      notApplicableCount:
+        type: integer
+      totalDurationMs:
+        type: integer
+    type: object
+  github_com_rendis_feature-evaluator_internal_dto.ObservabilityExternalCallTraceResponse:
+    properties:
+      apiKey:
+        type: string
+      cacheStatus:
+        type: string
+      durationMs:
+        type: integer
+      httpStatus:
+        type: integer
+      passed:
+        type: boolean
+    type: object
+  github_com_rendis_feature-evaluator_internal_dto.ObservabilityOverviewResponse:
+    properties:
+      components:
+        items:
+          $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityComponentResponse'
+        type: array
+      count:
+        type: integer
+      errorCount:
+        type: integer
+      featureKey:
+        type: string
+      totalDurationMs:
+        type: integer
+      usedRedisCount:
+        type: integer
+    type: object
+  github_com_rendis_feature-evaluator_internal_dto.ObservabilityRuleResponse:
+    properties:
+      compileCacheHitCount:
+        type: integer
+      count:
+        type: integer
+      expressionDurationMs:
+        type: integer
+      externalCalls:
+        items:
+          $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityExternalCallResponse'
+        type: array
+      matchedCount:
+        type: integer
+      priority:
+        type: integer
+      ruleId:
+        type: string
+      totalDurationMs:
+        type: integer
+    type: object
+  github_com_rendis_feature-evaluator_internal_dto.ObservabilityRuleTraceResponse:
+    properties:
+      compileCacheHit:
+        type: boolean
+      durationMs:
+        type: integer
+      expressionDurationMs:
+        type: integer
+      externalCalls:
+        items:
+          $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityExternalCallTraceResponse'
+        type: array
+      matched:
+        type: boolean
+      priority:
+        type: integer
+      ruleId:
+        type: string
+    type: object
+  github_com_rendis_feature-evaluator_internal_dto.ObservabilityTraceResponse:
+    properties:
+      cacheStatus:
+        type: string
+      components:
+        items:
+          $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityComponentTraceResponse'
+        type: array
+      createdAt:
+        type: string
+      environment:
+        type: string
+      errorCode:
+        type: string
+      featureKey:
+        type: string
+      id:
+        type: string
+      requestId:
+        type: string
+      resultReason:
+        type: string
+      rules:
+        items:
+          $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityRuleTraceResponse'
+        type: array
+      totalDurationMs:
+        type: integer
+      usedRedis:
+        type: boolean
     type: object
   github_com_rendis_feature-evaluator_internal_dto.PackRef:
     properties:
@@ -1795,6 +2011,10 @@ definitions:
         type: string
       lastImportAt:
         type: string
+      membershipCacheEnabled:
+        type: boolean
+      membershipCacheTTLSeconds:
+        type: integer
       metadata:
         additionalProperties: {}
         type: object
@@ -1804,6 +2024,10 @@ definitions:
         items:
           type: string
         type: array
+      recordCacheEnabled:
+        type: boolean
+      recordCacheTTLSeconds:
+        type: integer
       recordCount:
         type: integer
       recordKeyPath:
@@ -1897,6 +2121,8 @@ definitions:
   github_com_rendis_feature-evaluator_internal_dto.TestAuthProfileRequest:
     properties:
       active:
+        type: boolean
+      cacheEnabled:
         type: boolean
       cacheTTLSeconds:
         type: integer
@@ -2016,6 +2242,8 @@ definitions:
     properties:
       active:
         type: boolean
+      cacheEnabled:
+        type: boolean
       cacheTTLSeconds:
         type: integer
       config:
@@ -2042,6 +2270,10 @@ definitions:
     properties:
       description:
         type: string
+      lookupCacheEnabled:
+        type: boolean
+      lookupCacheTTLSeconds:
+        type: integer
       metrics:
         items:
           $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.MetricRequest'
@@ -2108,6 +2340,10 @@ definitions:
         items:
           type: string
         type: array
+      evalCacheEnabled:
+        type: boolean
+      evalCacheTTLSeconds:
+        type: integer
       inputContract:
         $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.InputContractRequest'
       metadata:
@@ -2198,11 +2434,19 @@ definitions:
     properties:
       description:
         type: string
+      membershipCacheEnabled:
+        type: boolean
+      membershipCacheTTLSeconds:
+        type: integer
       metadata:
         additionalProperties: {}
         type: object
       name:
         type: string
+      recordCacheEnabled:
+        type: boolean
+      recordCacheTTLSeconds:
+        type: integer
     required:
     - name
     type: object
@@ -3769,6 +4013,145 @@ paths:
       summary: Test expression with feature context
       tags:
       - expressions
+  /admin/features/{key}/observability/overview:
+    get:
+      description: Returns aggregated evaluation metrics for a feature
+      parameters:
+      - description: Feature key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityOverviewResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Feature observability overview
+      tags:
+      - features
+  /admin/features/{key}/observability/rules:
+    get:
+      description: Returns aggregated metrics for rules within a feature
+      parameters:
+      - description: Feature key
+        in: path
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.DataResponse-array_github_com_rendis_feature-evaluator_internal_dto_ObservabilityRuleResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Feature rule observability
+      tags:
+      - features
+  /admin/features/{key}/observability/rules/{ruleId}:
+    get:
+      description: Returns aggregated metrics for a single rule
+      parameters:
+      - description: Feature key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Rule ID
+        in: path
+        name: ruleId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityRuleResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Feature rule observability detail
+      tags:
+      - features
+  /admin/features/{key}/observability/traces:
+    get:
+      description: Returns persisted sanitized traces for a feature
+      parameters:
+      - description: Feature key
+        in: path
+        name: key
+        required: true
+        type: string
+      - description: Filter by rule ID
+        in: query
+        name: ruleId
+        type: string
+      - description: Search request ID
+        in: query
+        name: search
+        type: string
+      - description: Filter by cache status
+        in: query
+        name: cacheStatus
+        type: string
+      - description: Filter by Redis usage
+        in: query
+        name: usedRedis
+        type: boolean
+      - description: Start date (RFC3339)
+        in: query
+        name: from
+        type: string
+      - description: End date (RFC3339)
+        in: query
+        name: to
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ListResponse-github_com_rendis_feature-evaluator_internal_dto_ObservabilityTraceResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_rendis_feature-evaluator_internal_dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Feature evaluation traces
+      tags:
+      - features
   /admin/features/{key}/rules:
     get:
       description: Returns all rules for a feature, sorted by priority

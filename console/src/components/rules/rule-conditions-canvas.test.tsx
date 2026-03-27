@@ -127,22 +127,26 @@ describe('RuleConditionsCanvas', () => {
             kind: 'group',
             connector: 'and',
             items: [
-              {
-                id: 'external-api-condition',
-                kind: 'condition',
-                conditionKind: 'externalApi',
-                externalApiKey: 'payment-validator',
-                externalApiName: '',
-                paramMappings: [],
-                negate: false,
-              },
-            ],
+          {
+            id: 'external-api-condition',
+            kind: 'condition',
+            conditionKind: 'externalApi',
+            externalApiKey: 'payment-validator',
+            externalApiName: '',
+            cacheEnabled: false,
+            cacheTTL: 300,
+            paramMappings: [],
+            negate: false,
           },
+        ],
+      },
         )}
         initialSourceBindings={{ segments: [] }}
         initialExternalApiBindings={[
           {
             externalApiKey: 'payment-validator',
+            cacheEnabled: true,
+            cacheTTL: 120,
             paramMappings: [
               {
                 paramName: 'userId',
@@ -151,7 +155,6 @@ describe('RuleConditionsCanvas', () => {
               },
             ],
             failMode: 'open',
-            cacheTTL: 0,
           },
         ]}
         onChange={vi.fn()}
@@ -162,5 +165,7 @@ describe('RuleConditionsCanvas', () => {
     expect(screen.getAllByText(/userId/).length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: /Payment Validator/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /User ID/ })).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Cache de API externa' })).toBeChecked();
+    expect(screen.getByDisplayValue('120')).toBeInTheDocument();
   });
 });

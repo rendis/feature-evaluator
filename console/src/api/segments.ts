@@ -15,12 +15,20 @@ export interface CreateSegmentRequest {
   name: string;
   description?: string;
   metadata?: Record<string, unknown>;
+  membershipCacheEnabled?: boolean;
+  membershipCacheTTLSeconds?: number;
+  recordCacheEnabled?: boolean;
+  recordCacheTTLSeconds?: number;
 }
 
 export interface UpdateSegmentRequest {
   name?: string;
   description?: string;
   metadata?: Record<string, unknown>;
+  membershipCacheEnabled?: boolean;
+  membershipCacheTTLSeconds?: number;
+  recordCacheEnabled?: boolean;
+  recordCacheTTLSeconds?: number;
 }
 
 export interface ListSegmentRecordsParams {

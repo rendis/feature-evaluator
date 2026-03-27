@@ -7,7 +7,14 @@ import { defineConfig } from 'vite';
 
 
 export default defineConfig({
-  plugins: [TanStackRouterVite({ quoteStyle: 'single' }), react(), tailwindcss()],
+  plugins: [
+    TanStackRouterVite({
+      quoteStyle: 'single',
+      routeFileIgnorePattern: '.*\\.test\\.(ts|tsx)$',
+    }),
+    react(),
+    tailwindcss(),
+  ],
   envDir: path.resolve(__dirname, '..'),
   resolve: {
     alias: {

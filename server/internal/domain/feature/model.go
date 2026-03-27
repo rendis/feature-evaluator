@@ -90,32 +90,34 @@ func (ap AccessPolicy) Valid() bool {
 
 // Feature represents a feature flag with embedded rules.
 type Feature struct {
-	ID             string         `json:"id"`
-	WorkspaceKey   string         `json:"workspaceKey"`
-	Key            string         `json:"key"`
-	Name           string         `json:"name"`
-	Description    string         `json:"description"`
-	Enabled        bool           `json:"enabled"`
-	ValueType      ValueType      `json:"valueType"`
-	DefaultValue   any            `json:"defaultValue"`
-	ActiveFrom     *time.Time     `json:"activeFrom,omitempty"`
-	ActiveUntil    *time.Time     `json:"activeUntil,omitempty"`
-	Environments   []string       `json:"environments,omitempty"`
-	AccessPolicy   AccessPolicy   `json:"accessPolicy,omitempty"`
-	AuthProfileKey string         `json:"authProfileKey,omitempty"`
-	InputContract  InputContract  `json:"inputContract,omitempty"`
-	Metadata       map[string]any `json:"metadata,omitempty"`
-	Tags           []string       `json:"tags,omitempty"`
-	RolloutSalt    string         `json:"rolloutSalt,omitempty"`
-	RuleCount      int            `json:"ruleCount,omitempty"`
-	PackCount      int            `json:"packCount,omitempty"`
-	TrialUntil     *time.Time     `json:"trialUntil,omitempty"`
-	TrialValue     any            `json:"trialValue,omitempty"`
-	Rules          []Rule         `json:"rules,omitempty"`
-	CreatedAt      time.Time      `json:"createdAt"`
-	UpdatedAt      time.Time      `json:"updatedAt"`
-	CreatedBy      string         `json:"createdBy"`
-	UpdatedBy      string         `json:"updatedBy"`
+	ID                  string         `json:"id"`
+	WorkspaceKey        string         `json:"workspaceKey"`
+	Key                 string         `json:"key"`
+	Name                string         `json:"name"`
+	Description         string         `json:"description"`
+	Enabled             bool           `json:"enabled"`
+	EvalCacheEnabled    bool           `json:"evalCacheEnabled,omitempty"`
+	EvalCacheTTLSeconds int            `json:"evalCacheTTLSeconds,omitempty"`
+	ValueType           ValueType      `json:"valueType"`
+	DefaultValue        any            `json:"defaultValue"`
+	ActiveFrom          *time.Time     `json:"activeFrom,omitempty"`
+	ActiveUntil         *time.Time     `json:"activeUntil,omitempty"`
+	Environments        []string       `json:"environments,omitempty"`
+	AccessPolicy        AccessPolicy   `json:"accessPolicy,omitempty"`
+	AuthProfileKey      string         `json:"authProfileKey,omitempty"`
+	InputContract       InputContract  `json:"inputContract,omitempty"`
+	Metadata            map[string]any `json:"metadata,omitempty"`
+	Tags                []string       `json:"tags,omitempty"`
+	RolloutSalt         string         `json:"rolloutSalt,omitempty"`
+	RuleCount           int            `json:"ruleCount,omitempty"`
+	PackCount           int            `json:"packCount,omitempty"`
+	TrialUntil          *time.Time     `json:"trialUntil,omitempty"`
+	TrialValue          any            `json:"trialValue,omitempty"`
+	Rules               []Rule         `json:"rules,omitempty"`
+	CreatedAt           time.Time      `json:"createdAt"`
+	UpdatedAt           time.Time      `json:"updatedAt"`
+	CreatedBy           string         `json:"createdBy"`
+	UpdatedBy           string         `json:"updatedBy"`
 }
 
 // Rule represents a targeting rule within a feature.
@@ -177,6 +179,7 @@ type ExternalAPIBinding struct {
 	ExternalAPIKey string         `json:"externalApiKey"`
 	ParamMappings  []ParamMapping `json:"paramMappings,omitempty"`
 	FailMode       FailMode       `json:"failMode"`
+	CacheEnabled   bool           `json:"cacheEnabled,omitempty"`
 	CacheTTL       int            `json:"cacheTTL"`
 }
 
@@ -186,4 +189,59 @@ type ParamMapping struct {
 	Mode         string `json:"mode"` // "input" or "literal"
 	InputPath    string `json:"inputPath,omitempty"`
 	LiteralValue string `json:"literalValue,omitempty"`
+}
+
+const (
+	minCacheTTLSeconds             = 30
+	maxCacheTTLSeconds             = 3600
+	defaultFeatureEvalCacheTTL     = 300
+	defaultExternalBindingCacheTTL = 300
+)
+
+// NormalizeCacheConfig applies cache defaults and bounds to the feature and its rules.
+func (f *Feature) NormalizeCacheConfig() {
+	if f == nil {
+		return
+	}
+	normalizeEnabledTTL(&f.EvalCacheEnabled, &f.EvalCacheTTLSeconds, defaultFeatureEvalCacheTTL)
+	for i := range f.Rules {
+		f.Rules[i].NormalizeCacheConfig()
+	}
+}
+
+// NormalizeCacheConfig applies cache defaults and bounds to a rule's external bindings.
+func (r *Rule) NormalizeCacheConfig() {
+	if r == nil {
+		return
+	}
+	for i := range r.ExternalAPIBindings {
+		r.ExternalAPIBindings[i].NormalizeCacheConfig()
+	}
+}
+
+// NormalizeCacheConfig applies cache defaults and bounds to an external API binding.
+func (b *ExternalAPIBinding) NormalizeCacheConfig() {
+	if b == nil {
+		return
+	}
+	normalizeEnabledTTL(&b.CacheEnabled, &b.CacheTTL, defaultExternalBindingCacheTTL)
+}
+
+func normalizeEnabledTTL(enabled *bool, ttl *int, defaultTTL int) {
+	if enabled == nil || ttl == nil {
+		return
+	}
+	if !*enabled {
+		*ttl = 0
+		return
+	}
+	if *ttl <= 0 {
+		*ttl = defaultTTL
+	}
+	if *ttl < minCacheTTLSeconds {
+		*ttl = minCacheTTLSeconds
+	}
+	if *ttl > maxCacheTTLSeconds {
+		*ttl = maxCacheTTLSeconds
+	}
 }

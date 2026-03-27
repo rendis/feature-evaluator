@@ -104,6 +104,10 @@ Each API endpoint becomes a callable MCP tool. Tool naming pattern: `fe_{operati
 | `fe_list_packs` | List packs |
 | `fe_list_segments` | List segments |
 | `fe_list_experiments` | List experiments |
+| `fe_get_feature_observability_overview` | Read feature-level observability summary |
+| `fe_get_feature_observability_rules` | Read per-rule observability aggregates |
+| `fe_get_feature_observability_rule` | Read one rule plus recent traces |
+| `fe_get_feature_observability_traces` | Query persisted evaluation traces |
 | `fe_validate_expression` | Validate expression syntax |
 | `fe_test_expression` | Test expression with context |
 | `fe_expression_schema` | Available expression fields/functions |
@@ -118,8 +122,10 @@ All tools follow the `fe_*` prefix convention. Run any `fe_list_*` tool to disco
 2. fe_get_feature { key: "..." }   → inspect a specific feature
 3. fe_list_rules { key: "..." }    → see targeting rules
 4. fe_evaluate { featureKey: "...", context: {...} }  → evaluate a feature
-5. fe_expression_schema            → see available expression fields/functions
-6. fe_validate_expression { expression: "..." }       → validate rule syntax
+5. fe_get_feature_observability_overview { key: "..." } → see cache/latency rollups
+6. fe_get_feature_observability_traces { key: "...", usedRedis: true } → audit cached requests
+7. fe_expression_schema            → see available expression fields/functions
+8. fe_validate_expression { expression: "..." }       → validate rule syntax
 ```
 
 ## API Groups
@@ -142,6 +148,8 @@ All routes under base path `/features`.
 ### Features (Bearer JWT)
 - CRUD: `GET/POST/PUT/DELETE /admin/features`, `/admin/features/:key`
 - `PATCH /admin/features/:key/toggle` — enable/disable
+- Observability: `GET /admin/features/:key/observability/{overview,rules,traces}`
+- Rule observability detail: `GET /admin/features/:key/observability/rules/:ruleId`
 - `GET /admin/environments` — list environments
 
 ### Rules (Bearer JWT)
@@ -168,6 +176,24 @@ All routes under base path `/features`.
 - CRUD: `GET/POST/PUT/DELETE /admin/segments`, `/admin/segments/:key`
 - `GET /admin/segments/:key/schema`, `/admin/segments/:key/records`
 - `POST /admin/segments/:key/data/import`
+
+## Cache Configuration Surfaces
+
+These settings are now first-class admin fields and are exposed through MCP:
+
+- **Feature**: `evalCacheEnabled`, `evalCacheTTLSeconds`
+- **Rule external API binding**: `cacheEnabled`, `cacheTTL`
+- **Auth profile**: `cacheEnabled`, `cacheTTLSeconds`
+- **Segment**: `membershipCacheEnabled`, `membershipCacheTTLSeconds`, `recordCacheEnabled`, `recordCacheTTLSeconds`
+- **Experiment**: `lookupCacheEnabled`, `lookupCacheTTLSeconds`
+
+Recommended audit workflow:
+
+1. Read the feature detail and rules to confirm the cache policy configured in admin.
+2. Evaluate or reproduce the target traffic.
+3. Query `fe_get_feature_observability_overview` for high-level latency and Redis usage.
+4. Query `fe_get_feature_observability_rules` or `fe_get_feature_observability_rule` to see which rule or external dependency is slow.
+5. Query `fe_get_feature_observability_traces` with `ruleId`, `cacheStatus`, `usedRedis`, or `search` to drill into specific requests.
 
 ### Experiments (Bearer JWT)
 - CRUD: `GET/POST/PUT /admin/experiments`, `/admin/experiments/:id`

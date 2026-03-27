@@ -52,12 +52,14 @@ func (h *ExperimentHandler) Create(c *gin.Context) {
 	}
 
 	exp := &experiment.Experiment{
-		FeatureKey:  req.FeatureKey,
-		Name:        req.Name,
-		Description: req.Description,
-		Variants:    variants,
-		Metrics:     metrics,
-		CreatedBy:   middleware.GetUserEmail(c),
+		FeatureKey:            req.FeatureKey,
+		Name:                  req.Name,
+		Description:           req.Description,
+		LookupCacheEnabled:    req.LookupCacheEnabled,
+		LookupCacheTTLSeconds: req.LookupCacheTTLSeconds,
+		Variants:              variants,
+		Metrics:               metrics,
+		CreatedBy:             middleware.GetUserEmail(c),
 	}
 
 	if err := h.svc.Create(c.Request.Context(), exp); err != nil {
@@ -152,11 +154,13 @@ func (h *ExperimentHandler) Update(c *gin.Context) {
 	}
 
 	exp := &experiment.Experiment{
-		ID:          id,
-		Name:        req.Name,
-		Description: req.Description,
-		Variants:    variants,
-		Metrics:     metrics,
+		ID:                    id,
+		Name:                  req.Name,
+		Description:           req.Description,
+		LookupCacheEnabled:    req.LookupCacheEnabled,
+		LookupCacheTTLSeconds: req.LookupCacheTTLSeconds,
+		Variants:              variants,
+		Metrics:               metrics,
 	}
 
 	if err := h.svc.Update(c.Request.Context(), exp); err != nil {

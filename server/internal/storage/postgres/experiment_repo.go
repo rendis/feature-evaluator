@@ -46,10 +46,12 @@ func (r *ExperimentRepo) Create(ctx context.Context, exp *experiment.Experiment)
 	_, err = r.client.db(ctx).Exec(ctx, `
 		INSERT INTO experiments (
 			id, workspace_key, feature_id, name, description, variants, metrics, status,
+			lookup_cache_enabled, lookup_cache_ttl_seconds,
 			winner_key, started_at, completed_at, created_by, created_at, updated_at
 		) VALUES (
 			$1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8,
-			$9, $10, $11, $12, $13, $14
+			$9, $10,
+			$11, $12, $13, $14, $15, $16
 		)
 	`,
 		exp.ID,
@@ -60,6 +62,8 @@ func (r *ExperimentRepo) Create(ctx context.Context, exp *experiment.Experiment)
 		variantsJSON,
 		metricsJSON,
 		exp.Status,
+		exp.LookupCacheEnabled,
+		exp.LookupCacheTTLSeconds,
 		exp.WinnerKey,
 		exp.StartedAt,
 		exp.CompletedAt,
@@ -86,6 +90,7 @@ func (r *ExperimentRepo) GetByID(ctx context.Context, id string) (*experiment.Ex
 
 	row := r.client.db(ctx).QueryRow(ctx, `
 		SELECT e.id, e.workspace_key, f.key, e.name, e.description, e.variants, e.metrics, e.status,
+		       e.lookup_cache_enabled, e.lookup_cache_ttl_seconds,
 		       e.winner_key, e.started_at, e.completed_at, e.created_by, e.created_at, e.updated_at
 		FROM experiments e
 		JOIN features f ON f.id = e.feature_id
@@ -125,7 +130,8 @@ func (r *ExperimentRepo) Update(ctx context.Context, exp *experiment.Experiment)
 	tag, err := r.client.db(ctx).Exec(ctx, `
 		UPDATE experiments
 		SET name = $3, description = $4, variants = $5::jsonb, metrics = $6::jsonb,
-		    status = $7, winner_key = $8, started_at = $9, completed_at = $10, updated_at = $11
+		    status = $7, lookup_cache_enabled = $8, lookup_cache_ttl_seconds = $9,
+		    winner_key = $10, started_at = $11, completed_at = $12, updated_at = $13
 		WHERE workspace_key = $1 AND id = $2
 	`,
 		wsKey(ctx),
@@ -135,6 +141,8 @@ func (r *ExperimentRepo) Update(ctx context.Context, exp *experiment.Experiment)
 		variantsJSON,
 		metricsJSON,
 		exp.Status,
+		exp.LookupCacheEnabled,
+		exp.LookupCacheTTLSeconds,
 		exp.WinnerKey,
 		exp.StartedAt,
 		exp.CompletedAt,
@@ -157,6 +165,7 @@ func (r *ExperimentRepo) Update(ctx context.Context, exp *experiment.Experiment)
 func (r *ExperimentRepo) List(ctx context.Context) ([]experiment.Experiment, error) {
 	rows, err := r.client.db(ctx).Query(ctx, `
 		SELECT e.id, e.workspace_key, f.key, e.name, e.description, e.variants, e.metrics, e.status,
+		       e.lookup_cache_enabled, e.lookup_cache_ttl_seconds,
 		       e.winner_key, e.started_at, e.completed_at, e.created_by, e.created_at, e.updated_at
 		FROM experiments e
 		JOIN features f ON f.id = e.feature_id
@@ -190,6 +199,7 @@ func (r *ExperimentRepo) List(ctx context.Context) ([]experiment.Experiment, err
 func (r *ExperimentRepo) FindRunningByFeatureKey(ctx context.Context, featureKey string) (*experiment.Experiment, error) {
 	row := r.client.db(ctx).QueryRow(ctx, `
 		SELECT e.id, e.workspace_key, f.key, e.name, e.description, e.variants, e.metrics, e.status,
+		       e.lookup_cache_enabled, e.lookup_cache_ttl_seconds,
 		       e.winner_key, e.started_at, e.completed_at, e.created_by, e.created_at, e.updated_at
 		FROM experiments e
 		JOIN features f ON f.id = e.feature_id
@@ -243,6 +253,8 @@ func scanExperiment(scanner experimentScanner) (*experiment.Experiment, error) {
 		&variantsJSON,
 		&metricsJSON,
 		&exp.Status,
+		&exp.LookupCacheEnabled,
+		&exp.LookupCacheTTLSeconds,
 		&exp.WinnerKey,
 		&exp.StartedAt,
 		&exp.CompletedAt,

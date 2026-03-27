@@ -21,6 +21,14 @@
     "success": "Segment saved successfully",
     "error": "Error saving segment"
   },
+  "cache": {
+    "title": "Cache",
+    "help": "Choose whether this segment should cache membership and record lookups.",
+    "membership": "Membership cache",
+    "membershipHelp": "Cache the result of segment membership checks.",
+    "record": "Record cache",
+    "recordHelp": "Cache reads of this segment's records."
+  },
   "delete": {
     "title": "Delete segment",
     "description": "Are you sure you want to delete segment \"{{key}}\"?",

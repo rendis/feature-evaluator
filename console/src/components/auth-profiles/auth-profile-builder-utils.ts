@@ -100,7 +100,7 @@ export function createDraft(profile?: AuthProfile | null): DraftState {
     key: profile?.key ?? '',
     active: profile?.active ?? true,
     type,
-    cacheEnabled: (profile?.cacheTTLSeconds ?? 0) > 0,
+    cacheEnabled: profile?.cacheEnabled ?? (profile?.cacheTTLSeconds ?? 0) > 0,
     cacheTTLSeconds: profile?.cacheTTLSeconds ? String(profile.cacheTTLSeconds) : '300',
     apiKey: {
       location: (config.location as 'header' | 'query') ?? 'header',
@@ -154,6 +154,7 @@ export function buildPayload(draft: DraftState, key: string) {
       name: draft.name.trim(),
       active: draft.active,
       type: draft.type,
+      cacheEnabled: false,
       cacheTTLSeconds,
       config: {
         location: draft.apiKey.location,
@@ -172,6 +173,7 @@ export function buildPayload(draft: DraftState, key: string) {
       name: draft.name.trim(),
       active: draft.active,
       type: draft.type,
+      cacheEnabled: false,
       cacheTTLSeconds: 0,
       config: {
         issuer: draft.oidc.issuer.trim(),
@@ -185,6 +187,7 @@ export function buildPayload(draft: DraftState, key: string) {
     name: draft.name.trim(),
     active: draft.active,
     type: draft.type,
+    cacheEnabled: draft.cacheEnabled,
     cacheTTLSeconds,
     config: {
       url: draft.custom.url.trim(),

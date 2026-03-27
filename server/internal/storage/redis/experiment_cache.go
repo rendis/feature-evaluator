@@ -9,10 +9,7 @@ import (
 	"github.com/rendis/feature-evaluator/internal/domain/experiment"
 )
 
-const (
-	experimentPrefix = "fe:exp:running:"
-	experimentTTL    = 60 * time.Second
-)
+const experimentPrefix = "fe:exp:running:"
 
 // ExperimentCache caches running experiments by feature key.
 type ExperimentCache struct {
@@ -48,7 +45,10 @@ func (ec *ExperimentCache) GetRunning(ctx context.Context, workspaceKey, feature
 
 // SetRunning caches a running experiment for a feature key.
 // Pass nil to cache the absence of a running experiment.
-func (ec *ExperimentCache) SetRunning(ctx context.Context, workspaceKey, featureKey string, exp *experiment.Experiment) {
+func (ec *ExperimentCache) SetRunning(ctx context.Context, workspaceKey, featureKey string, exp *experiment.Experiment, ttl time.Duration) {
+	if ttl <= 0 {
+		return
+	}
 	var data []byte
 	if exp == nil {
 		data = []byte("null")
@@ -59,7 +59,7 @@ func (ec *ExperimentCache) SetRunning(ctx context.Context, workspaceKey, feature
 			return
 		}
 	}
-	_ = ec.client.Set(ctx, experimentKey(workspaceKey, featureKey), string(data), experimentTTL)
+	_ = ec.client.Set(ctx, experimentKey(workspaceKey, featureKey), string(data), ttl)
 }
 
 // Invalidate removes cached experiment for a feature key.

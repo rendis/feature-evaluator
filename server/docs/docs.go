@@ -2313,6 +2313,223 @@ const docTemplate = `{
                 }
             }
         },
+        "/admin/features/{key}/observability/overview": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns aggregated evaluation metrics for a feature",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "features"
+                ],
+                "summary": "Feature observability overview",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Feature key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityOverviewResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/features/{key}/observability/rules": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns aggregated metrics for rules within a feature",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "features"
+                ],
+                "summary": "Feature rule observability",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Feature key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.DataResponse-array_github_com_rendis_feature-evaluator_internal_dto_ObservabilityRuleResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/features/{key}/observability/rules/{ruleId}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns aggregated metrics for a single rule",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "features"
+                ],
+                "summary": "Feature rule observability detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Feature key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Rule ID",
+                        "name": "ruleId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityRuleResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/features/{key}/observability/traces": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns persisted sanitized traces for a feature",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "features"
+                ],
+                "summary": "Feature evaluation traces",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Feature key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by rule ID",
+                        "name": "ruleId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search request ID",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by cache status",
+                        "name": "cacheStatus",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by Redis usage",
+                        "name": "usedRedis",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start date (RFC3339)",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End date (RFC3339)",
+                        "name": "to",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ListResponse-github_com_rendis_feature-evaluator_internal_dto_ObservabilityTraceResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/features/{key}/rules": {
             "get": {
                 "security": [
@@ -5701,6 +5918,9 @@ const docTemplate = `{
                 "active": {
                     "type": "boolean"
                 },
+                "cacheEnabled": {
+                    "type": "boolean"
+                },
                 "cacheTTLSeconds": {
                     "type": "integer"
                 },
@@ -5811,6 +6031,9 @@ const docTemplate = `{
                 "active": {
                     "type": "boolean"
                 },
+                "cacheEnabled": {
+                    "type": "boolean"
+                },
                 "cacheTTLSeconds": {
                     "type": "integer"
                 },
@@ -5848,6 +6071,12 @@ const docTemplate = `{
                 },
                 "featureKey": {
                     "type": "string"
+                },
+                "lookupCacheEnabled": {
+                    "type": "boolean"
+                },
+                "lookupCacheTTLSeconds": {
+                    "type": "integer"
                 },
                 "metrics": {
                     "type": "array",
@@ -5944,6 +6173,12 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "evalCacheEnabled": {
+                    "type": "boolean"
+                },
+                "evalCacheTTLSeconds": {
+                    "type": "integer"
                 },
                 "inputContract": {
                     "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.InputContractRequest"
@@ -6106,12 +6341,24 @@ const docTemplate = `{
                 "key": {
                     "type": "string"
                 },
+                "membershipCacheEnabled": {
+                    "type": "boolean"
+                },
+                "membershipCacheTTLSeconds": {
+                    "type": "integer"
+                },
                 "metadata": {
                     "type": "object",
                     "additionalProperties": {}
                 },
                 "name": {
                     "type": "string"
+                },
+                "recordCacheEnabled": {
+                    "type": "boolean"
+                },
+                "recordCacheTTLSeconds": {
+                    "type": "integer"
                 }
             }
         },
@@ -6276,6 +6523,17 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_rendis_feature-evaluator_internal_dto.DataResponse-array_github_com_rendis_feature-evaluator_internal_dto_ObservabilityRuleResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityRuleResponse"
+                    }
+                }
+            }
+        },
         "github_com_rendis_feature-evaluator_internal_dto.DataResponse-array_github_com_rendis_feature-evaluator_internal_dto_PackResponse": {
             "type": "object",
             "properties": {
@@ -6375,6 +6633,12 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "lookupCacheEnabled": {
+                    "type": "boolean"
+                },
+                "lookupCacheTTLSeconds": {
+                    "type": "integer"
+                },
                 "metrics": {
                     "type": "array",
                     "items": {
@@ -6422,6 +6686,9 @@ const docTemplate = `{
                 "externalApiKey"
             ],
             "properties": {
+                "cacheEnabled": {
+                    "type": "boolean"
+                },
                 "cacheTTL": {
                     "type": "integer"
                 },
@@ -6442,6 +6709,9 @@ const docTemplate = `{
         "github_com_rendis_feature-evaluator_internal_dto.ExternalAPIBindingResponse": {
             "type": "object",
             "properties": {
+                "cacheEnabled": {
+                    "type": "boolean"
+                },
                 "cacheTTL": {
                     "type": "integer"
                 },
@@ -6654,6 +6924,12 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "evalCacheEnabled": {
+                    "type": "boolean"
+                },
+                "evalCacheTTLSeconds": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -6837,6 +7113,12 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "evalCacheEnabled": {
+                    "type": "boolean"
+                },
+                "evalCacheTTLSeconds": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "string"
@@ -7090,6 +7372,20 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_rendis_feature-evaluator_internal_dto.ListResponse-github_com_rendis_feature-evaluator_internal_dto_ObservabilityTraceResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityTraceResponse"
+                    }
+                },
+                "pagination": {
+                    "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.PaginationResponse"
+                }
+            }
+        },
         "github_com_rendis_feature-evaluator_internal_dto.ListResponse-github_com_rendis_feature-evaluator_internal_dto_SegmentRecordResponse": {
             "type": "object",
             "properties": {
@@ -7329,6 +7625,256 @@ const docTemplate = `{
                 "value": {},
                 "variant": {
                     "type": "string"
+                }
+            }
+        },
+        "github_com_rendis_feature-evaluator_internal_dto.ObservabilityComponentResponse": {
+            "type": "object",
+            "properties": {
+                "cacheBackend": {
+                    "type": "string"
+                },
+                "cacheEnabled": {
+                    "type": "boolean"
+                },
+                "cacheStatus": {
+                    "type": "string"
+                },
+                "computedCount": {
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "disabledCount": {
+                    "type": "integer"
+                },
+                "hitCount": {
+                    "type": "integer"
+                },
+                "missCount": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "notApplicableCount": {
+                    "type": "integer"
+                },
+                "totalDurationMs": {
+                    "type": "integer"
+                },
+                "ttlSeconds": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_rendis_feature-evaluator_internal_dto.ObservabilityComponentTraceResponse": {
+            "type": "object",
+            "properties": {
+                "cacheBackend": {
+                    "type": "string"
+                },
+                "cacheEnabled": {
+                    "type": "boolean"
+                },
+                "cacheStatus": {
+                    "type": "string"
+                },
+                "durationMs": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "outcome": {
+                    "type": "string"
+                },
+                "ttlSeconds": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_rendis_feature-evaluator_internal_dto.ObservabilityExternalCallResponse": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "type": "string"
+                },
+                "computedCount": {
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "disabledCount": {
+                    "type": "integer"
+                },
+                "hitCount": {
+                    "type": "integer"
+                },
+                "missCount": {
+                    "type": "integer"
+                },
+                "notApplicableCount": {
+                    "type": "integer"
+                },
+                "totalDurationMs": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_rendis_feature-evaluator_internal_dto.ObservabilityExternalCallTraceResponse": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "type": "string"
+                },
+                "cacheStatus": {
+                    "type": "string"
+                },
+                "durationMs": {
+                    "type": "integer"
+                },
+                "httpStatus": {
+                    "type": "integer"
+                },
+                "passed": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_rendis_feature-evaluator_internal_dto.ObservabilityOverviewResponse": {
+            "type": "object",
+            "properties": {
+                "components": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityComponentResponse"
+                    }
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "errorCount": {
+                    "type": "integer"
+                },
+                "featureKey": {
+                    "type": "string"
+                },
+                "totalDurationMs": {
+                    "type": "integer"
+                },
+                "usedRedisCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_rendis_feature-evaluator_internal_dto.ObservabilityRuleResponse": {
+            "type": "object",
+            "properties": {
+                "compileCacheHitCount": {
+                    "type": "integer"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "expressionDurationMs": {
+                    "type": "integer"
+                },
+                "externalCalls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityExternalCallResponse"
+                    }
+                },
+                "matchedCount": {
+                    "type": "integer"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "ruleId": {
+                    "type": "string"
+                },
+                "totalDurationMs": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_rendis_feature-evaluator_internal_dto.ObservabilityRuleTraceResponse": {
+            "type": "object",
+            "properties": {
+                "compileCacheHit": {
+                    "type": "boolean"
+                },
+                "durationMs": {
+                    "type": "integer"
+                },
+                "expressionDurationMs": {
+                    "type": "integer"
+                },
+                "externalCalls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityExternalCallTraceResponse"
+                    }
+                },
+                "matched": {
+                    "type": "boolean"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "ruleId": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_rendis_feature-evaluator_internal_dto.ObservabilityTraceResponse": {
+            "type": "object",
+            "properties": {
+                "cacheStatus": {
+                    "type": "string"
+                },
+                "components": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityComponentTraceResponse"
+                    }
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "environment": {
+                    "type": "string"
+                },
+                "errorCode": {
+                    "type": "string"
+                },
+                "featureKey": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "requestId": {
+                    "type": "string"
+                },
+                "resultReason": {
+                    "type": "string"
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.ObservabilityRuleTraceResponse"
+                    }
+                },
+                "totalDurationMs": {
+                    "type": "integer"
+                },
+                "usedRedis": {
+                    "type": "boolean"
                 }
             }
         },
@@ -7633,6 +8179,12 @@ const docTemplate = `{
                 "lastImportAt": {
                     "type": "string"
                 },
+                "membershipCacheEnabled": {
+                    "type": "boolean"
+                },
+                "membershipCacheTTLSeconds": {
+                    "type": "integer"
+                },
                 "metadata": {
                     "type": "object",
                     "additionalProperties": {}
@@ -7645,6 +8197,12 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "recordCacheEnabled": {
+                    "type": "boolean"
+                },
+                "recordCacheTTLSeconds": {
+                    "type": "integer"
                 },
                 "recordCount": {
                     "type": "integer"
@@ -7791,6 +8349,9 @@ const docTemplate = `{
             ],
             "properties": {
                 "active": {
+                    "type": "boolean"
+                },
+                "cacheEnabled": {
                     "type": "boolean"
                 },
                 "cacheTTLSeconds": {
@@ -7972,6 +8533,9 @@ const docTemplate = `{
                 "active": {
                     "type": "boolean"
                 },
+                "cacheEnabled": {
+                    "type": "boolean"
+                },
                 "cacheTTLSeconds": {
                     "type": "integer"
                 },
@@ -8008,6 +8572,12 @@ const docTemplate = `{
             "properties": {
                 "description": {
                     "type": "string"
+                },
+                "lookupCacheEnabled": {
+                    "type": "boolean"
+                },
+                "lookupCacheTTLSeconds": {
+                    "type": "integer"
                 },
                 "metrics": {
                     "type": "array",
@@ -8104,6 +8674,12 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "evalCacheEnabled": {
+                    "type": "boolean"
+                },
+                "evalCacheTTLSeconds": {
+                    "type": "integer"
                 },
                 "inputContract": {
                     "$ref": "#/definitions/github_com_rendis_feature-evaluator_internal_dto.InputContractRequest"
@@ -8239,12 +8815,24 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "membershipCacheEnabled": {
+                    "type": "boolean"
+                },
+                "membershipCacheTTLSeconds": {
+                    "type": "integer"
+                },
                 "metadata": {
                     "type": "object",
                     "additionalProperties": {}
                 },
                 "name": {
                     "type": "string"
+                },
+                "recordCacheEnabled": {
+                    "type": "boolean"
+                },
+                "recordCacheTTLSeconds": {
+                    "type": "integer"
                 }
             }
         },

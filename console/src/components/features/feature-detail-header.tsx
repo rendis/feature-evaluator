@@ -16,6 +16,7 @@ import { TagBadge } from '@/components/shared/tag-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useLocaleFormatters } from '@/hooks/use-locale-formatters';
+import { usePermissions } from '@/hooks/use-permissions';
 import { useDeleteFeature } from '@/mutations/feature-mutations';
 
 interface FeatureDetailHeaderProps {
@@ -58,6 +59,8 @@ function ScheduleInfo({ feature }: { feature: Feature }) {
 }
 
 function FeatureHeaderInfo({ feature }: { feature: Feature }) {
+  const { can } = usePermissions();
+
   return (
     <div>
       <div className="flex items-center gap-3">
@@ -84,6 +87,46 @@ function FeatureHeaderInfo({ feature }: { feature: Feature }) {
             </Link>
           ))}
         </div>
+      ) : null}
+      <FeatureHeaderTabs featureKey={feature.key} showObservability={can('audit.read')} />
+    </div>
+  );
+}
+
+function FeatureHeaderTabs({
+  featureKey,
+  showObservability,
+}: {
+  featureKey: string;
+  showObservability: boolean;
+}) {
+  const { t } = useTranslation('features');
+
+  return (
+    <div className="mt-3 flex flex-wrap gap-2">
+      <Link
+        to="/features/$featureKey"
+        params={{ featureKey }}
+        className="fe-tab-trigger rounded-full"
+        activeProps={{
+          className: 'fe-tab-trigger rounded-full bg-primary text-primary-foreground',
+          'aria-current': 'page',
+        }}
+      >
+        {t('detail.tabs.summary', { defaultValue: 'Resumen' })}
+      </Link>
+      {showObservability ? (
+        <Link
+          to="/features/$featureKey/observability"
+          params={{ featureKey }}
+          className="fe-tab-trigger rounded-full"
+          activeProps={{
+            className: 'fe-tab-trigger rounded-full bg-primary text-primary-foreground',
+            'aria-current': 'page',
+          }}
+        >
+          {t('detail.tabs.observability', { defaultValue: 'Observability' })}
+        </Link>
       ) : null}
     </div>
   );

@@ -58,6 +58,7 @@ func (s *Service) Create(ctx context.Context, f *Feature) error {
 	if err := validateScheduling(f); err != nil {
 		return err
 	}
+	f.NormalizeCacheConfig()
 
 	if f.RolloutSalt == "" {
 		salt, err := generateRolloutSalt()
@@ -121,6 +122,7 @@ func (s *Service) Update(ctx context.Context, f *Feature) error {
 	if err := validateScheduling(f); err != nil {
 		return err
 	}
+	f.NormalizeCacheConfig()
 	if f.Environments == nil {
 		f.Environments = []string{}
 	}
@@ -154,6 +156,7 @@ func (s *Service) AddRule(ctx context.Context, featureKey string, rule *Rule) er
 	if err := validateRuleSourceBindings(rule.SourceBindings); err != nil {
 		return err
 	}
+	rule.NormalizeCacheConfig()
 	if rule.ID == "" {
 		id, err := uuid.NewV7()
 		if err != nil {
@@ -172,6 +175,7 @@ func (s *Service) UpdateRule(ctx context.Context, featureKey string, rule *Rule)
 	if err := validateRuleSourceBindings(rule.SourceBindings); err != nil {
 		return err
 	}
+	rule.NormalizeCacheConfig()
 	rule.UpdatedAt = time.Now().UTC()
 	return s.repo.UpdateRule(ctx, featureKey, rule)
 }

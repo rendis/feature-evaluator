@@ -45,12 +45,15 @@ func (r *SegmentRepo) Create(ctx context.Context, seg *segment.Segment) error {
 	_, err = r.client.db(ctx).Exec(ctx, `
 		INSERT INTO segments (
 			id, workspace_key, key, name, description, metadata, schema, record_key_path,
-			active_dataset_version, preview_fields, source_type, record_count, last_import_at,
-			created_at, updated_at, created_by, updated_by
+			active_dataset_version, preview_fields, source_type, record_count,
+			membership_cache_enabled, membership_cache_ttl_seconds,
+			record_cache_enabled, record_cache_ttl_seconds,
+			last_import_at, created_at, updated_at, created_by, updated_by
 		) VALUES (
 			$1, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8,
-			$9, $10::jsonb, $11, $12, $13,
-			$14, $15, $16, $17
+			$9, $10::jsonb, $11, $12, $13, $14,
+			$15, $16,
+			$17, $18, $19, $20, $21
 		)
 	`,
 		seg.ID,
@@ -65,6 +68,10 @@ func (r *SegmentRepo) Create(ctx context.Context, seg *segment.Segment) error {
 		previewFieldsJSON,
 		seg.SourceType,
 		seg.RecordCount,
+		seg.MembershipCacheEnabled,
+		seg.MembershipCacheTTLSeconds,
+		seg.RecordCacheEnabled,
+		seg.RecordCacheTTLSeconds,
 		seg.LastImportAt,
 		seg.CreatedAt,
 		seg.UpdatedAt,
@@ -88,8 +95,10 @@ func (r *SegmentRepo) Create(ctx context.Context, seg *segment.Segment) error {
 func (r *SegmentRepo) GetByKey(ctx context.Context, key string) (*segment.Segment, error) {
 	row := r.client.db(ctx).QueryRow(ctx, `
 		SELECT id, workspace_key, key, name, description, metadata, schema, record_key_path,
-		       active_dataset_version, preview_fields, source_type, record_count, last_import_at,
-		       created_at, updated_at, created_by, updated_by
+		       active_dataset_version, preview_fields, source_type, record_count,
+		       membership_cache_enabled, membership_cache_ttl_seconds,
+		       record_cache_enabled, record_cache_ttl_seconds,
+		       last_import_at, created_at, updated_at, created_by, updated_by
 		FROM segments
 		WHERE workspace_key = $1 AND key = $2
 	`, wsKey(ctx), key)
@@ -127,7 +136,10 @@ func (r *SegmentRepo) Update(ctx context.Context, seg *segment.Segment) error {
 		UPDATE segments
 		SET name = $3, description = $4, metadata = $5::jsonb, schema = $6::jsonb,
 		    record_key_path = $7, active_dataset_version = $8, preview_fields = $9::jsonb,
-		    source_type = $10, record_count = $11, last_import_at = $12, updated_at = $13, updated_by = $14
+		    source_type = $10, record_count = $11,
+		    membership_cache_enabled = $12, membership_cache_ttl_seconds = $13,
+		    record_cache_enabled = $14, record_cache_ttl_seconds = $15,
+		    last_import_at = $16, updated_at = $17, updated_by = $18
 		WHERE workspace_key = $1 AND key = $2
 	`,
 		wsKey(ctx),
@@ -141,6 +153,10 @@ func (r *SegmentRepo) Update(ctx context.Context, seg *segment.Segment) error {
 		previewFieldsJSON,
 		seg.SourceType,
 		seg.RecordCount,
+		seg.MembershipCacheEnabled,
+		seg.MembershipCacheTTLSeconds,
+		seg.RecordCacheEnabled,
+		seg.RecordCacheTTLSeconds,
 		seg.LastImportAt,
 		seg.UpdatedAt,
 		seg.UpdatedBy,
@@ -193,8 +209,10 @@ func (r *SegmentRepo) List(ctx context.Context, params segment.ListParams) (*seg
 
 	rows, err := r.client.db(ctx).Query(ctx, `
 		SELECT id, workspace_key, key, name, description, metadata, schema, record_key_path,
-		       active_dataset_version, preview_fields, source_type, record_count, last_import_at,
-		       created_at, updated_at, created_by, updated_by
+		       active_dataset_version, preview_fields, source_type, record_count,
+		       membership_cache_enabled, membership_cache_ttl_seconds,
+		       record_cache_enabled, record_cache_ttl_seconds,
+		       last_import_at, created_at, updated_at, created_by, updated_by
 		FROM segments
 		WHERE workspace_key = $1
 		  AND ($2 = '' OR key ILIKE '%' || $2 || '%')
@@ -249,6 +267,10 @@ func scanSegment(scanner segmentScanner) (*segment.Segment, error) {
 		&previewFieldsJSON,
 		&seg.SourceType,
 		&seg.RecordCount,
+		&seg.MembershipCacheEnabled,
+		&seg.MembershipCacheTTLSeconds,
+		&seg.RecordCacheEnabled,
+		&seg.RecordCacheTTLSeconds,
 		&seg.LastImportAt,
 		&seg.CreatedAt,
 		&seg.UpdatedAt,

@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/rendis/feature-evaluator/internal/domain/authprofile"
 	"github.com/rendis/feature-evaluator/internal/domain/experiment"
 	"github.com/rendis/feature-evaluator/internal/domain/feature"
 	"github.com/rendis/feature-evaluator/internal/domain/pack"
@@ -77,6 +78,247 @@ func TestFeatureRepoStoresRulesAndTags(t *testing.T) {
 	}
 	if stored.RolloutSalt == "" {
 		t.Fatal("expected rollout salt to be generated")
+	}
+}
+
+func TestCacheConfigPersistenceAcrossRepos(t *testing.T) {
+	client, ctx := newIntegrationClient(t)
+	defer client.Close()
+
+	repos := newCacheConfigRepos(client)
+	seeds := seedCacheConfigData(ctx, t, repos)
+
+	assertFeatureCacheConfig(ctx, t, repos.featureRepo, seeds.featureKey)
+	assertAuthProfileCacheConfig(ctx, t, repos.authRepo, seeds.authProfileKey)
+	assertSegmentCacheConfig(ctx, t, repos.segmentRepo, seeds.segmentKey)
+	assertExperimentCacheConfig(ctx, t, repos.experimentRepo, seeds.experimentID)
+}
+
+type cacheConfigRepos struct {
+	featureRepo    *FeatureRepo
+	featureSvc     *feature.Service
+	authRepo       *AuthProfileRepo
+	authSvc        *authprofile.Service
+	segmentRepo    *SegmentRepo
+	segmentSvc     *segment.Service
+	experimentRepo *ExperimentRepo
+	experimentSvc  *experiment.Service
+}
+
+type cacheConfigSeeds struct {
+	featureKey     string
+	authProfileKey string
+	segmentKey     string
+	experimentID   string
+}
+
+func newCacheConfigRepos(client *Client) cacheConfigRepos {
+	featureRepo := NewFeatureRepo(client)
+	featureSvc := feature.NewService(featureRepo)
+	authRepo := NewAuthProfileRepo(client)
+	segmentRepo := NewSegmentRepo(client)
+	experimentRepo := NewExperimentRepo(client)
+	return cacheConfigRepos{
+		featureRepo:    featureRepo,
+		featureSvc:     featureSvc,
+		authRepo:       authRepo,
+		authSvc:        authprofile.NewService(authRepo, noopSecretCipher{}),
+		segmentRepo:    segmentRepo,
+		segmentSvc:     segment.NewService(segmentRepo, NewSegmentRecordRepo(client), nil),
+		experimentRepo: experimentRepo,
+		experimentSvc:  experiment.NewService(experimentRepo, NewExposureRepo(client), NewConversionRepo(client), featureSvc, nil),
+	}
+}
+
+func seedCacheConfigData(ctx context.Context, t *testing.T, repos cacheConfigRepos) cacheConfigSeeds {
+	t.Helper()
+
+	featureKey := createCacheConfigFeature(ctx, t, repos.featureSvc)
+	authProfileKey := createCacheConfigAuthProfile(ctx, t, repos.authSvc)
+	segmentKey := createCacheConfigSegment(ctx, t, repos.segmentSvc)
+	experimentID := createCacheConfigExperiment(ctx, t, repos.experimentSvc, featureKey)
+
+	return cacheConfigSeeds{
+		featureKey:     featureKey,
+		authProfileKey: authProfileKey,
+		segmentKey:     segmentKey,
+		experimentID:   experimentID,
+	}
+}
+
+func createCacheConfigFeature(ctx context.Context, t *testing.T, svc *feature.Service) string {
+	t.Helper()
+
+	feat := &feature.Feature{
+		Key:                 "cache_persistence_flag",
+		Name:                "Cache Persistence Flag",
+		Description:         "tests cache config persistence",
+		Enabled:             true,
+		EvalCacheEnabled:    true,
+		EvalCacheTTLSeconds: 120,
+		ValueType:           feature.ValueTypeBoolean,
+		DefaultValue:        false,
+		AccessPolicy:        feature.AccessPolicyPublic,
+		CreatedBy:           "tester",
+		UpdatedBy:           "tester",
+	}
+	mustNoError(t, svc.Create(ctx, feat), "create feature")
+	mustNoError(t, svc.AddRule(ctx, feat.Key, &feature.Rule{
+		Name:       "cache rule",
+		Priority:   1,
+		Enabled:    true,
+		Expression: "true",
+		Value:      true,
+		ExternalAPIBindings: []feature.ExternalAPIBinding{
+			{
+				ExternalAPIKey: "check-cache",
+				FailMode:       feature.FailModeOpen,
+				CacheEnabled:   true,
+				CacheTTL:       5,
+			},
+		},
+	}), "add rule")
+	return feat.Key
+}
+
+func createCacheConfigAuthProfile(ctx context.Context, t *testing.T, svc *authprofile.Service) string {
+	t.Helper()
+
+	profile := &authprofile.Profile{
+		Key:             "cache-auth",
+		Name:            "Cache Auth",
+		Active:          true,
+		Type:            authprofile.TypeCustom,
+		CacheEnabled:    true,
+		CacheTTLSeconds: 45,
+		Config: map[string]any{
+			"url":            "https://auth.example.com/validate",
+			"method":         "POST",
+			"headers":        []any{},
+			"body":           []any{},
+			"requestHeaders": []any{},
+			"successRule": map[string]any{
+				"type": "any_2xx",
+			},
+		},
+		CreatedBy: "tester",
+		UpdatedBy: "tester",
+	}
+	mustNoError(t, svc.Create(ctx, profile, nil), "create auth profile")
+	return profile.Key
+}
+
+func createCacheConfigSegment(ctx context.Context, t *testing.T, svc *segment.Service) string {
+	t.Helper()
+
+	seg := &segment.Segment{
+		Key:                       "cache-segment",
+		Name:                      "Cache Segment",
+		Description:               "segment cache config",
+		MembershipCacheEnabled:    true,
+		MembershipCacheTTLSeconds: 61,
+		RecordCacheEnabled:        true,
+		RecordCacheTTLSeconds:     300,
+		CreatedBy:                 "tester",
+		UpdatedBy:                 "tester",
+	}
+	mustNoError(t, svc.Create(ctx, seg), "create segment")
+	return seg.Key
+}
+
+func createCacheConfigExperiment(ctx context.Context, t *testing.T, svc *experiment.Service, featureKey string) string {
+	t.Helper()
+
+	exp := &experiment.Experiment{
+		FeatureKey:            featureKey,
+		Name:                  "Cache Experiment",
+		Description:           "experiment cache config",
+		Variants:              []experiment.Variant{{Key: "control", Value: false, Weight: 50}, {Key: "treatment", Value: true, Weight: 50}},
+		Status:                experiment.StatusDraft,
+		LookupCacheEnabled:    true,
+		LookupCacheTTLSeconds: 75,
+		CreatedBy:             "tester",
+	}
+	mustNoError(t, svc.Create(ctx, exp), "create experiment")
+	return exp.ID
+}
+
+func mustNoError(t *testing.T, err error, action string) {
+	t.Helper()
+	if err != nil {
+		t.Fatalf("%s: %v", action, err)
+	}
+}
+
+func assertFeatureCacheConfig(ctx context.Context, t *testing.T, repo *FeatureRepo, key string) {
+	t.Helper()
+
+	storedFeature, err := repo.GetByKey(ctx, key)
+	mustNoError(t, err, "get feature")
+	if !storedFeature.EvalCacheEnabled || storedFeature.EvalCacheTTLSeconds != 120 {
+		t.Fatalf("feature cache config = %+v, want enabled ttl=120", storedFeature)
+	}
+	if len(storedFeature.Rules) != 1 {
+		t.Fatalf("rules length = %d, want 1", len(storedFeature.Rules))
+	}
+	if len(storedFeature.Rules[0].ExternalAPIBindings) != 1 {
+		t.Fatalf("external api bindings length = %d, want 1", len(storedFeature.Rules[0].ExternalAPIBindings))
+	}
+	if !storedFeature.Rules[0].ExternalAPIBindings[0].CacheEnabled || storedFeature.Rules[0].ExternalAPIBindings[0].CacheTTL != 30 {
+		t.Fatalf("rule cache binding = %+v, want enabled ttl=30", storedFeature.Rules[0].ExternalAPIBindings[0])
+	}
+	listedFeatures, err := repo.List(ctx, feature.ListParams{Page: 1, PageSize: 20, View: feature.ListViewSummary})
+	mustNoError(t, err, "list features")
+	if len(listedFeatures.Data) == 0 || !listedFeatures.Data[0].EvalCacheEnabled || listedFeatures.Data[0].EvalCacheTTLSeconds != 120 {
+		t.Fatalf("listed feature cache config = %+v", listedFeatures.Data)
+	}
+}
+
+func assertAuthProfileCacheConfig(ctx context.Context, t *testing.T, repo *AuthProfileRepo, key string) {
+	t.Helper()
+
+	storedAuthProfile, err := repo.GetByKey(ctx, key)
+	mustNoError(t, err, "get auth profile")
+	if !storedAuthProfile.CacheEnabled || storedAuthProfile.CacheTTLSeconds != 45 {
+		t.Fatalf("auth profile cache config = %+v, want enabled ttl=45", storedAuthProfile)
+	}
+	listedAuthProfiles, err := repo.List(ctx)
+	mustNoError(t, err, "list auth profiles")
+	if len(listedAuthProfiles) == 0 || !listedAuthProfiles[0].CacheEnabled || listedAuthProfiles[0].CacheTTLSeconds != 45 {
+		t.Fatalf("listed auth profile cache config = %+v", listedAuthProfiles)
+	}
+}
+
+func assertSegmentCacheConfig(ctx context.Context, t *testing.T, repo *SegmentRepo, key string) {
+	t.Helper()
+
+	storedSegment, err := repo.GetByKey(ctx, key)
+	mustNoError(t, err, "get segment")
+	if !storedSegment.MembershipCacheEnabled || storedSegment.MembershipCacheTTLSeconds != 61 {
+		t.Fatalf("segment membership cache config = %+v, want enabled ttl=61", storedSegment)
+	}
+	if !storedSegment.RecordCacheEnabled || storedSegment.RecordCacheTTLSeconds != 300 {
+		t.Fatalf("segment record cache config = %+v, want enabled ttl=300", storedSegment)
+	}
+	listedSegments, err := repo.List(ctx, segment.ListParams{Page: 1, PageSize: 20})
+	mustNoError(t, err, "list segments")
+	if len(listedSegments.Data) == 0 || !listedSegments.Data[0].MembershipCacheEnabled || listedSegments.Data[0].RecordCacheTTLSeconds != 300 {
+		t.Fatalf("listed segment cache config = %+v", listedSegments.Data)
+	}
+}
+
+func assertExperimentCacheConfig(ctx context.Context, t *testing.T, repo *ExperimentRepo, id string) {
+	t.Helper()
+
+	storedExperiment, err := repo.GetByID(ctx, id)
+	mustNoError(t, err, "get experiment")
+	if !storedExperiment.LookupCacheEnabled || storedExperiment.LookupCacheTTLSeconds != 75 {
+		t.Fatalf("experiment cache config = %+v, want enabled ttl=75", storedExperiment)
+	}
+	listedExperiments, err := repo.List(ctx)
+	mustNoError(t, err, "list experiments")
+	if len(listedExperiments) == 0 || !listedExperiments[0].LookupCacheEnabled || listedExperiments[0].LookupCacheTTLSeconds != 75 {
+		t.Fatalf("listed experiment cache config = %+v", listedExperiments)
 	}
 }
 
@@ -475,4 +717,14 @@ func databaseURLWithName(t *testing.T, baseURL, dbName string) string {
 
 func ptrTime(value time.Time) *time.Time {
 	return &value
+}
+
+type noopSecretCipher struct{}
+
+func (noopSecretCipher) EncryptMap(payload map[string]string, _ string) (string, error) {
+	return "", nil
+}
+
+func (noopSecretCipher) DecryptMap(_ string, _ string) (map[string]string, error) {
+	return map[string]string{}, nil
 }

@@ -249,7 +249,7 @@ func (ctx *parseContext) unaryToBuilder(n *ast.UnaryNode) map[string]any {
 		if name == "externalApi" && len(call.Arguments) == 1 {
 			key := extractLiteral(call.Arguments[0])
 			if key != "" {
-				return makeExternalApiCondition(key, true)
+				return makeExternalAPICondition(key, true)
 			}
 		}
 	}
@@ -269,7 +269,7 @@ func (ctx *parseContext) callToBuilder(n *ast.CallNode) map[string]any {
 		if len(n.Arguments) == 1 {
 			key := extractLiteral(n.Arguments[0])
 			if key != "" {
-				return makeExternalApiCondition(key, false)
+				return makeExternalAPICondition(key, false)
 			}
 		}
 	case "inSegment":
@@ -402,7 +402,7 @@ func makeInputRefTyped(path string, fieldType string) map[string]any {
 	}
 }
 
-func makeExternalApiCondition(key string, negate bool) map[string]any {
+func makeExternalAPICondition(key string, negate bool) map[string]any {
 	return map[string]any{
 		"id":             newID(),
 		"kind":           "condition",

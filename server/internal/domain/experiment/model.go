@@ -39,20 +39,22 @@ type Metric struct {
 
 // Experiment represents an A/B test associated with a feature.
 type Experiment struct {
-	ID           string     `json:"id"`
-	WorkspaceKey string     `json:"workspaceKey"`
-	FeatureKey   string     `json:"featureKey"`
-	Name         string     `json:"name"`
-	Description  string     `json:"description"`
-	Variants     []Variant  `json:"variants"`
-	Metrics      []Metric   `json:"metrics"`
-	Status       Status     `json:"status"`
-	WinnerKey    string     `json:"winnerKey,omitempty"`
-	StartedAt    *time.Time `json:"startedAt,omitempty"`
-	CompletedAt  *time.Time `json:"completedAt,omitempty"`
-	CreatedBy    string     `json:"createdBy"`
-	CreatedAt    time.Time  `json:"createdAt"`
-	UpdatedAt    time.Time  `json:"updatedAt"`
+	ID                    string     `json:"id"`
+	WorkspaceKey          string     `json:"workspaceKey"`
+	FeatureKey            string     `json:"featureKey"`
+	Name                  string     `json:"name"`
+	Description           string     `json:"description"`
+	Variants              []Variant  `json:"variants"`
+	Metrics               []Metric   `json:"metrics"`
+	Status                Status     `json:"status"`
+	LookupCacheEnabled    bool       `json:"lookupCacheEnabled,omitempty"`
+	LookupCacheTTLSeconds int        `json:"lookupCacheTTLSeconds,omitempty"`
+	WinnerKey             string     `json:"winnerKey,omitempty"`
+	StartedAt             *time.Time `json:"startedAt,omitempty"`
+	CompletedAt           *time.Time `json:"completedAt,omitempty"`
+	CreatedBy             string     `json:"createdBy"`
+	CreatedAt             time.Time  `json:"createdAt"`
+	UpdatedAt             time.Time  `json:"updatedAt"`
 }
 
 // Exposure records that a user was exposed to a variant.
@@ -95,4 +97,38 @@ type Results struct {
 	TotalConversions int64          `json:"totalConversions"`
 	Variants         []VariantStats `json:"variants"`
 	IsSignificant    bool           `json:"isSignificant"`
+}
+
+const defaultExperimentLookupCacheTTLSeconds = 60
+
+const (
+	minCacheTTLSeconds = 30
+	maxCacheTTLSeconds = 3600
+)
+
+// NormalizeCacheConfig applies defaults and bounds to experiment cache settings.
+func (e *Experiment) NormalizeCacheConfig() {
+	if e == nil {
+		return
+	}
+	normalizeEnabledTTL(&e.LookupCacheEnabled, &e.LookupCacheTTLSeconds, defaultExperimentLookupCacheTTLSeconds)
+}
+
+func normalizeEnabledTTL(enabled *bool, ttl *int, defaultTTL int) {
+	if enabled == nil || ttl == nil {
+		return
+	}
+	if !*enabled {
+		*ttl = 0
+		return
+	}
+	if *ttl <= 0 {
+		*ttl = defaultTTL
+	}
+	if *ttl < minCacheTTLSeconds {
+		*ttl = minCacheTTLSeconds
+	}
+	if *ttl > maxCacheTTLSeconds {
+		*ttl = maxCacheTTLSeconds
+	}
 }

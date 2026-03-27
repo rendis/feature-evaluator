@@ -26,3 +26,33 @@ func TestTypeValid(t *testing.T) {
 		})
 	}
 }
+
+func TestProfileNormalizeCacheConfig(t *testing.T) {
+	t.Parallel()
+
+	custom := &Profile{
+		Type:            TypeCustom,
+		CacheEnabled:    true,
+		CacheTTLSeconds: 1,
+	}
+	custom.Normalize()
+	if !custom.CacheEnabled {
+		t.Fatal("expected custom profile cache to remain enabled")
+	}
+	if custom.CacheTTLSeconds != 30 {
+		t.Fatalf("CacheTTLSeconds = %d, want 30", custom.CacheTTLSeconds)
+	}
+
+	apiKey := &Profile{
+		Type:            TypeAPIKey,
+		CacheEnabled:    true,
+		CacheTTLSeconds: 120,
+	}
+	apiKey.Normalize()
+	if apiKey.CacheEnabled {
+		t.Fatal("expected api_key cache to be disabled")
+	}
+	if apiKey.CacheTTLSeconds != 0 {
+		t.Fatalf("CacheTTLSeconds = %d, want 0", apiKey.CacheTTLSeconds)
+	}
+}

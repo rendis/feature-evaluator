@@ -36,11 +36,11 @@ func (r *AuthProfileRepo) Create(ctx context.Context, profile *authprofile.Profi
 
 	_, err = r.client.db(ctx).Exec(ctx, `
 		INSERT INTO auth_profiles (
-			id, workspace_key, key, name, active, type, config, cache_ttl_seconds,
+			id, workspace_key, key, name, active, type, config, cache_enabled, cache_ttl_seconds,
 			version, secret_payload_encrypted, has_secret, created_at, updated_at, created_by, updated_by
 		) VALUES (
-			$1, $2, $3, $4, $5, $6, $7::jsonb, $8,
-			$9, $10, $11, $12, $13, $14, $15
+			$1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9,
+			$10, $11, $12, $13, $14, $15, $16
 		)
 	`,
 		profile.ID,
@@ -50,6 +50,7 @@ func (r *AuthProfileRepo) Create(ctx context.Context, profile *authprofile.Profi
 		profile.Active,
 		profile.Type,
 		configJSON,
+		profile.CacheEnabled,
 		profile.CacheTTLSeconds,
 		profile.Version,
 		profile.SecretPayloadEncrypted,
@@ -75,7 +76,7 @@ func (r *AuthProfileRepo) Create(ctx context.Context, profile *authprofile.Profi
 // GetByKey finds an auth profile by key.
 func (r *AuthProfileRepo) GetByKey(ctx context.Context, key string) (*authprofile.Profile, error) {
 	row := r.client.db(ctx).QueryRow(ctx, `
-		SELECT id, workspace_key, key, name, active, type, config, cache_ttl_seconds,
+		SELECT id, workspace_key, key, name, active, type, config, cache_enabled, cache_ttl_seconds,
 		       version, secret_payload_encrypted, has_secret, created_at, updated_at, created_by, updated_by
 		FROM auth_profiles
 		WHERE workspace_key = $1 AND key = $2
@@ -105,8 +106,8 @@ func (r *AuthProfileRepo) Update(ctx context.Context, currentKey string, profile
 	tag, err := r.client.db(ctx).Exec(ctx, `
 		UPDATE auth_profiles
 		SET key = $3, name = $4, active = $5, type = $6, config = $7::jsonb,
-		    cache_ttl_seconds = $8, version = $9, secret_payload_encrypted = $10,
-		    has_secret = $11, updated_at = $12, updated_by = $13
+		    cache_enabled = $8, cache_ttl_seconds = $9, version = $10, secret_payload_encrypted = $11,
+		    has_secret = $12, updated_at = $13, updated_by = $14
 		WHERE workspace_key = $1 AND key = $2
 	`,
 		wsKey(ctx),
@@ -116,6 +117,7 @@ func (r *AuthProfileRepo) Update(ctx context.Context, currentKey string, profile
 		profile.Active,
 		profile.Type,
 		configJSON,
+		profile.CacheEnabled,
 		profile.CacheTTLSeconds,
 		profile.Version,
 		profile.SecretPayloadEncrypted,
@@ -158,7 +160,7 @@ func (r *AuthProfileRepo) Delete(ctx context.Context, key string) error {
 // List returns all auth profiles for the workspace.
 func (r *AuthProfileRepo) List(ctx context.Context) ([]authprofile.Profile, error) {
 	rows, err := r.client.db(ctx).Query(ctx, `
-		SELECT id, workspace_key, key, name, active, type, config, cache_ttl_seconds,
+		SELECT id, workspace_key, key, name, active, type, config, cache_enabled, cache_ttl_seconds,
 		       version, secret_payload_encrypted, has_secret, created_at, updated_at, created_by, updated_by
 		FROM auth_profiles
 		WHERE workspace_key = $1
@@ -217,6 +219,7 @@ func scanAuthProfile(scanner authProfileScanner) (*authprofile.Profile, error) {
 		&profile.Active,
 		&profile.Type,
 		&configJSON,
+		&profile.CacheEnabled,
 		&profile.CacheTTLSeconds,
 		&profile.Version,
 		&profile.SecretPayloadEncrypted,
