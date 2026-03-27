@@ -5,14 +5,17 @@ import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { normalizeAppLocale } from '@/lib/locale';
 import { useLocaleStore } from '@/stores/locale-store';
 
 export function LanguageToggle() {
   const { i18n, t } = useTranslation();
   const { setLocale } = useLocaleStore();
+  const currentLanguage = normalizeAppLocale(i18n.resolvedLanguage ?? i18n.language);
 
   const changeLanguage = (lng: 'es' | 'en') => {
     setLocale(lng);
@@ -28,8 +31,13 @@ export function LanguageToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => changeLanguage('es')}>{t('language.es')}</DropdownMenuItem>
-        <DropdownMenuItem onClick={() => changeLanguage('en')}>{t('language.en')}</DropdownMenuItem>
+        <DropdownMenuRadioGroup
+          value={currentLanguage}
+          onValueChange={(value) => changeLanguage(value as 'es' | 'en')}
+        >
+          <DropdownMenuRadioItem value="es">{t('language.es')}</DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="en">{t('language.en')}</DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
