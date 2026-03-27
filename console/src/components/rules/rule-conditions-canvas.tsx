@@ -30,7 +30,6 @@ import {
   withoutBuilderMetadata,
 } from './conditions-builder-types';
 import { hydrateExternalApiConditions } from './rule-conditions-hydration';
-import { getVisibleErrorMessage } from '@/lib/display-error';
 
 import type {
   BuilderCondition,
@@ -88,6 +87,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { getVisibleErrorMessage } from '@/lib/display-error';
 import { cn } from '@/lib/utils';
 import { expressionQueries } from '@/queries/expression-queries';
 import { externalApiQueries } from '@/queries/external-api-queries';
@@ -232,6 +232,7 @@ export function RuleConditionsCanvas({
     [builderRoot, metadataSeed, mode],
   );
 
+  /* eslint-disable react-hooks/set-state-in-effect -- builder state is intentionally rehydrated when async catalogs arrive */
   useLayoutEffect(() => {
     if (mode !== 'guided') {
       return;
@@ -245,6 +246,7 @@ export function RuleConditionsCanvas({
       }),
     );
   }, [externalApis, initialExternalApiBindingsSeed, inputFields, mode]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     onChange({

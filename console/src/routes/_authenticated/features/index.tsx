@@ -49,6 +49,7 @@ export function FeaturesPage() {
   const debouncedSearch = useDebounce(search, 300);
   const { data } = useSuspenseQuery(featureQueries.summaryList(params));
 
+  /* eslint-disable react-hooks/set-state-in-effect -- debounced search intentionally drives list query state */
   useEffect(() => {
     const normalizedSearch = debouncedSearch.trim() || undefined;
     setParams((previous) =>
@@ -57,6 +58,7 @@ export function FeaturesPage() {
         : { ...previous, page: 1, search: normalizedSearch },
     );
   }, [debouncedSearch]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const features = data.data;
   const pagination = data.pagination;

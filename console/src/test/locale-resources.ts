@@ -1,8 +1,8 @@
 import type { Resource } from 'i18next';
 
-type LocaleModule = {
+interface LocaleModule {
   default: unknown;
-};
+}
 
 const localeModules = import.meta.glob('../../public/assets/locales/*/*.json', {
   eager: true,

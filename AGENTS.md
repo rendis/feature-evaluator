@@ -40,6 +40,63 @@ Single TS typecheck: `pnpm -C console run typecheck`
 - **i18n**: Spanish default, English secondary. Namespace per route (`console/public/locales/{lang}/{namespace}.json`)
 - **Config**: Viper reads env vars (underscore-separated). `AutomaticEnv()` does NOT load `.env` files — export them manually or use `make server`
 
+## Validation Policy (mandatory)
+
+- **Always run all validations required by the affected surface before saying a change is done, asking for review, committing, or pushing.**
+- **Do not rely on a single check** if the change can fail elsewhere (example: frontend route/search typing may require a full `build`, not only `typecheck`).
+- If any validation fails, **fix it first**. Do not commit/push known-red code.
+- **Before every commit/push, default to the strongest reasonable validation set**, not the weakest one that happens to pass.
+- If there is any doubt about whether a check is needed, **run it**.
+- In your final response, explicitly list:
+  - which validations you ran
+  - whether they passed/failed
+  - any validation you intentionally did not run, and why
+
+### Minimum validation matrix
+
+- **Docs-only changes**: no code validation required.
+- **Frontend code (`console/`)**:
+  - Run `pnpm -C console run typecheck`
+  - Run focused Vitest coverage for the changed behavior when tests exist or are added
+- **Frontend routing / TanStack Router / search params / route contracts / Vite build-sensitive changes**:
+  - Run `pnpm -C console run typecheck`
+  - Run relevant focused tests
+  - Run `pnpm -C console run build`
+- **Backend Go changes (`server/`)**:
+  - Run focused `go test -C server ...` for affected packages
+  - If handlers, repositories, shared DTOs, or cross-package behavior changed, run `make test-go`
+- **Cross-cutting or risky changes** (shared contracts, API shapes, repo-wide refactors, mixed frontend+backend work):
+  - Prefer `make quality`
+  - If `make quality` is too heavy for the iteration, explain why and run the nearest equivalent subset (`make lint`, `make test`, `make typecheck`, plus any focused checks)
+
+### Pre-push default checklist
+
+Use this checklist as the default behavior before commit/push:
+
+- **Frontend-only change (`console/`)**
+  - Run focused tests for the changed behavior
+  - Run `pnpm -C console run typecheck`
+  - Run `make lint-console` (or equivalent eslint check)
+  - Run `pnpm -C console run build` for any UI/routing/type-sensitive change
+- **Backend-only change (`server/`)**
+  - Run focused `go test -C server ...`
+  - Run `make lint-go`
+  - Run `make test-go` if the change touches handlers, repositories, shared DTOs, or cross-package behavior
+- **Mixed frontend + backend**
+  - Run `make lint`
+  - Run `make test`
+  - Run `make typecheck`
+  - Run `pnpm -C console run build`
+- **High-risk / release-like / broad refactor**
+  - Run `make quality`
+  - If frontend is affected, also run `pnpm -C console run build`
+
+### Validation reporting requirement
+
+- Never say "validated" or "ready" without naming the exact commands that were executed.
+- Never commit/push after only running focused tests if broader checks are warranted by the change.
+- If a build emits warnings but succeeds, mention them explicitly in the final report.
+
 ## Architecture
 
 ### Backend (`server/`)

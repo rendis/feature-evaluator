@@ -40,6 +40,7 @@ export function SegmentsPage() {
     setParams((previous) => ({ ...previous, page }));
   };
 
+  /* eslint-disable react-hooks/set-state-in-effect -- debounced search intentionally drives list query state */
   useEffect(() => {
     const normalizedSearch = debouncedSearch.trim() || undefined;
     setParams((previous) =>
@@ -48,6 +49,7 @@ export function SegmentsPage() {
         : { ...previous, page: 1, search: normalizedSearch },
     );
   }, [debouncedSearch]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return (
     <div className="space-y-6">

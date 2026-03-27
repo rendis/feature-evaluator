@@ -102,8 +102,7 @@ export function VariablesManagerModal({
 
     onRenameVariable(currentName, nextName);
     setNameDrafts((current) => {
-      const next = { ...current };
-      delete next[currentName];
+      const { [currentName]: _removedDraft, ...next } = current;
       next[nextName] = nextName;
       return next;
     });

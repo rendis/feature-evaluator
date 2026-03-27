@@ -85,6 +85,7 @@ export function ExternalApiTestPanel({
     ? t('evaluationDebug.pendingTooltip')
     : t('evaluationDebug.openTooltip');
 
+  /* eslint-disable react-hooks/set-state-in-effect -- intentional pulse state synced from incoming evaluation results */
   useEffect(() => {
     if (!hasInitializedEvaluationsRef.current) {
       hasInitializedEvaluationsRef.current = true;
@@ -113,6 +114,7 @@ export function ExternalApiTestPanel({
       evaluationPulseTimeoutRef.current = null;
     }, 3000);
   }, [evaluations]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     return () => {

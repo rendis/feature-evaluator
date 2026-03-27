@@ -288,10 +288,12 @@ export function SecurityPolicyPage() {
   const [warningOpen, setWarningOpen] = useState(false);
   const [pendingPayload, setPendingPayload] = useState<UpdateSecurityPolicyRequest | null>(null);
 
+  /* eslint-disable react-hooks/set-state-in-effect -- local editor state must reset when the persisted policy changes */
   useEffect(() => {
     const nextState = buildInitialState(policy);
     setCorsOrigins(nextState.corsOrigins);
   }, [policy]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const payload = useMemo<UpdateSecurityPolicyRequest>(
     () => ({

@@ -9,8 +9,12 @@ import { LoadingSkeleton } from '@/components/shared/loading-skeleton';
 import { featureQueries } from '@/queries/feature-queries';
 import { ruleQueries } from '@/queries/rule-queries';
 
+interface NewRuleSearch {
+  cloneFrom?: string;
+}
+
 export const Route = createFileRoute('/_authenticated/features/$featureKey/rules/new')({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): NewRuleSearch => ({
     cloneFrom:
       typeof search.cloneFrom === 'string' && search.cloneFrom.trim().length > 0
         ? search.cloneFrom

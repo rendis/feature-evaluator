@@ -489,8 +489,10 @@ function buildMemberOptions(
     return [];
   }
 
-  if (parsedContext.node.type === 'object') {
-    return parsedContext.node.members.map((member) => ({
+  const { node, path } = parsedContext;
+
+  if (node.type === 'object') {
+    return node.members.map((member) => ({
       label: member.label,
       insertText: member.insertText,
       detail: member.type,
@@ -504,10 +506,10 @@ function buildMemberOptions(
   }
 
   return catalog.profile.actions
-    .filter((action) => action.appliesTo.includes(parsedContext.node!.type))
+    .filter((action) => action.appliesTo.includes(node.type))
     .sort((left, right) => right.priority - left.priority)
     .map((action) => {
-      const applied = applyActionTemplate(action, parsedContext.path!);
+      const applied = applyActionTemplate(action, path);
       return {
         label: action.label,
         insertText: applied.text,

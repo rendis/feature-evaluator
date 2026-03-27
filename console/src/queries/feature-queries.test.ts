@@ -21,9 +21,13 @@ describe('featureQueries.summaryList', () => {
     });
 
     const query = featureQueries.summaryList({ page: 2, pageSize: 10, search: 'beta' });
+    const queryFn = query.queryFn;
+    if (!queryFn) {
+      throw new Error('summaryList queryFn is required');
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await query.queryFn!({ queryKey: query.queryKey, meta: undefined, signal: new AbortController().signal } as any);
+    await queryFn({ queryKey: query.queryKey, meta: undefined, signal: new AbortController().signal } as any);
 
     expect(query.queryKey).toEqual([
       'features',

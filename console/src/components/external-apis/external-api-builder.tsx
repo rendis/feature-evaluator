@@ -60,10 +60,10 @@ import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import { getVisibleErrorMessage } from '@/lib/display-error';
 import { slugifyResourceKey } from '@/lib/resource-key';
 import { cn } from '@/lib/utils';
-import { useUnsavedChanges } from '@/hooks/use-unsaved-changes';
 import {
   useCreateExternalApi,
   useDeleteExternalApi,
@@ -106,7 +106,7 @@ export function ExternalApiBuilder({ externalApi }: ExternalApiBuilderProps) {
         { id: 'request', icon: DatabaseZap, label: t('steps.request') },
         { id: 'validation', icon: Check, label: t('steps.validation') },
         { id: 'test', icon: Play, label: t('steps.test') },
-      ] satisfies Array<{ id: BuilderStep; icon: typeof Globe; label: string }>,
+      ] satisfies { id: BuilderStep; icon: typeof Globe; label: string }[],
     [t],
   );
 
@@ -276,13 +276,11 @@ export function ExternalApiBuilder({ externalApi }: ExternalApiBuilderProps) {
         return current;
       }
 
-      const nextVariables = { ...current.variables };
-      delete nextVariables[currentName];
+      const { [currentName]: _removedVariable, ...nextVariables } = current.variables;
       nextVariables[nextName] = variable;
 
       const currentInputValue = current.testInputs[currentName];
-      const nextInputs = { ...current.testInputs };
-      delete nextInputs[currentName];
+      const { [currentName]: _removedInput, ...nextInputs } = current.testInputs;
       if (currentInputValue != null) {
         nextInputs[nextName] = currentInputValue;
       }
@@ -302,10 +300,8 @@ export function ExternalApiBuilder({ externalApi }: ExternalApiBuilderProps) {
         return current;
       }
 
-      const nextVariables = { ...current.variables };
-      delete nextVariables[name];
-      const nextInputs = { ...current.testInputs };
-      delete nextInputs[name];
+      const { [name]: _removedVariable, ...nextVariables } = current.variables;
+      const { [name]: _removedInput, ...nextInputs } = current.testInputs;
 
       return {
         ...current,
