@@ -166,6 +166,12 @@
     "success": "Regla eliminada",
     "error": "No se pudo eliminar la regla"
   },
+  "toggle": {
+    "enableSuccess": "Regla activada",
+    "disableSuccess": "Regla desactivada",
+    "error": "No se pudo actualizar la regla",
+    "ariaLabel": "Activar o desactivar {{name}}"
+  },
   "empty": {
     "title": "Sin reglas",
     "description": "Agrega reglas para definir cuándo se activa esta feature",

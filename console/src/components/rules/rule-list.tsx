@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
+import { RuleToggle } from './rule-toggle';
+
 import type { Rule } from '@/api/types';
 
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { PermissionButton } from '@/components/shared/permission-button';
 import { Badge } from '@/components/ui/badge';
 import { useDeleteRule, useReorderRules } from '@/mutations/rule-mutations';
-
 
 interface RuleListProps {
   featureKey: string;
@@ -111,7 +112,18 @@ interface RuleRowProps {
   isDragging: boolean;
 }
 
-function RuleRow({ rule, index, onDragStart, onDragOver, onDragEnd, onEdit, onClone, onDelete, isDragging }: RuleRowProps) {
+function RuleRow({
+  rule,
+  index,
+  featureKey,
+  onDragStart,
+  onDragOver,
+  onDragEnd,
+  onEdit,
+  onClone,
+  onDelete,
+  isDragging,
+}: RuleRowProps) {
   const { t } = useTranslation('rules');
 
   return (
@@ -142,7 +154,8 @@ function RuleRow({ rule, index, onDragStart, onDragOver, onDragEnd, onEdit, onCl
           <p className="text-muted-foreground mt-1 truncate font-mono text-xs">{rule.expression}</p>
         ) : null}
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
+        <RuleToggle featureKey={featureKey} rule={rule} />
         <PermissionButton permission="features.write" variant="ghost" size="icon" onClick={onEdit}>
           <Pencil className="h-3 w-3" />
         </PermissionButton>

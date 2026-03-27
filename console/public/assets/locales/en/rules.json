@@ -166,6 +166,12 @@
     "success": "Rule deleted",
     "error": "Could not delete the rule"
   },
+  "toggle": {
+    "enableSuccess": "Rule enabled",
+    "disableSuccess": "Rule disabled",
+    "error": "Could not update the rule",
+    "ariaLabel": "Enable or disable {{name}}"
+  },
   "empty": {
     "title": "No rules",
     "description": "Add rules to define when this feature activates",
