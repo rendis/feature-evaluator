@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <defs>
+    <!--
+      The mask cuts out the logic track from the main block.
+      We carve out the main path and two expanded circular "rooms" at the terminal nodes
+      to create a perfect halo of negative space around the toggle thumb.
+    -->
+    <mask id="track-cutout-primary">
+      <rect width="128" height="128" fill="white" />
+      <path
+        d="M 32 64 L 64 64 L 88 40 M 64 64 L 88 88"
+        stroke="black"
+        stroke-width="16"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"
+      />
+      <circle cx="88" cy="40" r="16" fill="black" />
+      <circle cx="88" cy="88" r="16" fill="black" />
+    </mask>
+  </defs>
+
+  <!-- The core decision engine / pack block -->
+  <rect x="8" y="8" width="112" height="112" rx="24" fill="#1E293B" mask="url(#track-cutout-primary)" />
+
+  <!-- The activated feature state / toggle thumb -->
+  <circle cx="88" cy="40" r="8" fill="#10B981" />
+</svg>
